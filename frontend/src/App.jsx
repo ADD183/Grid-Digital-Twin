@@ -5,6 +5,7 @@ import MetricCards from './components/MetricCards';
 import NetworkTopologyCanvas from './components/NetworkTopologyCanvas';
 import TimeSeriesChart from './components/TimeSeriesChart';
 import TelemetryTables from './components/TelemetryTables';
+import ForecastPanel from './components/ForecastPanel';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -13,6 +14,7 @@ export default function App() {
   const [summary, setSummary] = useState(null);
   const [topology, setTopology] = useState(null);
   const [solarLoadData, setSolarLoadData] = useState([]);
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'grid' | 'forecast'
   
   const [startDate, setStartDate] = useState('2023-01-01');
   const [endDate, setEndDate] = useState('2023-01-31');
@@ -80,13 +82,87 @@ export default function App() {
       {/* Header Bar */}
       <Header apiOnline={apiOnline} />
 
-      {/* Date Range Selection Bar */}
-      <DateRangePicker
-        startDate={startDate}
-        endDate={endDate}
-        onApply={(s, e) => fetchTimeSeries(s, e)}
-        loading={loading}
-      />
+      {/* Main Navigation Tabs */}
+      <div 
+        style={{ 
+          display: 'flex', 
+          gap: '10px', 
+          marginBottom: '20px', 
+          backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+          padding: '6px', 
+          borderRadius: '12px', 
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          width: 'fit-content'
+        }}
+      >
+        <button
+          onClick={() => setActiveTab('all')}
+          style={{
+            backgroundColor: activeTab === 'all' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+            color: activeTab === 'all' ? '#38bdf8' : '#94a3b8',
+            border: activeTab === 'all' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          🌐 Full Digital Twin View
+        </button>
+        <button
+          onClick={() => setActiveTab('grid')}
+          style={{
+            backgroundColor: activeTab === 'grid' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+            color: activeTab === 'grid' ? '#38bdf8' : '#94a3b8',
+            border: activeTab === 'grid' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          ⚡ Grid Topology & Power Flow
+        </button>
+        <button
+          onClick={() => setActiveTab('forecast')}
+          style={{
+            backgroundColor: activeTab === 'forecast' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
+            color: activeTab === 'forecast' ? '#c084fc' : '#94a3b8',
+            border: activeTab === 'forecast' ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          🧠 AI Forecaster (Checkpoint 2)
+        </button>
+      </div>
+
+      {/* Date Range Selection Bar (Grid & Time-Series Views) */}
+      {activeTab !== 'forecast' && (
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onApply={(s, e) => fetchTimeSeries(s, e)}
+          loading={loading}
+        />
+      )}
 
       {error && (
         <div 
@@ -105,20 +181,31 @@ export default function App() {
       )}
 
       {/* Metric Cards Summary */}
-      <MetricCards summary={summary} />
+      {activeTab !== 'forecast' && <MetricCards summary={summary} />}
 
       {/* Interactive Topology Diagram */}
-      <NetworkTopologyCanvas topology={topology} />
+      {(activeTab === 'all' || activeTab === 'grid') && (
+        <NetworkTopologyCanvas topology={topology} />
+      )}
 
       {/* Solar Generation vs Demand Chart */}
-      <TimeSeriesChart
-        data={solarLoadData}
-        startDate={startDate}
-        endDate={endDate}
-      />
+      {(activeTab === 'all' || activeTab === 'grid') && (
+        <TimeSeriesChart
+          data={solarLoadData}
+          startDate={startDate}
+          endDate={endDate}
+        />
+      )}
+
+      {/* Checkpoint 2: AI Forecasting Panel */}
+      {(activeTab === 'all' || activeTab === 'forecast') && (
+        <ForecastPanel />
+      )}
 
       {/* Grid Elements Breakdown Tables */}
-      <TelemetryTables topology={topology} />
+      {(activeTab === 'all' || activeTab === 'grid') && (
+        <TelemetryTables topology={topology} />
+      )}
 
       {/* Footer Banner */}
       <footer 
@@ -132,14 +219,15 @@ export default function App() {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px'
+          gap: '12px',
+          marginTop: '16px'
         }}
       >
         <div>
           ⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend
         </div>
         <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-          Checkpoint 1 Verification: Baseline AC power flow converges cleanly. Safe voltage tolerance [0.94 - 1.05 p.u.].
+          Checkpoint 2: LightGBM Solar & Load Forecasting + Chronological Holdout Benchmark Verified.
         </div>
       </footer>
 

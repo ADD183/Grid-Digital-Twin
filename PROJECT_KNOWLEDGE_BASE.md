@@ -28,6 +28,8 @@ The utility's usual fix is conservative: cap how much solar a given area is allo
 4. **Propose & compare** — if a violation is predicted, try multiple corrective actions (reduce solar export, use a battery, reroute via a different feeder), re-simulate each, and rank them by how well they fix the problem and how much clean energy they preserve.
 5. **Report honestly** — show the recommended action, and in at least one scenario, show a case where *no* action can fully fix the problem — an honest limitation, not a hidden one.
 
+Checkpoint 2 currently completes the first step with LightGBM/scikit-learn forecasting, chronological holdout evaluation, persisted model artifacts, and an interactive forecast panel in the React control room. The power-flow and corrective-action steps remain later checkpoints.
+
 This loop (forecast → simulate → detect → propose → verify) is the whole "digital twin" — a live, predictive model of the grid rather than a static diagram.
 
 ---
@@ -43,14 +45,14 @@ This loop (forecast → simulate → detect → propose → verify) is the whole
                                                                               │
                                                                               v
                                                                     ┌───────────────────┐
-                                                                    │  Streamlit frontend │
+                                                                    │ React/FastAPI UI  │
                                                                     │  (interactive demo) │
                                                                     └───────────────────┘
 ```
 
 **Backend (`src/`)** is pure Python, independently testable, no UI code inside it — this is what makes the project "defensible": a judge or a test suite can verify the logic works without touching the interface at all.
 
-**Frontend (`app/`)** is a Streamlit app that only *renders* what the backend computes — it never contains simulation or decision logic itself.
+**Frontend:** Checkpoint 1 established the active UI as a React/Vite SPA under `frontend/`, backed by the FastAPI server in `api.py`. The legacy Streamlit surface remains under `app/` for reference and compatibility. Both surfaces only render backend results; simulation and forecasting logic stays in `src/`.
 
 This split is built checkpoint by checkpoint (see `PRD_renewable_grid_digital_twin.md`):
 1. Grid + data foundation + live network diagram
@@ -153,7 +155,7 @@ The engine tries all three (at a few magnitudes each), re-simulates, and ranks t
 3. **Our approach — the 5-step loop** (§3) — forecast → simulate → detect → propose → verify
 4. **Architecture diagram** (§4)
 5. **Data & model choices, briefly** (§6, §7) — 1 slide, keep technical detail light, this is what NOTES.md is for if asked
-6. **Live demo** (walk through Scenarios 1–3 via the Streamlit app)
+6. **Live demo** (walk through Scenarios 1–3 via the React control room)
 7. **The honest failure case** (§9, scenario 4) — a dedicated slide; judges respond well to teams that show a limitation deliberately
 8. **Problem-statement checklist** (§10) — a single slide directly mapping requirements to what was built; makes evaluation easy for judges
 9. **Limitations + future work** (§11, §12)
