@@ -19,10 +19,13 @@ No public Indian distribution feeder data exists at this level of topological de
 ## 5. Why the load profile is synthetic
 Granular smart-meter household demand data for specific feeders is proprietary to DISCOMs. We use a hand-built synthetic diurnal curve representing typical residential and commercial demand (morning ramp, evening peak 6–10 PM, overnight trough), augmented with realistic Gaussian noise.
 
-## 6. Why Streamlit was chosen over React/FastAPI
-Streamlit enables real-time interactive parameter tweaking, Plotly network map rendering, and instant re-simulation without the overhead of a separate frontend build pipeline or state synchronization issues, perfectly suited for rapid hackathon delivery.
+## 6. Frontend architecture decision
+The original PRD proposed Streamlit for rapid prototyping. Checkpoint 1 instead delivered a React/Vite control room backed by FastAPI, so the active demo surface is the React SPA while `app/streamlit_app.py` remains a lightweight legacy/reference surface. Backend physics, data, and forecasting stay UI-independent under `src/`.
 
-## 7. Scenario Overview Notes
+## 7. Forecasting benchmark
+Forecasts use a strictly chronological holdout: the final 20% of the time series is never used for fitting. Each model is compared with persistence baselines (the previous hour and the same hour on the previous day); the better naive score is the baseline shown in the UI. Artifacts are persisted with `joblib` so API reads do not retrain models.
+
+## 8. Scenario Overview Notes
 - **Scenario 1 (High Solar / Low Load):** Midday peak solar export causing localized overvoltage near feeder ends.
 - **Scenario 2 (Evening Peak Load / Low Solar):** High evening residential demand causing voltage sags and line loading thermal stress.
 - **Scenario 3 (Cloudy Day Rapid Drop):** Sudden solar drop testing fast-acting battery response and forecasting accuracy.

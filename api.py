@@ -11,10 +11,11 @@ import os
 
 from src.grid import load_cigre_network, run_baseline_powerflow, get_grid_summary, get_network_element_dfs
 from src.data_pipeline import build_aligned_dataset
+from src.forecast import train_all_models, load_saved_models_and_metrics, get_forecast_chart_data
 
 app = FastAPI(
     title="Renewable Grid Digital Twin API",
-    description="REST API serving pandapower grid simulations and PVGIS solar/demand datasets",
+    description="REST API serving pandapower grid simulations, PVGIS solar/demand datasets, and ML forecasting models",
     version="1.0.0"
 )
 
@@ -128,6 +129,50 @@ def get_solar_load_data(
             })
 
         return records
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.get("/api/forecast/metrics")
+def get_forecast_metrics() -> Dict[str, Any]:
+    """Return model performance metrics (MAE, RMSE, R2, baseline improvements) for solar and load forecasters."""
+    try:
+        saved = load_saved_models_and_metrics()
+        if saved is None:
+            res = train_all_models(save=True)
+            return res["summary"]
+        return saved["summary"]
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.get("/api/forecast/chart")
+def get_forecast_chart(
+    points: int = Query(
+        168,
+        ge=24,
+        le=336,
+        description="Number of test holdout hours to visualize (24-336; default 168 = 7 days)"
+    )
+) -> Dict[str, Any]:
+    """Return actual vs predicted vs naive persistence baseline time series for the holdout test window."""
+    try:
+        data = get_forecast_chart_data(max_points=points)
+        return data
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.post("/api/forecast/train")
+def retrain_forecast_models() -> Dict[str, Any]:
+    """Trigger retraining of Solar and Load gradient boosting models and persist artifacts."""
+    try:
+        res = train_all_models(save=True)
+        return {
+            "status": "success",
+            "message": "Forecasting models retrained and serialized successfully.",
+            "summary": res["summary"]
+        }
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
 

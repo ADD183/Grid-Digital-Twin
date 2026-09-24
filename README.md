@@ -11,6 +11,13 @@ An interactive digital twin of a local power distribution network (CIGRE MV benc
 - **FastAPI REST Server:** UI-decoupled REST API exposing grid summary, network element DataFrames, and time-aligned solar/demand time-series data.
 - **Defensible Clean Architecture:** `src/` backend is completely UI-independent and testable via `pytest` and CLI (`main.py`).
 
+## 🧠 Checkpoint 2: Forecasting
+- **Validated solar and load forecasters:** LightGBM gradient-boosted regressors with a scikit-learn `GradientBoostingRegressor` fallback.
+- **Leakage-safe feature engineering:** t-1, t-2, t-3, and t-24 lag features plus calendar and rolling statistics.
+- **Chronological holdout benchmark:** the latest 20% of the aligned time series is held out; model MAE/RMSE are shown beside a persistence baseline.
+- **Persistent artifacts:** trained models and evaluation data are stored in `data/processed/models/` and reloaded by the API without retraining.
+- **Forecast control-room panel:** the React SPA provides solar/load toggles, 48-hour/7-day/14-day windows, actual-vs-forecast-vs-naive charts, benchmark metrics, and retraining.
+
 ---
 
 ## 📁 Repository Structure
@@ -20,6 +27,7 @@ renewable-grid-digital-twin/
 ├── NOTES.md                     # Engineering assumptions log & judge Q&A prep
 ├── requirements.txt             # Python dependency specification
 ├── CHECKPOINT_1_REPORT.md       # Checkpoint 1 verification report
+├── CHECKPOINT_2_REPORT.md       # Checkpoint 2 verification report
 ├── api.py                       # FastAPI REST Server
 ├── main.py                      # CLI entrypoint for pure backend validation
 ├── data/
@@ -67,5 +75,13 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### 4. Run Automated Test Suite
 ```bash
-python -m pytest tests/test_grid.py
+python -m pytest tests -q
 ```
+
+### 5. Build the React frontend
+```bash
+cd frontend
+npm run build
+```
+
+The forecast panel is available from the **AI Forecaster (Checkpoint 2)** tab after the FastAPI server is running.
