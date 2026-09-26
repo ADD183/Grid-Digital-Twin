@@ -30,3 +30,20 @@ Forecasts use a strictly chronological holdout: the final 20% of the time series
 - **Scenario 2 (Evening Peak Load / Low Solar):** High evening residential demand causing voltage sags and line loading thermal stress.
 - **Scenario 3 (Cloudy Day Rapid Drop):** Sudden solar drop testing fast-acting battery response and forecasting accuracy.
 - **Scenario 4 (Infeasible Violation):** Severe multi-bus overload where no single action fully resolves the constraint, demonstrating honest partial mitigation reporting.
+
+## 9. Corrective Action Multi-Objective Scoring Rationale (Checkpoint 3)
+Corrective actions are scored using a clear engineering priority hierarchy:
+1. **Primary: Complete Constraint Elimination (+1000 pts):** Any action that leaves residual voltage or thermal violations is heavily penalized, because operating outside utility limits risks hardware tripping.
+2. **Secondary: Renewable Energy Preservation (+2.0 pts per % clean generation retained):** Clean energy generated from zero-marginal-cost solar is economically and environmentally valuable. Solutions that avoid curtailment score significantly higher.
+3. **Tertiary: Operational Cost Proxy Penalty (-15.0 pts per unit):**
+   - **Cost Proxy 1 (Feeder Reconfiguration):** Pure network switching operation with zero fuel cost, zero wear, and zero energy loss.
+   - **Cost Proxy 2 (Battery Storage Dispatch):** Incurs electrochemical battery degradation / cycling wear, but stores and preserves 100% of clean generation.
+   - **Cost Proxy 3 (Solar Curtailment):** Wastes clean zero-carbon generation. Considered the "last resort" measure when switching and storage are insufficient.
+
+## 10. CIGRE MV Feeder Reconfiguration Physics
+The CIGRE MV benchmark includes three normally-open tie switches:
+- **Switch S1 (Line 14, Bus 8 <-> Bus 14):** Connects Feeder 1 and Feeder 2, allowing power to bypass congested substation transformers and line segments.
+- **Switch S2 (Line 12, Bus 6 <-> Bus 7):** Loop tie between remote branches.
+- **Switch S3 (Line 13, Bus 4 <-> Bus 11):** Cross-feeder link.
+Closing tie switch S1 redistributes active power flow across alternative lines, successfully relieving voltage sags and line congestion without requiring generation curtailment.
+

@@ -29,20 +29,20 @@ export default function Header({ apiOnline }) {
               </h1>
               <span 
                 style={{ 
-                  backgroundColor: 'rgba(6, 182, 212, 0.15)', 
-                  color: '#06b6d4', 
-                  border: '1px solid rgba(6, 182, 212, 0.3)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.15)', 
+                  color: '#34d399', 
+                  border: '1px solid rgba(16, 185, 129, 0.35)',
                   padding: '2px 8px', 
                   borderRadius: '6px', 
                   fontSize: '0.75rem',
                   fontWeight: 600
                 }}
               >
-                Checkpoint 1
+                Checkpoints 1–3 Complete
               </span>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '2px' }}>
-              AC Power Flow Simulation & PVGIS Solar Irradiance Integration
+              Physics Engine • Chronological AI Forecaster • Propose-Verify-Repair Action Engine
             </p>
           </div>
         </div>

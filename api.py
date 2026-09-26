@@ -5,17 +5,22 @@ Exposes backend grid topology, power flow calculation results, and time-series s
 
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import pandas as pd
 import os
+
+from pydantic import BaseModel, Field
 
 from src.grid import load_cigre_network, run_baseline_powerflow, get_grid_summary, get_network_element_dfs
 from src.data_pipeline import build_aligned_dataset
 from src.forecast import train_all_models, load_saved_models_and_metrics, get_forecast_chart_data
+from src.violations import check_grid_violations
+from src.actions import apply_curtailment, apply_battery_dispatch, apply_feeder_reconfiguration
+from src.engine import trigger_scenario, evaluate_actions, DEMO_SCENARIOS
 
 app = FastAPI(
     title="Renewable Grid Digital Twin API",
-    description="REST API serving pandapower grid simulations, PVGIS solar/demand datasets, and ML forecasting models",
+    description="REST API serving pandapower grid simulations, PVGIS solar/demand datasets, ML forecasting models, and corrective action engine",
     version="1.0.0"
 )
 
@@ -27,6 +32,58 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def serialize_topology(net) -> Dict[str, Any]:
+    """Serialize network elements (buses, lines, static generators) formatted for UI rendering."""
+    bus_df, line_df, sgen_df = get_network_element_dfs(net)
+
+    buses = []
+    for idx, row in bus_df.iterrows():
+        buses.append({
+            "id": int(idx),
+            "name": str(row.get("name", f"Bus {idx}")),
+            "vm_pu": round(float(row.get("vm_pu", 1.0)), 4),
+            "va_degree": round(float(row.get("va_degree", 0.0)), 2),
+            "p_mw": round(float(row.get("p_mw", 0.0)), 3),
+            "q_mvar": round(float(row.get("q_mvar", 0.0)), 3),
+            "x": round(float(row.get("x", 0.0)), 2),
+            "y": round(float(row.get("y", 0.0)), 2),
+            "vn_kv": round(float(row.get("vn_kv", 15.0)), 1)
+        })
+
+    lines = []
+    for idx, row in line_df.iterrows():
+        lines.append({
+            "id": int(idx),
+            "name": str(row.get("name", f"Line {idx}")),
+            "from_bus": int(row["from_bus"]),
+            "to_bus": int(row["to_bus"]),
+            "loading_percent": round(float(row.get("loading_percent", 0.0)), 2),
+            "length_km": round(float(row.get("length_km", 1.0)), 2),
+            "from_x": round(float(row.get("from_x", 0.0)), 2),
+            "from_y": round(float(row.get("from_y", 0.0)), 2),
+            "to_x": round(float(row.get("to_x", 0.0)), 2),
+            "to_y": round(float(row.get("to_y", 0.0)), 2),
+        })
+
+    sgens = []
+    if not sgen_df.empty:
+        for idx, row in sgen_df.iterrows():
+            sgens.append({
+                "id": int(idx),
+                "name": str(row.get("name", f"DER {idx}")),
+                "bus": int(row["bus"]),
+                "p_mw": round(float(row.get("p_mw", 0.0)), 3),
+                "q_mvar": round(float(row.get("q_mvar", 0.0)), 3),
+                "type": str(row.get("type", "PV"))
+            })
+
+    return {
+        "buses": buses,
+        "lines": lines,
+        "sgens": sgens
+    }
 
 
 @app.get("/api/health")
@@ -42,6 +99,8 @@ def get_summary() -> Dict[str, Any]:
         net = load_cigre_network()
         run_baseline_powerflow(net)
         summary = get_grid_summary(net)
+        violations = check_grid_violations(net)
+        summary["violations"] = violations
         return summary
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
@@ -53,54 +112,7 @@ def get_topology() -> Dict[str, Any]:
     try:
         net = load_cigre_network()
         run_baseline_powerflow(net)
-        bus_df, line_df, sgen_df = get_network_element_dfs(net)
-
-        buses = []
-        for idx, row in bus_df.iterrows():
-            buses.append({
-                "id": int(idx),
-                "name": str(row.get("name", f"Bus {idx}")),
-                "vm_pu": round(float(row.get("vm_pu", 1.0)), 4),
-                "va_degree": round(float(row.get("va_degree", 0.0)), 2),
-                "p_mw": round(float(row.get("p_mw", 0.0)), 3),
-                "q_mvar": round(float(row.get("q_mvar", 0.0)), 3),
-                "x": round(float(row.get("x", 0.0)), 2),
-                "y": round(float(row.get("y", 0.0)), 2),
-                "vn_kv": round(float(row.get("vn_kv", 15.0)), 1)
-            })
-
-        lines = []
-        for idx, row in line_df.iterrows():
-            lines.append({
-                "id": int(idx),
-                "name": str(row.get("name", f"Line {idx}")),
-                "from_bus": int(row["from_bus"]),
-                "to_bus": int(row["to_bus"]),
-                "loading_percent": round(float(row.get("loading_percent", 0.0)), 2),
-                "length_km": round(float(row.get("length_km", 1.0)), 2),
-                "from_x": round(float(row.get("from_x", 0.0)), 2),
-                "from_y": round(float(row.get("from_y", 0.0)), 2),
-                "to_x": round(float(row.get("to_x", 0.0)), 2),
-                "to_y": round(float(row.get("to_y", 0.0)), 2),
-            })
-
-        sgens = []
-        if not sgen_df.empty:
-            for idx, row in sgen_df.iterrows():
-                sgens.append({
-                    "id": int(idx),
-                    "name": str(row.get("name", f"DER {idx}")),
-                    "bus": int(row["bus"]),
-                    "p_mw": round(float(row.get("p_mw", 0.0)), 3),
-                    "q_mvar": round(float(row.get("q_mvar", 0.0)), 3),
-                    "type": str(row.get("type", "PV"))
-                })
-
-        return {
-            "buses": buses,
-            "lines": lines,
-            "sgens": sgens
-        }
+        return serialize_topology(net)
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
 
@@ -116,8 +128,6 @@ def get_solar_load_data(
     """
     try:
         aligned_df = build_aligned_dataset(start_date=start_date, end_date=end_date)
-        
-        # Format for React charts
         records = []
         for idx, row in aligned_df.iterrows():
             records.append({
@@ -127,7 +137,6 @@ def get_solar_load_data(
                 "load_kw": round(float(row.get("load_kw", 0.0)), 2),
                 "load_pu": round(float(row.get("load_pu", 0.0)), 4)
             })
-
         return records
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
@@ -172,6 +181,120 @@ def retrain_forecast_models() -> Dict[str, Any]:
             "status": "success",
             "message": "Forecasting models retrained and serialized successfully.",
             "summary": res["summary"]
+        }
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+# =========================================================================
+# CHECKPOINT 3: VIOLATION DETECTION & CORRECTIVE ACTION ENGINE ENDPOINTS
+# =========================================================================
+
+class TriggerScenarioRequest(BaseModel):
+    scenario_id: str = Field("solar_spike", description="Scenario identifier ('solar_spike', 'evening_peak', 'line_congestion')")
+    magnitude: Optional[float] = Field(None, description="Optional custom magnitude multiplier")
+
+
+class EvaluateEngineRequest(BaseModel):
+    scenario_id: str = Field("solar_spike", description="Scenario to trigger and evaluate")
+    magnitude: Optional[float] = Field(None, description="Optional custom magnitude multiplier")
+
+
+class CustomActionRequest(BaseModel):
+    scenario_id: str = Field("solar_spike", description="Scenario basis")
+    action_type: str = Field(..., description="'CURTAILMENT' | 'BATTERY_DISPATCH' | 'FEEDER_RECONFIGURATION'")
+    curtailment_pct: Optional[float] = Field(50.0, description="Curtailment percentage (0-100)")
+    battery_p_mw: Optional[float] = Field(1.0, description="Battery power in MW (+ charge / - discharge)")
+    battery_bus: Optional[int] = Field(5, description="Bus for battery storage")
+    switch_name: Optional[str] = Field("S1", description="Switch name ('S1', 'S2', 'S3')")
+
+
+@app.get("/api/violations/scenarios")
+def get_scenarios() -> Dict[str, Any]:
+    """Return available triggerable constraint scenarios and their metadata."""
+    return {"scenarios": list(DEMO_SCENARIOS.values())}
+
+
+@app.post("/api/violations/trigger")
+def api_trigger_scenario(req: TriggerScenarioRequest) -> Dict[str, Any]:
+    """
+    Artificially trigger a constraint scenario (solar overvoltage spike, evening peak, line congestion)
+    and return the resulting network violations, summary, and post-powerflow topology.
+    """
+    try:
+        net, meta = trigger_scenario(scenario_id=req.scenario_id, magnitude=req.magnitude)
+        violations = check_grid_violations(net)
+        summary = get_grid_summary(net)
+        topology = serialize_topology(net)
+        return {
+            "status": "success",
+            "scenario": meta,
+            "violations": violations,
+            "summary": summary,
+            "topology": topology,
+        }
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.post("/api/violations/evaluate")
+def api_evaluate_engine(req: EvaluateEngineRequest) -> Dict[str, Any]:
+    """
+    Execute the Propose -> Verify -> Repair engine:
+    1. Triggers the requested scenario.
+    2. Proposes candidates across curtailment, battery storage, and feeder reconfiguration.
+    3. Verifies each candidate via AC power flow.
+    4. Ranks candidates on resolution, clean energy retention, and operational cost.
+    5. Returns full ranked matrix, winner, explanation, and before/after topologies.
+    """
+    try:
+        net, meta = trigger_scenario(scenario_id=req.scenario_id, magnitude=req.magnitude)
+        before_topology = serialize_topology(net)
+        eval_result = evaluate_actions(net)
+        eval_result["scenario"] = meta
+        eval_result["before_topology"] = before_topology
+        return eval_result
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.post("/api/violations/apply-custom-action")
+def api_apply_custom_action(req: CustomActionRequest) -> Dict[str, Any]:
+    """
+    Apply a specific user-selected corrective action to the scenario network
+    and return the resulting topology and residual violations.
+    """
+    try:
+        net, meta = trigger_scenario(scenario_id=req.scenario_id)
+        
+        if req.action_type.upper() == "CURTAILMENT":
+            mod_net, action_meta = apply_curtailment(net, curtailment_pct=req.curtailment_pct or 50.0)
+        elif req.action_type.upper() == "BATTERY_DISPATCH":
+            mod_net, action_meta = apply_battery_dispatch(
+                net,
+                p_mw=req.battery_p_mw or 1.0,
+                bus_id=req.battery_bus or 5
+            )
+        elif req.action_type.upper() == "FEEDER_RECONFIGURATION":
+            mod_net, action_meta = apply_feeder_reconfiguration(
+                net,
+                switch_name=req.switch_name or "S1"
+            )
+        else:
+            raise ValueError(f"Unknown action_type: {req.action_type}")
+
+        run_baseline_powerflow(mod_net)
+        violations = check_grid_violations(mod_net)
+        summary = get_grid_summary(mod_net)
+        topology = serialize_topology(mod_net)
+
+        return {
+            "status": "success",
+            "action": action_meta,
+            "resolved": not violations["has_violations"],
+            "violations": violations,
+            "summary": summary,
+            "topology": topology,
         }
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))

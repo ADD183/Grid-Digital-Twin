@@ -6,6 +6,7 @@ import NetworkTopologyCanvas from './components/NetworkTopologyCanvas';
 import TimeSeriesChart from './components/TimeSeriesChart';
 import TelemetryTables from './components/TelemetryTables';
 import ForecastPanel from './components/ForecastPanel';
+import ViolationEnginePanel from './components/ViolationEnginePanel';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -14,7 +15,7 @@ export default function App() {
   const [summary, setSummary] = useState(null);
   const [topology, setTopology] = useState(null);
   const [solarLoadData, setSolarLoadData] = useState([]);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'grid' | 'forecast'
+  const [activeTab, setActiveTab] = useState('engine'); // 'all' | 'engine' | 'forecast' | 'grid'
   
   const [startDate, setStartDate] = useState('2023-01-01');
   const [endDate, setEndDate] = useState('2023-01-31');
@@ -86,21 +87,22 @@ export default function App() {
       <div 
         style={{ 
           display: 'flex', 
-          gap: '10px', 
+          gap: '8px', 
           marginBottom: '20px', 
-          backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+          backgroundColor: 'rgba(15, 23, 42, 0.75)', 
           padding: '6px', 
           borderRadius: '12px', 
           border: '1px solid rgba(255, 255, 255, 0.08)',
-          width: 'fit-content'
+          width: 'fit-content',
+          flexWrap: 'wrap'
         }}
       >
         <button
-          onClick={() => setActiveTab('all')}
+          onClick={() => setActiveTab('engine')}
           style={{
-            backgroundColor: activeTab === 'all' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
-            color: activeTab === 'all' ? '#38bdf8' : '#94a3b8',
-            border: activeTab === 'all' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+            backgroundColor: activeTab === 'engine' ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
+            color: activeTab === 'engine' ? '#f87171' : '#94a3b8',
+            border: activeTab === 'engine' ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid transparent',
             padding: '8px 18px',
             borderRadius: '8px',
             fontWeight: 600,
@@ -109,30 +111,13 @@ export default function App() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            boxShadow: activeTab === 'engine' ? '0 0 12px rgba(239, 68, 68, 0.25)' : 'none'
           }}
         >
-          🌐 Full Digital Twin View
+          🛡️ Action Engine (Checkpoint 3)
         </button>
-        <button
-          onClick={() => setActiveTab('grid')}
-          style={{
-            backgroundColor: activeTab === 'grid' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
-            color: activeTab === 'grid' ? '#38bdf8' : '#94a3b8',
-            border: activeTab === 'grid' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
-            padding: '8px 18px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.2s'
-          }}
-        >
-          ⚡ Grid Topology & Power Flow
-        </button>
+
         <button
           onClick={() => setActiveTab('forecast')}
           style={{
@@ -152,10 +137,50 @@ export default function App() {
         >
           🧠 AI Forecaster (Checkpoint 2)
         </button>
+
+        <button
+          onClick={() => setActiveTab('grid')}
+          style={{
+            backgroundColor: activeTab === 'grid' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+            color: activeTab === 'grid' ? '#38bdf8' : '#94a3b8',
+            border: activeTab === 'grid' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          ⚡ Grid Topology & Power Flow (C1)
+        </button>
+
+        <button
+          onClick={() => setActiveTab('all')}
+          style={{
+            backgroundColor: activeTab === 'all' ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+            color: activeTab === 'all' ? '#34d399' : '#94a3b8',
+            border: activeTab === 'all' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          🌐 Full Digital Twin View
+        </button>
       </div>
 
       {/* Date Range Selection Bar (Grid & Time-Series Views) */}
-      {activeTab !== 'forecast' && (
+      {(activeTab === 'all' || activeTab === 'grid') && (
         <DateRangePicker
           startDate={startDate}
           endDate={endDate}
@@ -181,14 +206,19 @@ export default function App() {
       )}
 
       {/* Metric Cards Summary */}
-      {activeTab !== 'forecast' && <MetricCards summary={summary} />}
+      {(activeTab === 'all' || activeTab === 'grid') && <MetricCards summary={summary} />}
 
-      {/* Interactive Topology Diagram */}
+      {/* CHECKPOINT 3: VIOLATION DETECTION & CORRECTIVE ACTION ENGINE PANEL */}
+      {(activeTab === 'all' || activeTab === 'engine') && (
+        <ViolationEnginePanel />
+      )}
+
+      {/* Interactive Topology Diagram (Checkpoint 1) */}
       {(activeTab === 'all' || activeTab === 'grid') && (
         <NetworkTopologyCanvas topology={topology} />
       )}
 
-      {/* Solar Generation vs Demand Chart */}
+      {/* Solar Generation vs Demand Chart (Checkpoint 1) */}
       {(activeTab === 'all' || activeTab === 'grid') && (
         <TimeSeriesChart
           data={solarLoadData}
@@ -227,7 +257,7 @@ export default function App() {
           ⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend
         </div>
         <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-          Checkpoint 2: LightGBM Solar & Load Forecasting + Chronological Holdout Benchmark Verified.
+          Checkpoints 1, 2 & 3 Complete: Physics Grid • Chronological ML Forecaster • Propose-Verify-Repair Action Engine.
         </div>
       </footer>
 
