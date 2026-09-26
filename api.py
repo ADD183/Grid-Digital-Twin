@@ -16,6 +16,7 @@ from src.data_pipeline import build_aligned_dataset
 from src.forecast import get_forecast_chart_data, train_all_models
 from src.actions import apply_battery_dispatch, apply_curtailment, apply_feeder_reconfiguration
 from src.engine import DEMO_SCENARIOS, evaluate_actions, trigger_scenario
+from src.scenarios import run_scenario
 from src.violations import check_grid_violations
 
 app = FastAPI(
@@ -204,6 +205,15 @@ def evaluate_violation_scenario(request: ScenarioRequest) -> Dict[str, Any]:
         result = evaluate_actions(net)
         result["before_topology"] = serialize_topology(net)
         return result
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+
+@app.post("/api/scenarios/run")
+def run_violation_scenario(request: ScenarioRequest) -> Dict[str, Any]:
+    """Run the full checkpoint-4 scenario pipeline and persist its artifacts."""
+    try:
+        return run_scenario(request.scenario_id)
     except Exception as err:
         raise HTTPException(status_code=400, detail=str(err))
 

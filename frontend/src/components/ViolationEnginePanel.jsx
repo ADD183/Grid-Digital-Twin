@@ -258,6 +258,8 @@ export default function ViolationEnginePanel() {
             { id: 'solar_spike', icon: Sun, title: 'Midday Solar Surge', desc: 'High rooftop PV + low demand triggers overvoltage (>1.05 p.u.)' },
             { id: 'evening_peak', icon: BatteryCharging, title: 'Evening Demand Peak', desc: 'Sunset + peak appliance load causes voltage sags (<0.94 p.u.)' },
             { id: 'line_congestion', icon: Zap, title: 'Feeder Line Overload', desc: 'Heavy branch demand pushes line loading past 100% thermal limit' },
+            { id: 'cloudy_drop', icon: AlertTriangle, title: 'Cloudy-Day Solar Drop', desc: 'Sudden generation collapse forces a rapid support response and residual stress' },
+            { id: 'infeasible', icon: XCircle, title: 'Infeasible Stress Event', desc: 'Deliberately exceeds the corrective-action envelope and must remain unresolved' },
           ].map((scen) => {
             const Icon = scen.icon;
             const isSelected = selectedScenario === scen.id;

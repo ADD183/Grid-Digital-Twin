@@ -47,6 +47,20 @@ DEMO_SCENARIOS = {
         "primary_violation": "LINE_OVERLOAD",
         "default_magnitude": 1.80,
     },
+    "cloudy_drop": {
+        "id": "cloudy_drop",
+        "name": "🌥️ Cloudy-Day Solar Drop",
+        "description": "An abrupt cloud bank removes most solar output while residual demand remains elevated, stressing voltage support and causing a fast reactive/thermal response requirement.",
+        "primary_violation": "UNDERVOLTAGE",
+        "default_magnitude": 0.10,
+    },
+    "infeasible": {
+        "id": "infeasible",
+        "name": "🚫 Deliberately Infeasible Stress Event",
+        "description": "A severe, multi-bus contingency that exceeds the operating range and leaves residual constraints even after the strongest available corrective actions.",
+        "primary_violation": "MULTI_CONSTRAINT",
+        "default_magnitude": 2.20,
+    },
 }
 
 
@@ -129,6 +143,57 @@ def trigger_scenario(
             "name": DEMO_SCENARIOS["line_congestion"]["name"],
             "description": DEMO_SCENARIOS["line_congestion"]["description"],
             "parameters": {"feeder_load_multiplier": scale, "target_buses": branch_buses},
+            "initial_violations": violations,
+        }
+        return net, metadata
+
+    elif scenario_id == "cloudy_drop":
+        scale = magnitude if magnitude is not None else 0.10
+        pv_mask = net.sgen["type"].astype(str).str.upper().str.contains("PV|SOLAR")
+        if pv_mask.any():
+            net.sgen.loc[pv_mask, "p_mw"] *= float(scale)
+        net.load["p_mw"] *= 1.15
+        net.load["q_mvar"] *= 1.15
+
+        pp.runpp(net, numba=False)
+        violations = check_grid_violations(net)
+
+        metadata = {
+            "scenario_id": "cloudy_drop",
+            "name": DEMO_SCENARIOS["cloudy_drop"]["name"],
+            "description": DEMO_SCENARIOS["cloudy_drop"]["description"],
+            "parameters": {"solar_drop_factor": float(scale), "load_scale": 1.15},
+            "initial_violations": violations,
+        }
+        return net, metadata
+
+    elif scenario_id == "infeasible":
+        # Keep this case severe enough to leave residual violations after mitigation,
+        # but not so extreme that pandapower fails to converge. The scenario should
+        # remain truthful and unresolved rather than crashing the solver.
+        scale = magnitude if magnitude is not None else 2.20
+        pv_mask = net.sgen["type"].astype(str).str.upper().str.contains("PV|SOLAR")
+        if pv_mask.any():
+            net.sgen.loc[pv_mask, "p_mw"] = 0.0
+
+        # Keep the feeder stressed but solvable: a moderate-wide, multi-bus spike is
+        # enough to trigger lingering voltage/thermal violations while maintaining AC
+        # power-flow convergence for honest reporting.
+        net.load["p_mw"] *= float(scale)
+        net.load["q_mvar"] *= float(scale)
+        severe_buses = [2, 3, 5, 7, 9, 11]
+        if "bus" in net.load.columns:
+            net.load.loc[net.load["bus"].isin(severe_buses), "p_mw"] *= 1.4
+            net.load.loc[net.load["bus"].isin(severe_buses), "q_mvar"] *= 1.4
+
+        pp.runpp(net, numba=False)
+        violations = check_grid_violations(net)
+
+        metadata = {
+            "scenario_id": "infeasible",
+            "name": DEMO_SCENARIOS["infeasible"]["name"],
+            "description": DEMO_SCENARIOS["infeasible"]["description"],
+            "parameters": {"load_scale": float(scale), "solar_generation_mw": 0.0, "target_buses": severe_buses},
             "initial_violations": violations,
         }
         return net, metadata
