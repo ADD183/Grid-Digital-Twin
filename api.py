@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from src.grid import load_cigre_network, run_baseline_powerflow, get_grid_summary, get_network_element_dfs
 from src.data_pipeline import build_aligned_dataset
+from src.forecast import get_forecast_chart_data, train_all_models
 from src.actions import apply_battery_dispatch, apply_curtailment, apply_feeder_reconfiguration
 from src.engine import DEMO_SCENARIOS, evaluate_actions, trigger_scenario
 from src.violations import check_grid_violations
@@ -139,6 +140,27 @@ def get_solar_load_data(
         return records
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.get("/api/forecast/chart")
+def get_forecast_chart(
+    points: int = Query(168, ge=1, le=8760, description="Maximum number of recent hourly evaluation points")
+) -> Dict[str, Any]:
+    """Return cached or freshly trained forecast evaluation data for the UI."""
+    try:
+        return get_forecast_chart_data(max_points=points)
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Unable to load forecast data: {err}")
+
+
+@app.post("/api/forecast/train")
+def retrain_forecast_models() -> Dict[str, Any]:
+    """Retrain and persist both forecast models, then return their summary metrics."""
+    try:
+        result = train_all_models(save=True)
+        return {"status": "success", "summary": result["summary"]}
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Unable to train forecast models: {err}")
 
 
 class ScenarioRequest(BaseModel):
