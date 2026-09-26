@@ -70,6 +70,21 @@ def test_chronological_split(sample_dataset):
     assert len(X_test) == int(len(X) * 0.25)
 
 
+def test_invalid_split_ratio_raises():
+    """Invalid chronologic split ratios should fail fast with a clear ValueError."""
+    X = pd.DataFrame({"value": [1.0, 2.0, 3.0, 4.0]})
+    y = pd.Series([1.0, 2.0, 3.0, 4.0], index=X.index)
+
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        chronological_split(X, y, test_ratio=1.5)
+
+
+def test_invalid_date_range_raises():
+    """Backwards date ranges should fail fast instead of producing a broken dataset."""
+    with pytest.raises(ValueError, match="start_date.*end_date"):
+        build_aligned_dataset(start_date="2023-01-02", end_date="2023-01-01")
+
+
 def test_compute_metrics_accuracy():
     """Verify pure numpy metric calculation logic."""
     y_true = np.array([1.0, 2.0, 3.0, 4.0, 5.0])

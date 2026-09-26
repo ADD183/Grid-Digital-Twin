@@ -18,6 +18,7 @@ const API_BASE = 'http://127.0.0.1:8000';
 
 export default function ViolationEnginePanel() {
   const [selectedScenario, setSelectedScenario] = useState('solar_spike');
+  const [scenarios, setScenarios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
   const [error, setError] = useState(null);
@@ -27,6 +28,7 @@ export default function ViolationEnginePanel() {
   const [evaluationData, setEvaluationData] = useState(null);
   const [activeViewMode, setActiveViewMode] = useState('before'); // 'before' | 'after' | 'custom'
   const [filterType, setFilterType] = useState('ALL');
+  const [selectedActionIndex, setSelectedActionIndex] = useState(0);
 
   // Custom action sandbox inputs
   const [customType, setCustomType] = useState('FEEDER_RECONFIGURATION');

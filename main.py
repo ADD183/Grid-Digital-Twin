@@ -54,7 +54,6 @@ def main():
     print(f"        - Model RMSE:            {f_sum['load']['model_metrics']['rmse']} p.u. (Naive: {f_sum['load']['naive_metrics']['rmse']})")
     print(f"        - MAE Improvement:       +{f_sum['load']['mae_improvement_pct']}%")
     print(f"        - R² Score:              {round(f_sum['load']['model_metrics']['r2'] * 100, 2)}%")
-
     print("\n[5/5] Executing Checkpoint 3 Propose -> Verify -> Repair Corrective Action Engine...")
     print("      Triggering Solar Surge Overvoltage Scenario (Midday PV Spike)...")
     spike_net, meta = trigger_scenario("solar_spike")

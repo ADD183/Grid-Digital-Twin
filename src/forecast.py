@@ -105,12 +105,22 @@ def chronological_split(
     Returns:
         Tuple: X_train, X_test, y_train, y_test
     """
+    if not 0.0 < test_ratio < 1.0:
+        raise ValueError(f"test_ratio must be between 0 and 1, got {test_ratio!r}.")
+
     n_samples = len(X)
+    if n_samples == 0:
+        raise ValueError("Cannot split an empty feature matrix.")
+
     if test_hours is not None:
+        if test_hours <= 0 or test_hours >= n_samples:
+            raise ValueError(f"test_hours must be in the range [1, {n_samples - 1}], got {test_hours!r}.")
         split_idx = max(1, n_samples - test_hours)
     else:
         split_idx = int(n_samples * (1.0 - test_ratio))
-        
+        if split_idx <= 0 or split_idx >= n_samples:
+            split_idx = max(1, min(n_samples - 1, split_idx))
+
     X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
     y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
     return X_train, X_test, y_train, y_test

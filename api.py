@@ -13,14 +13,14 @@ from pydantic import BaseModel, Field
 
 from src.grid import load_cigre_network, run_baseline_powerflow, get_grid_summary, get_network_element_dfs
 from src.data_pipeline import build_aligned_dataset
-from src.forecast import train_all_models, load_saved_models_and_metrics, get_forecast_chart_data
+from src.forecast import get_forecast_chart_data, train_all_models
+from src.actions import apply_battery_dispatch, apply_curtailment, apply_feeder_reconfiguration
+from src.engine import DEMO_SCENARIOS, evaluate_actions, trigger_scenario
 from src.violations import check_grid_violations
-from src.actions import apply_curtailment, apply_battery_dispatch, apply_feeder_reconfiguration
-from src.engine import trigger_scenario, evaluate_actions, DEMO_SCENARIOS
 
 app = FastAPI(
     title="Renewable Grid Digital Twin API",
-    description="REST API serving pandapower grid simulations, PVGIS solar/demand datasets, ML forecasting models, and corrective action engine",
+    description="REST API serving pandapower grid simulations and PVGIS solar/demand datasets",
     version="1.0.0"
 )
 
@@ -40,8 +40,8 @@ def serialize_topology(net) -> Dict[str, Any]:
 
     buses = []
     for idx, row in bus_df.iterrows():
-        buses.append({
-            "id": int(idx),
+            buses.append({
+                "id": int(str(idx)),
             "name": str(row.get("name", f"Bus {idx}")),
             "vm_pu": round(float(row.get("vm_pu", 1.0)), 4),
             "va_degree": round(float(row.get("va_degree", 0.0)), 2),
@@ -55,7 +55,7 @@ def serialize_topology(net) -> Dict[str, Any]:
     lines = []
     for idx, row in line_df.iterrows():
         lines.append({
-            "id": int(idx),
+            "id": int(str(idx)),
             "name": str(row.get("name", f"Line {idx}")),
             "from_bus": int(row["from_bus"]),
             "to_bus": int(row["to_bus"]),
@@ -71,7 +71,7 @@ def serialize_topology(net) -> Dict[str, Any]:
     if not sgen_df.empty:
         for idx, row in sgen_df.iterrows():
             sgens.append({
-                "id": int(idx),
+                "id": int(str(idx)),
                 "name": str(row.get("name", f"DER {idx}")),
                 "bus": int(row["bus"]),
                 "p_mw": round(float(row.get("p_mw", 0.0)), 3),
@@ -131,7 +131,7 @@ def get_solar_load_data(
         records = []
         for idx, row in aligned_df.iterrows():
             records.append({
-                "timestamp": idx.strftime("%Y-%m-%d %H:%M"),
+                "timestamp": pd.Timestamp(str(idx)).strftime("%Y-%m-%d %H:%M"),
                 "solar_ghi": round(float(row.get("solar_ghi", 0.0)), 2),
                 "solar_pu": round(float(row.get("solar_pu", 0.0)), 4),
                 "load_kw": round(float(row.get("load_kw", 0.0)), 2),
@@ -142,162 +142,97 @@ def get_solar_load_data(
         raise HTTPException(status_code=500, detail=str(err))
 
 
-@app.get("/api/forecast/metrics")
-def get_forecast_metrics() -> Dict[str, Any]:
-    """Return model performance metrics (MAE, RMSE, R2, baseline improvements) for solar and load forecasters."""
-    try:
-        saved = load_saved_models_and_metrics()
-        if saved is None:
-            res = train_all_models(save=True)
-            return res["summary"]
-        return saved["summary"]
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
 @app.get("/api/forecast/chart")
 def get_forecast_chart(
-    points: int = Query(
-        168,
-        ge=24,
-        le=336,
-        description="Number of test holdout hours to visualize (24-336; default 168 = 7 days)"
-    )
+    points: int = Query(168, ge=1, le=8760, description="Maximum number of recent hourly evaluation points")
 ) -> Dict[str, Any]:
-    """Return actual vs predicted vs naive persistence baseline time series for the holdout test window."""
+    """Return cached or freshly trained forecast evaluation data for the UI."""
     try:
-        data = get_forecast_chart_data(max_points=points)
-        return data
+        return get_forecast_chart_data(max_points=points)
     except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
+        raise HTTPException(status_code=500, detail=f"Unable to load forecast data: {err}")
 
 
 @app.post("/api/forecast/train")
 def retrain_forecast_models() -> Dict[str, Any]:
-    """Trigger retraining of Solar and Load gradient boosting models and persist artifacts."""
+    """Retrain and persist both forecast models, then return their summary metrics."""
     try:
-        res = train_all_models(save=True)
-        return {
-            "status": "success",
-            "message": "Forecasting models retrained and serialized successfully.",
-            "summary": res["summary"]
-        }
+        result = train_all_models(save=True)
+        return {"status": "success", "summary": result["summary"]}
     except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
+        raise HTTPException(status_code=500, detail=f"Unable to train forecast models: {err}")
 
 
-# =========================================================================
-# CHECKPOINT 3: VIOLATION DETECTION & CORRECTIVE ACTION ENGINE ENDPOINTS
-# =========================================================================
-
-class TriggerScenarioRequest(BaseModel):
-    scenario_id: str = Field("solar_spike", description="Scenario identifier ('solar_spike', 'evening_peak', 'line_congestion')")
-    magnitude: Optional[float] = Field(None, description="Optional custom magnitude multiplier")
+class ScenarioRequest(BaseModel):
+    scenario_id: str = "solar_spike"
 
 
-class EvaluateEngineRequest(BaseModel):
-    scenario_id: str = Field("solar_spike", description="Scenario to trigger and evaluate")
-    magnitude: Optional[float] = Field(None, description="Optional custom magnitude multiplier")
-
-
-class CustomActionRequest(BaseModel):
-    scenario_id: str = Field("solar_spike", description="Scenario basis")
-    action_type: str = Field(..., description="'CURTAILMENT' | 'BATTERY_DISPATCH' | 'FEEDER_RECONFIGURATION'")
-    curtailment_pct: Optional[float] = Field(50.0, description="Curtailment percentage (0-100)")
-    battery_p_mw: Optional[float] = Field(1.0, description="Battery power in MW (+ charge / - discharge)")
-    battery_bus: Optional[int] = Field(5, description="Bus for battery storage")
-    switch_name: Optional[str] = Field("S1", description="Switch name ('S1', 'S2', 'S3')")
+class CustomActionRequest(ScenarioRequest):
+    action_type: str
+    curtailment_pct: float = Field(default=50.0, ge=0.0, le=100.0)
+    battery_p_mw: float = Field(default=1.5, ge=-2.0, le=2.0)
+    battery_bus: int = 5
+    switch_name: str = "S1"
 
 
 @app.get("/api/violations/scenarios")
-def get_scenarios() -> Dict[str, Any]:
-    """Return available triggerable constraint scenarios and their metadata."""
+def get_violation_scenarios() -> Dict[str, Any]:
+    """Return the selectable Checkpoint 3 violation scenarios."""
     return {"scenarios": list(DEMO_SCENARIOS.values())}
 
 
 @app.post("/api/violations/trigger")
-def api_trigger_scenario(req: TriggerScenarioRequest) -> Dict[str, Any]:
-    """
-    Artificially trigger a constraint scenario (solar overvoltage spike, evening peak, line congestion)
-    and return the resulting network violations, summary, and post-powerflow topology.
-    """
+def trigger_violation_scenario(request: ScenarioRequest) -> Dict[str, Any]:
+    """Trigger a scenario and return its violated topology for the control room."""
     try:
-        net, meta = trigger_scenario(scenario_id=req.scenario_id, magnitude=req.magnitude)
-        violations = check_grid_violations(net)
-        summary = get_grid_summary(net)
-        topology = serialize_topology(net)
+        net, metadata = trigger_scenario(request.scenario_id)
         return {
             "status": "success",
-            "scenario": meta,
-            "violations": violations,
-            "summary": summary,
-            "topology": topology,
+            "scenario": metadata,
+            "violations": metadata["initial_violations"],
+            "topology": serialize_topology(net),
         }
     except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
+        raise HTTPException(status_code=400, detail=str(err))
 
 
 @app.post("/api/violations/evaluate")
-def api_evaluate_engine(req: EvaluateEngineRequest) -> Dict[str, Any]:
-    """
-    Execute the Propose -> Verify -> Repair engine:
-    1. Triggers the requested scenario.
-    2. Proposes candidates across curtailment, battery storage, and feeder reconfiguration.
-    3. Verifies each candidate via AC power flow.
-    4. Ranks candidates on resolution, clean energy retention, and operational cost.
-    5. Returns full ranked matrix, winner, explanation, and before/after topologies.
-    """
+def evaluate_violation_scenario(request: ScenarioRequest) -> Dict[str, Any]:
+    """Run the corrective-action engine for a selected scenario."""
     try:
-        net, meta = trigger_scenario(scenario_id=req.scenario_id, magnitude=req.magnitude)
-        before_topology = serialize_topology(net)
-        eval_result = evaluate_actions(net)
-        eval_result["scenario"] = meta
-        eval_result["before_topology"] = before_topology
-        return eval_result
+        net, _ = trigger_scenario(request.scenario_id)
+        result = evaluate_actions(net)
+        result["before_topology"] = serialize_topology(net)
+        return result
     except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
+        raise HTTPException(status_code=400, detail=str(err))
 
 
 @app.post("/api/violations/apply-custom-action")
-def api_apply_custom_action(req: CustomActionRequest) -> Dict[str, Any]:
-    """
-    Apply a specific user-selected corrective action to the scenario network
-    and return the resulting topology and residual violations.
-    """
+def apply_custom_violation_action(request: CustomActionRequest) -> Dict[str, Any]:
+    """Apply one user-selected action to a triggered scenario and return its result."""
     try:
-        net, meta = trigger_scenario(scenario_id=req.scenario_id)
-        
-        if req.action_type.upper() == "CURTAILMENT":
-            mod_net, action_meta = apply_curtailment(net, curtailment_pct=req.curtailment_pct or 50.0)
-        elif req.action_type.upper() == "BATTERY_DISPATCH":
-            mod_net, action_meta = apply_battery_dispatch(
-                net,
-                p_mw=req.battery_p_mw or 1.0,
-                bus_id=req.battery_bus or 5
-            )
-        elif req.action_type.upper() == "FEEDER_RECONFIGURATION":
-            mod_net, action_meta = apply_feeder_reconfiguration(
-                net,
-                switch_name=req.switch_name or "S1"
-            )
+        net, _ = trigger_scenario(request.scenario_id)
+        if request.action_type == "CURTAILMENT":
+            modified_net, action = apply_curtailment(net, request.curtailment_pct)
+        elif request.action_type == "BATTERY_DISPATCH":
+            modified_net, action = apply_battery_dispatch(net, request.battery_p_mw, request.battery_bus)
+        elif request.action_type == "FEEDER_RECONFIGURATION":
+            modified_net, action = apply_feeder_reconfiguration(net, switch_name=request.switch_name)
         else:
-            raise ValueError(f"Unknown action_type: {req.action_type}")
+            raise ValueError(f"Unknown action_type: '{request.action_type}'")
 
-        run_baseline_powerflow(mod_net)
-        violations = check_grid_violations(mod_net)
-        summary = get_grid_summary(mod_net)
-        topology = serialize_topology(mod_net)
-
+        run_baseline_powerflow(modified_net)
+        violations = check_grid_violations(modified_net)
         return {
             "status": "success",
-            "action": action_meta,
             "resolved": not violations["has_violations"],
+            "action": action,
             "violations": violations,
-            "summary": summary,
-            "topology": topology,
+            "topology": serialize_topology(modified_net),
         }
     except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
+        raise HTTPException(status_code=400, detail=str(err))
 
 
 if __name__ == "__main__":

@@ -196,6 +196,11 @@ def build_aligned_dataset(
     Returns:
         pd.DataFrame: Time-aligned dataset containing solar and load series.
     """
+    start_ts = pd.to_datetime(start_date)
+    end_ts = pd.to_datetime(end_date)
+    if end_ts < start_ts:
+        raise ValueError(f"Invalid date range: start_date '{start_date}' is later than end_date '{end_date}'.")
+
     ensure_directories()
 
     solar_df = fetch_pune_solar_data(start_date=start_date, end_date=end_date)
