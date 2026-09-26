@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
 import DateRangePicker from './components/DateRangePicker';
 import MetricCards from './components/MetricCards';
@@ -6,6 +6,7 @@ import NetworkTopologyCanvas from './components/NetworkTopologyCanvas';
 import TimeSeriesChart from './components/TimeSeriesChart';
 import TelemetryTables from './components/TelemetryTables';
 import ForecastPanel from './components/ForecastPanel';
+import ViolationEnginePanel from './components/ViolationEnginePanel';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -14,55 +15,40 @@ export default function App() {
   const [summary, setSummary] = useState(null);
   const [topology, setTopology] = useState(null);
   const [solarLoadData, setSolarLoadData] = useState([]);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'grid' | 'forecast'
-  
+  const [activeTab, setActiveTab] = useState('engine');
   const [startDate, setStartDate] = useState('2023-01-01');
   const [endDate, setEndDate] = useState('2023-01-31');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch initial grid summary and network topology
   useEffect(() => {
     const fetchGridInfo = async () => {
       try {
-        const resHealth = await fetch(`${API_BASE}/api/health`);
-        if (resHealth.ok) {
-          setApiOnline(true);
-        }
-
-        const resSum = await fetch(`${API_BASE}/api/grid/summary`);
-        if (resSum.ok) {
-          const sumData = await resSum.json();
-          setSummary(sumData);
-        }
-
-        const resTop = await fetch(`${API_BASE}/api/grid/topology`);
-        if (resTop.ok) {
-          const topData = await resTop.json();
-          setTopology(topData);
-        }
+        const healthResponse = await fetch(`${API_BASE}/api/health`);
+        setApiOnline(healthResponse.ok);
+        const [summaryResponse, topologyResponse] = await Promise.all([
+          fetch(`${API_BASE}/api/grid/summary`),
+          fetch(`${API_BASE}/api/grid/topology`),
+        ]);
+        if (summaryResponse.ok) setSummary(await summaryResponse.json());
+        if (topologyResponse.ok) setTopology(await topologyResponse.json());
       } catch (err) {
         console.error('API Error:', err);
         setApiOnline(false);
       }
     };
-
     fetchGridInfo();
   }, []);
 
-  // Fetch time series solar + load dataset for given date range
-  const fetchTimeSeries = async (sDate, eDate) => {
+  const fetchTimeSeries = async (selectedStartDate, selectedEndDate) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/data/solar-load?start_date=${sDate}&end_date=${eDate}`);
-      if (!res.ok) {
-        throw new Error(`Server returned ${res.status}`);
-      }
-      const data = await res.json();
-      setSolarLoadData(data);
-      setStartDate(sDate);
-      setEndDate(eDate);
+      const response = await fetch(`${API_BASE}/api/data/solar-load?start_date=${selectedStartDate}&end_date=${selectedEndDate}`);
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      setSolarLoadData(await response.json());
+      setStartDate(selectedStartDate);
+      setEndDate(selectedEndDate);
       setApiOnline(true);
     } catch (err) {
       console.error('Fetch error:', err);
@@ -76,161 +62,39 @@ export default function App() {
     fetchTimeSeries(startDate, endDate);
   }, []);
 
+  const showGrid = activeTab === 'all' || activeTab === 'grid';
+  const tabs = [
+    ['engine', '🛡️ Action Engine (Checkpoint 3)', '#f87171'],
+    ['forecast', '🧠 AI Forecaster (Checkpoint 2)', '#c084fc'],
+    ['grid', '⚡ Grid Topology & Power Flow (Checkpoint 1)', '#38bdf8'],
+    ['all', '🌐 Full Digital Twin View', '#34d399'],
+  ];
+
   return (
     <div style={{ maxWidth: '1380px', margin: '0 auto', padding: '24px 20px' }}>
-      
-      {/* Header Bar */}
       <Header apiOnline={apiOnline} />
-
-      {/* Main Navigation Tabs */}
-      <div 
-        style={{ 
-          display: 'flex', 
-          gap: '10px', 
-          marginBottom: '20px', 
-          backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-          padding: '6px', 
-          borderRadius: '12px', 
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          width: 'fit-content'
-        }}
-      >
-        <button
-          onClick={() => setActiveTab('all')}
-          style={{
-            backgroundColor: activeTab === 'all' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
-            color: activeTab === 'all' ? '#38bdf8' : '#94a3b8',
-            border: activeTab === 'all' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
-            padding: '8px 18px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.2s'
-          }}
-        >
-          🌐 Full Digital Twin View
-        </button>
-        <button
-          onClick={() => setActiveTab('grid')}
-          style={{
-            backgroundColor: activeTab === 'grid' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
-            color: activeTab === 'grid' ? '#38bdf8' : '#94a3b8',
-            border: activeTab === 'grid' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
-            padding: '8px 18px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.2s'
-          }}
-        >
-          ⚡ Grid Topology & Power Flow
-        </button>
-        <button
-          onClick={() => setActiveTab('forecast')}
-          style={{
-            backgroundColor: activeTab === 'forecast' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
-            color: activeTab === 'forecast' ? '#c084fc' : '#94a3b8',
-            border: activeTab === 'forecast' ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid transparent',
-            padding: '8px 18px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.2s'
-          }}
-        >
-          🧠 AI Forecaster (Checkpoint 2)
-        </button>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: '6px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', width: 'fit-content', maxWidth: '100%', flexWrap: 'wrap' }}>
+        {tabs.map(([id, label, color]) => (
+          <button key={id} onClick={() => setActiveTab(id)} style={{ backgroundColor: activeTab === id ? `${color}22` : 'transparent', color: activeTab === id ? color : '#94a3b8', border: activeTab === id ? `1px solid ${color}66` : '1px solid transparent', padding: '8px 14px', borderRadius: '8px', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>
+            {label}
+          </button>
+        ))}
       </div>
 
-      {/* Date Range Selection Bar (Grid & Time-Series Views) */}
-      {activeTab !== 'forecast' && (
-        <DateRangePicker
-          startDate={startDate}
-          endDate={endDate}
-          onApply={(s, e) => fetchTimeSeries(s, e)}
-          loading={loading}
-        />
-      )}
+      {showGrid && <DateRangePicker startDate={startDate} endDate={endDate} onApply={fetchTimeSeries} loading={loading} />}
+      {error && <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px' }}>⚠️ {error}</div>}
 
-      {error && (
-        <div 
-          style={{ 
-            backgroundColor: 'rgba(239, 68, 68, 0.15)', 
-            border: '1px solid rgba(239, 68, 68, 0.3)', 
-            color: '#f87171', 
-            padding: '12px 16px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            fontSize: '0.88rem'
-          }}
-        >
-          ⚠️ {error}
-        </div>
-      )}
+      {showGrid && <MetricCards summary={summary} />}
+      {(activeTab === 'all' || activeTab === 'engine') && <ViolationEnginePanel />}
+      {showGrid && <NetworkTopologyCanvas topology={topology} />}
+      {showGrid && <TimeSeriesChart data={solarLoadData} startDate={startDate} endDate={endDate} />}
+      {(activeTab === 'all' || activeTab === 'forecast') && <ForecastPanel />}
+      {showGrid && <TelemetryTables topology={topology} />}
 
-      {/* Metric Cards Summary */}
-      {activeTab !== 'forecast' && <MetricCards summary={summary} />}
-
-      {/* Interactive Topology Diagram */}
-      {(activeTab === 'all' || activeTab === 'grid') && (
-        <NetworkTopologyCanvas topology={topology} />
-      )}
-
-      {/* Solar Generation vs Demand Chart */}
-      {(activeTab === 'all' || activeTab === 'grid') && (
-        <TimeSeriesChart
-          data={solarLoadData}
-          startDate={startDate}
-          endDate={endDate}
-        />
-      )}
-
-      {/* Checkpoint 2: AI Forecasting Panel */}
-      {(activeTab === 'all' || activeTab === 'forecast') && (
-        <ForecastPanel />
-      )}
-
-      {/* Grid Elements Breakdown Tables */}
-      {(activeTab === 'all' || activeTab === 'grid') && (
-        <TelemetryTables topology={topology} />
-      )}
-
-      {/* Footer Banner */}
-      <footer 
-        className="glass-panel" 
-        style={{ 
-          padding: '16px 20px', 
-          textAlign: 'center', 
-          fontSize: '0.85rem', 
-          color: '#94a3b8',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px',
-          marginTop: '16px'
-        }}
-      >
-        <div>
-          ⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend
-        </div>
-        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-          Checkpoint 2: LightGBM Solar & Load Forecasting + Chronological Holdout Benchmark Verified.
-        </div>
+      <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
+        <div>⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend</div>
+        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1, 2 & 3: Physics Grid • Chronological ML Forecaster • Propose-Verify-Repair Action Engine.</div>
       </footer>
-
     </div>
   );
 }

@@ -14,7 +14,7 @@ import pandas as pd
 try:
     import lightgbm as lgb
     HAS_LIGHTGBM = True
-except ImportError:
+except (ImportError, OSError):
     HAS_LIGHTGBM = False
 
 from src.data_pipeline import build_aligned_dataset, DEFAULT_ALIGNED_OUTPUT
