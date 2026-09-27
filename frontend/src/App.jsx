@@ -123,7 +123,7 @@ export default function App() {
         {showGrid && <TelemetryTables topology={topology} />}
 
         <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
-          <div>⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend</div>
+          <div>⚡ <strong>VoltPredict</strong> — React.js SPA & FastAPI Backend</div>
           <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1, 2 & 3: Physics Grid • Chronological ML Forecaster • Propose-Verify-Repair Action Engine.</div>
         </footer>
       </div>

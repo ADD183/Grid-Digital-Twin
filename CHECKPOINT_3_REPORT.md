@@ -6,7 +6,7 @@
 
 ## 1. Executive Summary
 
-Checkpoint 3 adds the core grid-defense workflow to the Renewable Distribution Grid Digital Twin. The backend can now detect voltage and thermal violations after an AC power flow, apply independent corrective actions to isolated network copies, verify each action with a fresh power flow, and return a ranked comparison with an explainable recommendation.
+Checkpoint 3 adds the core grid-defense workflow to VoltPredict. The backend can now detect voltage and thermal violations after an AC power flow, apply independent corrective actions to isolated network copies, verify each action with a fresh power flow, and return a ranked comparison with an explainable recommendation.
 
 The active React/FastAPI control room exposes this workflow through selectable trigger scenarios, a before/after topology view, an action comparison matrix, and a custom action sandbox. The implementation stays UI-independent under `src/`, so the physics and decision logic can be tested without the browser.
 

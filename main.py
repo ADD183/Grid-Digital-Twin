@@ -1,5 +1,5 @@
 """
-Main CLI entrypoint for pure backend execution of the Renewable Grid Digital Twin.
+Main CLI entrypoint for pure backend execution of VoltPredict.
 Runs CIGRE network initialization, baseline AC power flow, and time-series data pipeline.
 """
 
@@ -13,7 +13,7 @@ from src.engine import trigger_scenario, evaluate_actions
 
 def main():
     print("==================================================================")
-    print("   RENEWABLE DISTRIBUTION GRID DIGITAL TWIN — BACKEND CLI RUNNER   ")
+    print("   VOLTPREDICT — BACKEND CLI RUNNER   ")
     print("==================================================================")
     
     print("\n[1/5] Loading CIGRE MV Distribution Network with DERs...")

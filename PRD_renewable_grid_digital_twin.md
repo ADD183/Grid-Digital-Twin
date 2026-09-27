@@ -1,4 +1,4 @@
-# PRD — Renewable Distribution Grid Digital Twin
+# PRD — VoltPredict
 **Backend + interactive frontend prototype for hackathon Round 1 (Git repo is the primary judged artifact)**
 
 ---
@@ -39,7 +39,7 @@ Demo location: **Pune, India** (lat 18.52, lon 73.85).
 ## 2. Repo structure (create this at Checkpoint 1, keep it stable after)
 
 ```
-renewable-grid-digital-twin/
+voltpredict/
 ├── README.md
 ├── NOTES.md                     # engineering assumptions / judge Q&A prep
 ├── requirements.txt

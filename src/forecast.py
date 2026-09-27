@@ -1,5 +1,5 @@
 """
-Forecasting module for Renewable Distribution Grid Digital Twin (Checkpoint 2).
+Forecasting module for VoltPredict (Checkpoint 2).
 Provides feature engineering (lagged + calendar features), chronological train/test splitting,
 solar & load gradient boosting models (using native LightGBM with pure-Python fallback),
 naive baseline benchmarking (persistence t-1 and seasonal t-24), and model persistence via joblib.

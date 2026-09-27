@@ -1,4 +1,4 @@
-"""Checkpoint 4 scenario runner for the renewable grid digital twin.
+"""Checkpoint 4 scenario runner for VoltPredict.
 
 This module creates the full scenario suite required by the PRD:
 - high solar / low load

@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-Checkpoint 1 of the **Renewable Distribution Grid Digital Twin** has been refactored into a high-performance **React.js Single Page Application (SPA)** backed by a **FastAPI REST Server**. It establishes a defensible, UI-decoupled backend infrastructure powered by `pandapower` (CIGRE MV benchmark network with DERs) and `pvlib` (PVGIS solar irradiance data for Pune, India).
+Checkpoint 1 of **VoltPredict** established a high-performance **React.js Single Page Application (SPA)** backed by a **FastAPI REST Server**. It establishes a defensible, UI-decoupled backend infrastructure powered by `pandapower` (CIGRE MV benchmark network with DERs) and `pvlib` (PVGIS solar irradiance data for Pune, India).
 
 The frontend features a **Calendar Date Range Selector** enabling single- and multi-month date selections (e.g. 1, 2, 3, or 6 months), an **Interactive SVG Grid Topology Canvas** with glowing voltage-coded bus nodes and telemetry inspector, glassmorphism metric cards, and **Recharts time-series visualization**.
 
@@ -16,7 +16,7 @@ The frontend features a **Calendar Date Range Selector** enabling single- and mu
 ## 2. Deliverables Built
 
 ```
-renewable-grid-digital-twin/
+voltpredict/
 ├── README.md                    # Setup and overview documentation
 ├── NOTES.md                     # Engineering assumptions log & judge Q&A prep
 ├── requirements.txt             # Pinned dependency specification

@@ -1,5 +1,5 @@
 """
-FastAPI REST API Server for the Renewable Grid Digital Twin.
+FastAPI REST API Server for VoltPredict.
 Exposes backend grid topology, power flow calculation results, and time-series solar/load data to the React.js frontend.
 """
 
@@ -21,7 +21,7 @@ from src.violations import check_grid_violations
 from src.chat_tools import process_chat_request
 
 app = FastAPI(
-    title="Renewable Grid Digital Twin API",
+    title="VoltPredict API",
     description="REST API serving pandapower grid simulations and PVGIS solar/demand datasets",
     version="1.0.0"
 )
@@ -91,7 +91,7 @@ def serialize_topology(net) -> Dict[str, Any]:
 @app.get("/api/health")
 def health_check() -> Dict[str, str]:
     """Health check endpoint."""
-    return {"status": "ok", "version": "1.0.0", "system": "Renewable Grid Digital Twin API"}
+    return {"status": "ok", "version": "1.0.0", "system": "VoltPredict API"}
 
 
 @app.get("/api/grid/summary")

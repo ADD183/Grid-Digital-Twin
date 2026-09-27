@@ -1,4 +1,4 @@
-# Renewable Distribution Grid Digital Twin
+# VoltPredict
 
 An interactive digital twin of a local power distribution network (CIGRE MV benchmark) connected to solar irradiance history for Pune, India (PVGIS) and synthetic customer demand profiles. The system features a defensible Python backend (`pandapower`, `pvlib`) with a FastAPI REST server and an ultra-modern **React.js Single Page Application (SPA)** frontend.
 
@@ -25,7 +25,7 @@ The application includes a floating chatbot widget allowing users to ask natural
 
 ## 📁 Repository Structure
 ```
-renewable-grid-digital-twin/
+voltpredict/
 ├── README.md                    # Setup and overview documentation
 ├── NOTES.md                     # Engineering assumptions log & judge Q&A prep
 ├── requirements.txt             # Python dependency specification

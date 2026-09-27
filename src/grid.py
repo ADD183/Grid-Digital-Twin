@@ -1,5 +1,5 @@
 """
-Grid topology and power flow calculations for the Renewable Grid Digital Twin.
+Grid topology and power flow calculations for VoltPredict.
 
 Uses pandapower CIGRE MV network with DERs to execute baseline AC power flow (runpp).
 """

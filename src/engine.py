@@ -1,5 +1,5 @@
 """
-Corrective Action Engine for Renewable Distribution Grid Digital Twin (Checkpoint 3).
+Corrective Action Engine for VoltPredict (Checkpoint 3).
 
 Implements the Propose -> Verify -> Repair decision-support loop:
 1. Detects grid violations (bus overvoltage/undervoltage, line/trafo thermal overload).

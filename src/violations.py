@@ -1,5 +1,5 @@
 """
-Violation Detection Module for Renewable Distribution Grid Digital Twin (Checkpoint 3).
+Violation Detection Module for VoltPredict (Checkpoint 3).
 
 Checks AC power flow results against standard utility operational limits:
 - Voltage band: 0.95 to 1.05 p.u. (EN 50160 / ANSI C84.1 tolerance)

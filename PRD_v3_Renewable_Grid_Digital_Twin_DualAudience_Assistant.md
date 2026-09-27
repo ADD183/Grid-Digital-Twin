@@ -1,13 +1,13 @@
 Product Requirements Document & Technical Specification
-Renewable Distribution Grid Digital Twin — v3 (Dual-Audience System + Agentic Digital Grid Assistant)
+VoltPredict — v3 (Dual-Audience System + Agentic Digital Grid Assistant)
 Problem Statement ENR-02 · HackMatrix 5.0, PCCOE Pune
 ## 1. Executive Summary & One-Line Pitch
 - One-Line Pitch: A digital twin of a local power distribution grid that forecasts near-term solar generation and demand, detects when rising rooftop solar pushes voltage or equipment limits out of safe ranges, and automatically compares corrective actions — curtailing solar, dispatching battery storage, or reconfiguring feeders — to keep the grid safe while minimizing clean energy waste.
 - Primary Artifact: A defensible, independently testable Python backend (src/) paired with an interactive, clickable Streamlit frontend (app/), designed for live hackathon judging and judge Q&A.
-- Secondary Artifact (updated): An agentic conversational interface to the Digital Grid Twin — the Digital Grid Assistant — that lets both technical and non-technical users explore, understand, query, and interpret the system's data, simulations, forecasts, scenarios, decisions, assumptions, methodology, and limitations in natural language. It never invents system state; it explains and synthesizes only from verified sources.
+- Secondary Artifact (updated): An agentic conversational interface to VoltPredict — the Digital Grid Assistant — that lets both technical and non-technical users explore, understand, query, and interpret the system's data, simulations, forecasts, scenarios, decisions, assumptions, methodology, and limitations in natural language. It never invents system state; it explains and synthesizes only from verified sources.
 ## 2. Target Users & Design Implications (Updated — Dual Audience)
-The Digital Grid Twin is designed to be accessible to both professional and ordinary users, at the same time, without compromising technical precision for either.
-The Digital Grid Twin is accessible to both technical and non-technical users. Professionals can inspect precise grid metrics, bus/line states, forecasts, violations and corrective actions, while ordinary users can interact with the same system through clear natural-language explanations without needing prior power-systems knowledge.
+VoltPredict is designed to be accessible to both professional and ordinary users, at the same time, without compromising technical precision for either.
+VoltPredict is accessible to both technical and non-technical users. Professionals can inspect precise grid metrics, bus/line states, forecasts, violations and corrective actions, while ordinary users can interact with the same system through clear natural-language explanations without needing prior power-systems knowledge.
 This is achieved through a dual-layer communication approach, not through simplifying the system itself. The underlying data, simulations, and forecasts are identical for both audiences — only the presentation layer adapts.
 ### For ordinary users
 - Clear, understandable natural-language explanations.
@@ -28,7 +28,7 @@ In residential and commercial networks with high rooftop solar penetration, sunn
 ## 5. Pinned Tech Stack & Verified APIs (Unchanged — no new libraries required)
 ## 6. Repository Structure & Separation of Concerns (Updated)
 The existing rule is preserved and extended: src/ contains zero Streamlit or LLM-prompting logic and is evaluated directly via pytest or CLI. The assistant's tools wrap src/ functions rather than duplicating them, and its own orchestration code is isolated in src/chatbot/ so it can be tested independently of both the UI and the live LLM call. A new knowledge/ subfolder holds the curated, approved documentation the project-knowledge tool is allowed to read from.
-renewable-grid-digital-twin/
+voltpredict/
 ├── README.md
 ├── NOTES.md # Engineering assumptions & judge Q&A prep
 ├── requirements.txt
@@ -74,11 +74,11 @@ This is the deterministic component referenced in Section 3. When a violation is
 - Feeder Reconfiguration — toggles network switches (net.switch) to reroute sections and rebalance load without touching generation.
 The structured ranking this engine produces — per-action scores, not just a single winner — is exactly what the Digital Grid Assistant reads from in Section 10; no new computation is added for the chatbot to work.
 ## 10. The Digital Grid Assistant (Expanded — was “Conversational Query Assistant”)
-Positioning: an agentic conversational interface to the Digital Grid Twin that allows both technical and non-technical users to explore, understand, query, and interpret the system through natural language. It is still a secondary, stretch feature — the core contribution remains the Forecast → Simulate → Detect → Propose & Compare → Report Honestly loop (Section 4). The assistant is an intelligent interaction layer on top of that system, not a replacement for it.
-The assistant is no longer scoped to numeric lookups only. It is designed to answer any reasonable question about the Digital Grid Twin, spanning five broad categories:
+Positioning: an agentic conversational interface to VoltPredict that allows both technical and non-technical users to explore, understand, query, and interpret the system through natural language. It is still a secondary, stretch feature — the core contribution remains the Forecast → Simulate → Detect → Propose & Compare → Report Honestly loop (Section 4). The assistant is an intelligent interaction layer on top of that system, not a replacement for it.
+The assistant is no longer scoped to numeric lookups only. It is designed to answer any reasonable question about VoltPredict, spanning five broad categories:
 - Quantitative — “What is the voltage at Bus 7?”, “Is Line 4 overloaded?”, “How much renewable energy was retained after battery dispatch?”
 - Explanatory — “Why is the voltage too high?”, “What does 1.05 pu mean?”, “Why can rooftop solar cause overvoltage?”
-- System / methodology — “How does this Digital Twin work?”, “Where does the solar data come from?”, “Why is the load data synthetic?”
+- System / methodology — “How does VoltPredict work?”, “Where does the solar data come from?”, “Why is the load data synthetic?”
 - Scenario — “What happened in the high-solar scenario?”, “Was the evening peak scenario resolved?”
 - Decision / limitation — “Why did the engine select battery dispatch?”, “Is this a real Indian grid?”, “How accurate is the forecasting model?”
 ### 10.1 Dual-Audience Response Principle (New)
@@ -90,7 +90,7 @@ Answer: Bus 7 is currently experiencing an overvoltage condition. Its simulated 
 Supporting evidence: Bus 7 voltage: 1.082 pu · Safe upper limit: 1.05 pu · Violation margin: +0.032 pu · Scenario: High Solar / Low Load
 Exact UI formatting (a collapsible “evidence” panel, inline badges, etc.) is left to implementation, but the two-part structure — natural-language explanation, then measurable/system-grounded evidence — is mandatory for every response where evidence exists. For purely conceptual questions with no scenario-specific metric to attach (e.g. “what is curtailment?”), the evidence section instead cites the documented definition/source the answer came from, rather than fabricating a number to fill the slot.
 ### 10.2 Grounding Contract (Strengthened)
-The LLM may explain, summarize, and reason over information available in approved system sources, but it must never invent system state, simulation values, forecast values, scenario outcomes, metrics, or other factual claims about the Digital Grid Twin.
+The LLM may explain, summarize, and reason over information available in approved system sources, but it must never invent system state, simulation values, forecast values, scenario outcomes, metrics, or other factual claims about VoltPredict.
 - For numerical / system-state questions: no tool call or verified source → no system-specific numeric claim.
 - For conceptual / documentation questions: the assistant may answer from the approved project knowledge base, provided the information exists there.
 If the requested information is not available in (1) live system/tool output, (2) saved scenario data, or (3) approved project documentation, the assistant must clearly say the information is not available. It must not estimate, fabricate, or produce a plausible-looking value or explanation to fill the gap.

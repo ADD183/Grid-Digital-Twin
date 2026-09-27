@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-Checkpoint 4 completes the scenario-driven operational layer of the Renewable Distribution Grid Digital Twin. The backend now includes the full four-scenario suite required by the PRD, persists structured artifacts for each run, and reports the deliberately infeasible case honestly as unresolved instead of pretending it was fixed.
+Checkpoint 4 completes the scenario-driven operational layer of VoltPredict. The backend now includes the full four-scenario suite required by the PRD, persists structured artifacts for each run, and reports the deliberately infeasible case honestly as unresolved instead of pretending it was fixed.
 
 This version preserves the prior checkpoint 3 logic while extending the demo surface with a realistic scenario runner that supports:
 

@@ -5,7 +5,7 @@
 
 ## 1. Scope
 
-Checkpoint 2 extends the Checkpoint 1 React/FastAPI digital twin with validated next-hour solar and demand forecasting. The backend remains UI-independent under `src/forecast.py`; the React control room renders the holdout comparison and benchmark metrics.
+Checkpoint 2 extends VoltPredict with validated next-hour solar and demand forecasting. The backend remains UI-independent under `src/forecast.py`; the React control room renders the holdout comparison and benchmark metrics.
 
 ## 2. Delivered
 

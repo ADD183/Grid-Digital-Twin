@@ -1,4 +1,4 @@
-# Renewable Distribution Grid Digital Twin — Project Knowledge Base
+# VoltPredict — Project Knowledge Base
 **Reference document for PPT content, judge Q&A prep, and team onboarding. Sits alongside `PRD_renewable_grid_digital_twin.md` (the build-checkpoint spec) as project documentation.**
 
 ---

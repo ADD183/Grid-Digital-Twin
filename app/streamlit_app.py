@@ -1,5 +1,5 @@
 """
-Renewable Distribution Grid Digital Twin — Interactive Streamlit Dashboard.
+VoltPredict — Interactive Streamlit Dashboard.
 
 Entry point for the Streamlit UI. Imports purely from src/ backend modules
 and app/components/ render modules.
@@ -20,14 +20,14 @@ from app.components.charts import render_time_series_charts
 
 # Page setup
 st.set_page_config(
-    page_title="Renewable Grid Digital Twin",
+    page_title="VoltPredict",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # App Title & Intro Banner
-st.title("⚡ Renewable Distribution Grid Digital Twin")
+st.title("⚡ VoltPredict")
 st.caption("Pune, India (18.52° N, 73.85° E) | CIGRE Medium-Voltage Distribution Grid Simulation")
 
 st.markdown("""

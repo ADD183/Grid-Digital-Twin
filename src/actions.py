@@ -1,5 +1,5 @@
 """
-Corrective Action Module for Renewable Distribution Grid Digital Twin (Checkpoint 3).
+Corrective Action Module for VoltPredict (Checkpoint 3).
 
 Implements three distinct operational corrective actions to mitigate grid violations:
 1. Solar Curtailment: Throttles active power generation of static generators (PV DERs).

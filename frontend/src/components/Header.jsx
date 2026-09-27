@@ -25,7 +25,7 @@ export default function Header({ apiOnline }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h1 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-                Renewable Distribution Grid Digital Twin
+                VoltPredict
               </h1>
               <span 
                 style={{ 

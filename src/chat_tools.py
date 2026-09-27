@@ -1,5 +1,5 @@
 """
-Chatbot tools and OpenRouter API integration module for Renewable Grid Digital Twin.
+Chatbot tools and OpenRouter API integration module for VoltPredict.
 Provides tool definitions, tool execution, and OpenRouter completion handling for /api/chat.
 """
 
@@ -278,7 +278,7 @@ def process_chat_request(user_message: str) -> Dict[str, Any]:
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
         "HTTP-Referer": "http://localhost:8000",
-        "X-Title": "Renewable Grid Digital Twin"
+        "X-Title": "VoltPredict"
     }
 
     payload = {
