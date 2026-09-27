@@ -3,9 +3,71 @@ import { MessageCircle, X, Send, Bot, Sparkles, ChevronDown, ChevronRight, Check
 import './ChatWidget.css';
 
 const API_BASE = 'http://127.0.0.1:8000';
+const MIN_VISIBLE = 60;
+
+const EVIDENCE_LABELS = {
+  bus_count: 'Grid buses',
+  der_count: 'Distributed energy resources',
+  sgen_count: 'Generators',
+  storage_count: 'Storage units',
+  vm_pu_min: 'Minimum voltage',
+  vm_pu_max: 'Maximum voltage',
+  max_vm_pu: 'Maximum voltage',
+  max_line_loading_percent: 'Maximum line loading',
+  converged: 'Power-flow calculation completed',
+  has_violations: 'Active grid violations',
+  total_violations: 'Total active violations',
+  voltage_violations: 'Voltage violations',
+  loading_violations: 'Line loading violations',
+  trafo_violations: 'Transformer violations',
+  all_violations: 'All active violations',
+  voltage_violation_count: 'Voltage violation count',
+  loading_violation_count: 'Line loading violation count',
+  trafo_violation_count: 'Transformer violation count',
+  min_vm_pu: 'Minimum voltage',
+  max_vm_pu: 'Maximum voltage',
+  max_voltage_deviation: 'Maximum voltage deviation',
+  max_loading_margin: 'Maximum loading margin',
+  worst_voltage_bus: 'Bus with worst voltage',
+  worst_loading_line: 'Line with highest loading',
+  fully_resolved: 'Fully resolved',
+  status: 'Scenario status',
+  scenario_id: 'Scenario',
+  explanation: 'Result details',
+  error: 'Data availability',
+};
+
+const evidenceLabel = (key) => EVIDENCE_LABELS[key] || key
+  .replace(/_/g, ' ')
+  .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+function getEvidenceRows(evidence, parentLabel = '') {
+  if (Array.isArray(evidence)) {
+    if (evidence.length === 0) return [{ label: parentLabel, value: 'None' }];
+    return evidence.flatMap((item, index) => getEvidenceRows(item, `${parentLabel} - Item ${index + 1}`));
+  }
+
+  if (evidence && typeof evidence === 'object') {
+    return Object.entries(evidence).flatMap(([key, value]) => {
+      const label = [parentLabel, evidenceLabel(key)].filter(Boolean).join(' · ');
+      return getEvidenceRows(value, label);
+    });
+  }
+
+  let value = evidence;
+  if (value === null || value === undefined || value === 'N/A') value = 'Not available';
+  else if (typeof value === 'boolean') value = value ? 'Yes' : 'No';
+  else if (/(minimum|maximum) voltage$/i.test(parentLabel) && typeof value === 'number') value = `${value} p.u.`;
+  else if (/maximum line loading$/i.test(parentLabel) && typeof value === 'number') value = `${value}%`;
+
+  return [{ label: parentLabel, value: String(value) }];
+}
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 480);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
@@ -19,6 +81,56 @@ export default function ChatWidget() {
   ]);
 
   const messagesEndRef = useRef(null);
+  const panelRef = useRef(null);
+  const dragOffsetRef = useRef(null);
+
+  const clampPosition = (x, y, panelWidth) => ({
+    x: Math.max(0, Math.min(x, window.innerWidth - MIN_VISIBLE)),
+    y: Math.max(0, Math.min(y, window.innerHeight - MIN_VISIBLE)),
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 480);
+      if (position && panelRef.current && window.innerWidth >= 480) {
+        const { width } = panelRef.current.getBoundingClientRect();
+        setPosition((current) => current && clampPosition(current.x, current.y, width));
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [position]);
+
+  const startDragging = (event) => {
+    if (isMobile || event.button !== 0 || event.target.closest('button')) return;
+
+    const bounds = panelRef.current.getBoundingClientRect();
+    const nextPosition = clampPosition(bounds.left, bounds.top, bounds.width);
+    dragOffsetRef.current = {
+      x: event.clientX - bounds.left,
+      y: event.clientY - bounds.top,
+    };
+    setPosition(nextPosition);
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const dragPanel = (event) => {
+    if (!isDragging || !dragOffsetRef.current || !panelRef.current) return;
+    const { width } = panelRef.current.getBoundingClientRect();
+    setPosition(clampPosition(
+      event.clientX - dragOffsetRef.current.x,
+      event.clientY - dragOffsetRef.current.y,
+      width
+    ));
+  };
+
+  const stopDragging = () => {
+    dragOffsetRef.current = null;
+    setIsDragging(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -99,7 +211,10 @@ export default function ChatWidget() {
       {/* Floating Action Button */}
       <button
         className="chat-fab-button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen((open) => !open);
+          setPosition(null);
+        }}
         title={isOpen ? 'Close Assistant' : 'Open Digital Grid Assistant'}
         aria-label="Toggle Digital Grid Assistant"
       >
@@ -108,9 +223,24 @@ export default function ChatWidget() {
 
       {/* Floating Chat Panel */}
       {isOpen && (
-        <div className="chat-widget-panel glass-panel">
+        <div
+          ref={panelRef}
+          className="chat-widget-panel glass-panel"
+          style={!isMobile && position ? {
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            right: 'auto',
+            bottom: 'auto',
+          } : undefined}
+        >
           {/* Header */}
-          <div className="chat-header">
+          <div
+            className={`chat-header${isDragging ? ' is-dragging' : ''}`}
+            onPointerDown={startDragging}
+            onPointerMove={dragPanel}
+            onPointerUp={stopDragging}
+            onPointerCancel={stopDragging}
+          >
             <div className="chat-header-title">
               <div
                 style={{
@@ -133,7 +263,10 @@ export default function ChatWidget() {
                 </div>
               </div>
             </div>
-            <button className="chat-close-btn" onClick={() => setIsOpen(false)} title="Close">
+            <button className="chat-close-btn" onClick={() => {
+              setIsOpen(false);
+              setPosition(null);
+            }} title="Close">
               <X size={18} />
             </button>
           </div>
@@ -150,11 +283,20 @@ export default function ChatWidget() {
                       onClick={() => toggleEvidence(msg.id)}
                     >
                       {msg.showEvidence ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      <span>{msg.showEvidence ? 'Hide System Evidence' : 'View Grounded Evidence'}</span>
+                      <span>{msg.showEvidence ? 'Hide Details' : 'View Grounded Details'}</span>
                     </button>
                     {msg.showEvidence && (
                       <div className="chat-evidence-content">
-                        {JSON.stringify(msg.evidence, null, 2)}
+                        <table className="chat-evidence-table">
+                          <tbody>
+                            {getEvidenceRows(msg.evidence).map((row, index) => (
+                              <tr key={`${row.label}-${index}`}>
+                                <th scope="row">{row.label}</th>
+                                <td>{row.value}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>

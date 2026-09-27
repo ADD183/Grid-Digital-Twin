@@ -145,11 +145,31 @@ TOOLS_SCHEMA = [
 ]
 
 SYSTEM_PROMPT = (
-    "You are a grid operations assistant. Answer briefly in plain language, then state "
-    "the exact number(s) you used. If no tool returns the needed information, say so — "
-    "never invent a value. If the question isn't about this grid system, say you can only "
-    "answer questions about this project."
+    "You are a grid operations assistant. Answer briefly in natural language, using "
+    "readable engineering terms rather than API field names or raw JSON. Include exact "
+    "numbers and units when available. If a value is missing, say it is not available; "
+    "never output N/A as if it were a measurement and never invent a value. If no tool "
+    "returns the needed information, say so. If the question isn't about this grid system, "
+    "say you can only answer questions about this project."
 )
+
+
+def _display_metric(value: Any) -> str:
+    """Format a measured value or clearly identify missing data."""
+    if value is None or value == "N/A":
+        return "not available"
+    return str(value)
+
+
+def _is_raw_json(text: str) -> bool:
+    """Identify structured tool output that should not be shown as a chat reply."""
+    stripped = text.strip()
+    if not stripped.startswith(("{", "[")):
+        return False
+    try:
+        return isinstance(json.loads(stripped), (dict, list))
+    except (TypeError, ValueError):
+        return False
 
 # ---------------------------------------------------------------------------
 # Fallback keyword handler (when LLM API key is missing or API call fails)
@@ -169,10 +189,18 @@ def handle_canned_fallback(user_message: str) -> Dict[str, Any]:
 
     if any(k in msg_lower for k in ["loading", "voltage", "grid summary", "bus count", "grid status"]):
         ev = get_grid_summary_tool()
-        max_load = ev.get("max_line_loading_percent", "N/A")
-        min_v = ev.get("min_vm_pu", "N/A")
-        max_v = ev.get("max_vm_pu", "N/A")
-        reply = f"Current grid summary: max line loading is {max_load}%, min voltage is {min_v} p.u., and max voltage is {max_v} p.u."
+        max_load = _display_metric(ev.get("max_line_loading_percent"))
+        min_v = _display_metric(ev.get("vm_pu_min"))
+        max_v = _display_metric(ev.get("vm_pu_max"))
+        loading_text = f"{max_load}%" if max_load != "not available" else max_load
+        min_voltage_text = f"{min_v} p.u." if min_v != "not available" else min_v
+        max_voltage_text = f"{max_v} p.u." if max_v != "not available" else max_v
+        reply = (
+            f"The grid's maximum line loading is {loading_text}. "
+            f"Minimum voltage is {min_voltage_text}, and maximum voltage is {max_voltage_text}"
+        )
+        if not reply.endswith((".", "!", "?")):
+            reply += "."
         return {"reply": reply, "evidence": ev}
 
     if "scenario" in msg_lower and any(k in msg_lower for k in ["list", "available", "what scenarios", "can i run"]):
@@ -273,6 +301,8 @@ def process_chat_request(user_message: str) -> Dict[str, Any]:
 
         if not tool_calls:
             reply_text = message_obj.get("content") or "I can only answer questions about this grid system."
+            if _is_raw_json(reply_text):
+                return handle_canned_fallback(user_message)
             return {"reply": reply_text, "evidence": {}}
 
         tool_call = tool_calls[0]
@@ -313,15 +343,14 @@ def process_chat_request(user_message: str) -> Dict[str, Any]:
         if followup_resp.status_code == 200:
             followup_data = followup_resp.json()
             final_reply = followup_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            if not final_reply.strip() or _is_raw_json(final_reply):
+                return handle_canned_fallback(user_message)
             return {
                 "reply": final_reply,
                 "evidence": tool_result
             }
         else:
-            return {
-                "reply": f"Tool '{func_name}' output: {json.dumps(tool_result, default=str)}",
-                "evidence": tool_result
-            }
+            return handle_canned_fallback(user_message)
 
     except Exception as err:
         print(f"Chat execution exception: {err}")
