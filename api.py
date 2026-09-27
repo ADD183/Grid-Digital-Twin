@@ -18,6 +18,7 @@ from src.actions import apply_battery_dispatch, apply_curtailment, apply_feeder_
 from src.engine import DEMO_SCENARIOS, evaluate_actions, trigger_scenario
 from src.scenarios import run_scenario
 from src.violations import check_grid_violations
+from src.chat_tools import process_chat_request
 
 app = FastAPI(
     title="Renewable Grid Digital Twin API",
@@ -243,6 +244,19 @@ def apply_custom_violation_action(request: CustomActionRequest) -> Dict[str, Any
         }
     except Exception as err:
         raise HTTPException(status_code=400, detail=str(err))
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+@app.post("/api/chat")
+def chat_endpoint(request: ChatRequest) -> Dict[str, Any]:
+    """Process natural language query about grid operations using grounded tools."""
+    try:
+        return process_chat_request(request.message)
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
 
 
 if __name__ == "__main__":

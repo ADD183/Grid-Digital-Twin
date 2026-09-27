@@ -28,6 +28,7 @@ export default function ViolationEnginePanel() {
   const [evaluationData, setEvaluationData] = useState(null);
   const [activeViewMode, setActiveViewMode] = useState('before'); // 'before' | 'after' | 'custom'
   const [filterType, setFilterType] = useState('ALL');
+  const [violationCategoryFilter, setViolationCategoryFilter] = useState('ALL');
   const [selectedActionIndex, setSelectedActionIndex] = useState(0);
 
   // Custom action sandbox inputs
@@ -146,7 +147,13 @@ export default function ViolationEnginePanel() {
 
   const currentViolations = 
     activeViewMode === 'after'
-      ? { has_violations: !evaluationData?.fully_resolved, total_violations: evaluationData?.recommended_action?.residual_violations_count || 0, voltage_violations: [], loading_violations: [] }
+      ? { 
+          has_violations: !evaluationData?.fully_resolved, 
+          total_violations: evaluationData?.recommended_action?.residual_violations_count || 0, 
+          all_violations: evaluationData?.recommended_action?.violations_detail || [],
+          voltage_violations: [], 
+          loading_violations: [] 
+        }
       : activeViewMode === 'custom' && customResult?.violations
       ? customResult.violations
       : scenarioData?.violations || evaluationData?.initial_violations;
@@ -484,6 +491,140 @@ export default function ViolationEnginePanel() {
           </div>
         </div>
 
+        {/* ACTIVE VIOLATIONS DETAILED BREAKDOWN LOG */}
+        {currentViolations?.has_violations ? (
+          <div 
+            style={{
+              padding: '16px',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              marginBottom: '16px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f87171', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldAlert size={18} />
+                <span>Active Grid Violations Log ({currentViolations.total_violations} Constraints Flagged)</span>
+              </div>
+
+              {/* Category Filter Chips */}
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { id: 'ALL', label: `All (${currentViolations.total_violations})` },
+                  { id: 'OVERVOLTAGE', label: 'Overvoltage' },
+                  { id: 'UNDERVOLTAGE', label: 'Undervoltage' },
+                  { id: 'LINE_OVERLOAD', label: 'Line Overload' },
+                  { id: 'TRAFO_OVERLOAD', label: 'Trafo Overload' },
+                ].map((cat) => {
+                  const count = cat.id === 'ALL' 
+                    ? currentViolations.total_violations 
+                    : (currentViolations.all_violations || []).filter((v) => v.violation_type === cat.id).length;
+                  if (cat.id !== 'ALL' && count === 0) return null;
+                  const isSelected = violationCategoryFilter === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setViolationCategoryFilter(cat.id)}
+                      style={{
+                        backgroundColor: isSelected ? 'rgba(239, 68, 68, 0.25)' : 'rgba(15, 23, 42, 0.6)',
+                        color: isSelected ? '#f87171' : '#94a3b8',
+                        border: isSelected ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.08)',
+                        padding: '3px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.74rem',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {cat.id === 'ALL' ? cat.label : `${cat.label} (${count})`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Violation Items Grid */}
+            <div style={{ display: 'grid', gap: '8px', maxHeight: '260px', overflowY: 'auto', paddingRight: '4px' }}>
+              {(currentViolations.all_violations || [])
+                .filter((v) => violationCategoryFilter === 'ALL' || v.violation_type === violationCategoryFilter)
+                .map((v, i) => {
+                  const isOver = v.violation_type.includes('OVERVOLTAGE') || v.violation_type.includes('OVERLOAD');
+                  const themeColor = isOver ? '#ef4444' : '#f59e0b';
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                        borderRadius: '8px',
+                        borderLeft: `4px solid ${themeColor}`,
+                        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                        borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        fontSize: '0.82rem',
+                        gap: '12px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: `${themeColor}22`,
+                            color: themeColor,
+                            border: `1px solid ${themeColor}44`,
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {v.violation_type.replace('_', ' ')}
+                        </span>
+                        <div>
+                          <strong style={{ color: '#f8fafc', fontSize: '0.86rem' }}>{v.element_name}</strong>
+                          <div style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '2px', lineHeight: 1.3 }}>
+                            {v.description}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', minWidth: '130px' }}>
+                        <div style={{ color: themeColor, fontWeight: 700, fontSize: '0.88rem' }}>
+                          {v.actual_value} {v.unit}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                          Limit: {v.limit_value} {v.unit} (+{v.margin} margin)
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        ) : (
+          <div 
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.83rem',
+              color: '#34d399'
+            }}
+          >
+            <CheckCircle2 size={16} color="#10b981" />
+            <span>✓ All 15 buses and feeder lines are operating within safe tolerances [0.94 - 1.05 p.u., ≤ 100% load]. 0 active violations.</span>
+          </div>
+        )}
+
         {/* Embedded SVG Topology Canvas for Current Mode */}
         {currentTopology && currentTopology.buses && (
           <div style={{ backgroundColor: '#090d16', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', overflow: 'hidden' }}>
@@ -528,6 +669,7 @@ export default function ViolationEnginePanel() {
 
                 return (
                   <g key={`l-${line.id}`}>
+                    <title>{`${line.name} (Bus ${line.from_bus} -> Bus ${line.to_bus}): Loading ${line.loading_percent}% ${line.loading_percent > 100 ? '⚠️ OVERLOAD VIOLATION' : ''}`}</title>
                     <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={strokeColor} strokeWidth="4" strokeOpacity="0.25" />
                     <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={strokeColor} strokeWidth="2" className="flow-line" />
                   </g>
@@ -551,6 +693,7 @@ export default function ViolationEnginePanel() {
 
                 return (
                   <g key={`b-${bus.id}`}>
+                    <title>{`Bus ${bus.id} (${bus.name}): Voltage ${bus.vm_pu.toFixed(4)} p.u. ${bus.vm_pu > 1.05 ? '⚠️ OVERVOLTAGE VIOLATION' : bus.vm_pu < 0.94 ? '⚠️ UNDERVOLTAGE VIOLATION' : '✓ Normal'}`}</title>
                     {/* Glowing ring for violation */}
                     {isViolation && (
                       <circle

@@ -1383,8 +1383,8 @@
   ],
   "explanation": "Feeder Reconfiguration (S1) is the optimal recommendation. It fully resolved all 9 grid violations while retaining 100% of clean renewable generation with minimal operational cost (cost proxy 1.0/3). It superiorly avoided the energy waste of solar curtailment and equipment wear of battery cycling.",
   "artifacts": {
-    "json_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\solar_spike.json",
-    "csv_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\solar_spike.csv",
-    "plot_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\solar_spike.png"
+    "json_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\solar_spike.json",
+    "csv_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\solar_spike.csv",
+    "plot_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\solar_spike.png"
   }
 }

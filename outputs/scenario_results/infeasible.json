@@ -4062,8 +4062,8 @@
   ],
   "explanation": "UNRESOLVED: this event is deliberately infeasible within the available operating envelope. The best partial mitigation was Dual-Battery Coordinated Dispatch (-2.0 MW) with 17 residual violations remaining. The network still violates the operating limits, so the result is reported honestly instead of pretending the scenario is fixed.",
   "artifacts": {
-    "json_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\infeasible.json",
-    "csv_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\infeasible.csv",
-    "plot_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\infeasible.png"
+    "json_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\infeasible.json",
+    "csv_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\infeasible.csv",
+    "plot_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\infeasible.png"
   }
 }

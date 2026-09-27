@@ -1,0 +1,73 @@
+# TASK: Minimal Working Chatbot — Floating Widget + Grounded Backend
+
+## Context
+This is an existing project: FastAPI backend (`api.py`, `src/`) + React/Vite SPA (`frontend/`).
+Reference `PRD_renewable_grid_digital_twin.md` (v3) for the full long-term chatbot design
+("Digital Grid Assistant" — Section 10). **Do not build that full spec now.** This task is
+the smallest possible slice of it that actually works end-to-end: a floating chat button,
+a chat panel, and a backend endpoint that answers a handful of real questions using real
+system data. Full multi-tool orchestration, LangGraph, and the knowledge-base tool come later.
+
+## Goal
+A user can click a floating chat icon anywhere in the app, ask a basic question about the
+grid's current state, and get a real answer grounded in the actual backend data —
+not a hallucinated one. Nothing else.
+
+## Scope — build exactly this, nothing more
+
+### 1. Backend: one new endpoint in `api.py`
+- `POST /api/chat` — body: `{"message": "<user text>"}` → response: `{"reply": "<text>", "evidence": {...}}`
+- Use the Open Router API with a small, fixed
+  **tool/function-calling** setup — not a general prompt. The model must call one of the
+  tools below to get real numbers; it must never answer a factual question about the grid
+  without a tool result backing it.
+- Tools to expose (wrap existing `src/` functions directly — do not duplicate logic):
+  1. `get_grid_summary()` → wraps `src.grid.get_grid_summary` (bus count, DER count, min/max voltage, max line loading, converged)
+  2. `list_active_violations()` → wraps `src.violations.check_grid_violations` on the current/default network state
+  3. `get_scenario_result(scenario_id)` → reads from `outputs/scenario_results/{scenario_id}.json` (one of: solar_spike, evening_peak, cloudy_drop, infeasible, line_congestion)
+  4. `list_available_scenarios()` → returns `src.engine.DEMO_SCENARIOS` keys + descriptions
+  5. `get_forecast_summary()` → wraps whatever `src.forecast` already exposes for MAE/RMSE vs baseline (reuse existing function, don't write new forecasting code)
+- System prompt for the model (keep it short and explicit):
+  - "You are a grid operations assistant. Answer briefly in plain language, then state
+    the exact number(s) you used. If no tool returns the needed information, say so —
+    never invent a value. If the question isn't about this grid system, say you can only
+    answer questions about this project."
+- If `OPEN_ROUTER_API_KEY` is missing or the Open Router call fails, fall back to a simple keyword-matched
+  canned response using the tool outputs directly (no LLM) — so the widget still demos
+  something even if the API key isn't configured in front of a judge.
+- Add CORS is already open (`allow_origins=["*"]`) — no changes needed there.
+
+### 2. Frontend: floating widget, two new files
+- `frontend/src/components/ChatWidget.jsx`
+  - A circular floating button, fixed position, bottom-right corner (`position: fixed; bottom: 24px; right: 24px; z-index: 1000`), using an existing icon from `lucide-react` (e.g. `MessageCircle`).
+  - Clicking it toggles a chat panel (fixed, bottom-right, ~360px wide, ~480px tall, matches the existing dark glassmorphism theme in `index.css` — reuse existing CSS variables/classes, don't invent a new visual language).
+  - Panel contains: scrollable message list, a text input + send button, a small "Ask about: grid status, violations, scenario X" hint line so a judge knows what to try.
+  - Local React state only (`useState`) for message history — no Redux, no persistence needed for this pass.
+  - On send: POST to `/api/chat` with the message, append the reply to the message list, show a lightweight loading indicator while waiting.
+- `frontend/src/components/ChatWidget.css` (or inline styles matching existing pattern) — keep it visually consistent with `Header.jsx` / `MetricCards.jsx` styling, not a mismatched new style.
+- Mount `<ChatWidget />` once in `App.jsx`, outside the main layout flow, so it floats above every tab/panel.
+
+### 3. Explicit "do not" list
+- Do not build `src/chatbot/` as a package, LangGraph, or multi-tool orchestration yet — a single function-calling call to Open Router with the 5 tools above is enough for this pass.
+- Do not add a knowledge-base / documentation tool yet (no NOTES.md lookup) — defer to the next pass.
+- Do not persist chat history to a database — in-memory per session is fine.
+- Do not restyle any existing page — the widget is additive only.
+- Do not let the model answer with a specific number it didn't get from a tool call. If uncertain, say the check failed.
+
+## Minimum acceptance test — must all work before this is "done"
+Ask the widget each of these and confirm the answer is correct and grounded (compare against the actual API/data, not just "looks plausible"):
+1. "Is the grid safe right now?" → should reflect actual `list_active_violations()` result
+2. "What's the current max line loading?" → should match `get_grid_summary()`'s real number
+3. "What scenarios can I run?" → should list the actual 5 scenario IDs
+4. "What happened in the infeasible scenario?" → should pull real fields from `infeasible.json`, including that it was unresolved
+5. "What's the capital of France?" → should decline and redirect ("I can only answer questions about this grid system")
+6. Ask about a scenario that doesn't exist (e.g. "what happened in the blackout scenario?") → should say it has no data for that, not guess
+
+## Deliverable
+- `api.py` updated with `/api/chat` and the 5 tool functions (can live in `api.py` directly for this minimal pass, or a new `src/chat_tools.py` if cleaner — your call, keep it simple)
+- `frontend/src/components/ChatWidget.jsx` + styling
+- `App.jsx` updated to mount it
+- One short paragraph in `README.md` noting the chatbot exists, how to set `GROQ_API_KEY`, and that this is a minimal first pass (full design is in the PRD)
+- Do NOT touch `src/grid.py`, `src/violations.py`, `src/engine.py`, `src/actions.py`, `src/scenarios.py`, or `src/forecast.py` — only import from them
+
+OPEN_ROUTER_API_KEY = <your_openrouter_api_key_here>

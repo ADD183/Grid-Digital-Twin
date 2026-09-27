@@ -2666,8 +2666,8 @@
   ],
   "explanation": "Constraint Alert: No single action completely resolved all violations. Hybrid: Reconfiguration (S1) + Battery (0.5 MW) provided the best partial mitigation (residual violations: 2, score: 13.46). Additional grid support or combination actions are required.",
   "artifacts": {
-    "json_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\evening_peak.json",
-    "csv_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\evening_peak.csv",
-    "plot_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\evening_peak.png"
+    "json_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\evening_peak.json",
+    "csv_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\evening_peak.csv",
+    "plot_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\evening_peak.png"
   }
 }

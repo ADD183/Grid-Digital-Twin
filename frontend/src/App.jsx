@@ -7,6 +7,7 @@ import TimeSeriesChart from './components/TimeSeriesChart';
 import TelemetryTables from './components/TelemetryTables';
 import ForecastPanel from './components/ForecastPanel';
 import ViolationEnginePanel from './components/ViolationEnginePanel';
+import ChatWidget from './components/ChatWidget';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -22,22 +23,29 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let interval;
     const fetchGridInfo = async () => {
       try {
         const healthResponse = await fetch(`${API_BASE}/api/health`);
-        setApiOnline(healthResponse.ok);
-        const [summaryResponse, topologyResponse] = await Promise.all([
-          fetch(`${API_BASE}/api/grid/summary`),
-          fetch(`${API_BASE}/api/grid/topology`),
-        ]);
-        if (summaryResponse.ok) setSummary(await summaryResponse.json());
-        if (topologyResponse.ok) setTopology(await topologyResponse.json());
+        const online = healthResponse.ok;
+        setApiOnline(online);
+        if (online) {
+          const [summaryResponse, topologyResponse] = await Promise.all([
+            fetch(`${API_BASE}/api/grid/summary`),
+            fetch(`${API_BASE}/api/grid/topology`),
+          ]);
+          if (summaryResponse.ok) setSummary(await summaryResponse.json());
+          if (topologyResponse.ok) setTopology(await topologyResponse.json());
+        }
       } catch (err) {
         console.error('API Error:', err);
         setApiOnline(false);
       }
     };
+
     fetchGridInfo();
+    interval = setInterval(fetchGridInfo, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchTimeSeries = async (selectedStartDate, selectedEndDate) => {
@@ -46,13 +54,15 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE}/api/data/solar-load?start_date=${selectedStartDate}&end_date=${selectedEndDate}`);
       if (!response.ok) throw new Error(`Server returned ${response.status}`);
-      setSolarLoadData(await response.json());
+      const data = await response.json();
+      setSolarLoadData(data);
       setStartDate(selectedStartDate);
       setEndDate(selectedEndDate);
       setApiOnline(true);
+      setError(null);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError('Failed to load solar/demand data for selected date range.');
+      setError('Failed to load solar/demand data for selected date range (Check if backend API at localhost:8000 is online).');
     } finally {
       setLoading(false);
     }
@@ -71,30 +81,55 @@ export default function App() {
   ];
 
   return (
-    <div style={{ maxWidth: '1380px', margin: '0 auto', padding: '24px 20px' }}>
-      <Header apiOnline={apiOnline} />
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: '6px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', width: 'fit-content', maxWidth: '100%', flexWrap: 'wrap' }}>
-        {tabs.map(([id, label, color]) => (
-          <button key={id} onClick={() => setActiveTab(id)} style={{ backgroundColor: activeTab === id ? `${color}22` : 'transparent', color: activeTab === id ? color : '#94a3b8', border: activeTab === id ? `1px solid ${color}66` : '1px solid transparent', padding: '8px 14px', borderRadius: '8px', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>
-            {label}
-          </button>
-        ))}
+    <>
+      <div style={{ maxWidth: '1380px', margin: '0 auto', padding: '24px 20px' }}>
+        <Header apiOnline={apiOnline} />
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: '6px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', width: 'fit-content', maxWidth: '100%', flexWrap: 'wrap' }}>
+          {tabs.map(([id, label, color]) => (
+            <button key={id} onClick={() => setActiveTab(id)} style={{ backgroundColor: activeTab === id ? `${color}22` : 'transparent', color: activeTab === id ? color : '#94a3b8', border: activeTab === id ? `1px solid ${color}66` : '1px solid transparent', padding: '8px 14px', borderRadius: '8px', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {showGrid && <DateRangePicker startDate={startDate} endDate={endDate} onApply={fetchTimeSeries} loading={loading} />}
+        {error && (
+          <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <span>⚠️ {error}</span>
+            <button
+              onClick={() => fetchTimeSeries(startDate, endDate)}
+              disabled={loading}
+              style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.25)',
+                color: '#ffffff',
+                border: '1px solid rgba(239, 68, 68, 0.5)',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
+            >
+              🔄 {loading ? 'Retrying...' : 'Retry Load Data'}
+            </button>
+          </div>
+        )}
+
+        {showGrid && <MetricCards summary={summary} />}
+        {(activeTab === 'all' || activeTab === 'engine') && <ViolationEnginePanel />}
+        {showGrid && <NetworkTopologyCanvas topology={topology} />}
+        {showGrid && <TimeSeriesChart data={solarLoadData} startDate={startDate} endDate={endDate} />}
+        {(activeTab === 'all' || activeTab === 'forecast') && <ForecastPanel />}
+        {showGrid && <TelemetryTables topology={topology} />}
+
+        <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
+          <div>⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend</div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1, 2 & 3: Physics Grid • Chronological ML Forecaster • Propose-Verify-Repair Action Engine.</div>
+        </footer>
       </div>
 
-      {showGrid && <DateRangePicker startDate={startDate} endDate={endDate} onApply={fetchTimeSeries} loading={loading} />}
-      {error && <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px' }}>⚠️ {error}</div>}
-
-      {showGrid && <MetricCards summary={summary} />}
-      {(activeTab === 'all' || activeTab === 'engine') && <ViolationEnginePanel />}
-      {showGrid && <NetworkTopologyCanvas topology={topology} />}
-      {showGrid && <TimeSeriesChart data={solarLoadData} startDate={startDate} endDate={endDate} />}
-      {(activeTab === 'all' || activeTab === 'forecast') && <ForecastPanel />}
-      {showGrid && <TelemetryTables topology={topology} />}
-
-      <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
-        <div>⚡ <strong>Renewable Grid Digital Twin</strong> — React.js SPA & FastAPI Backend</div>
-        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1, 2 & 3: Physics Grid • Chronological ML Forecaster • Propose-Verify-Repair Action Engine.</div>
-      </footer>
-    </div>
+      {/* Floating Chatbot Assistant Widget */}
+      <ChatWidget />
+    </>
   );
 }

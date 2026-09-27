@@ -18,6 +18,9 @@ An interactive digital twin of a local power distribution network (CIGRE MV benc
 - **Persistent artifacts:** trained models and evaluation data are stored in `data/processed/models/` and reloaded by the API without retraining.
 - **Forecast control-room panel:** the React SPA provides solar/load toggles, 48-hour/7-day/14-day windows, actual-vs-forecast-vs-naive charts, benchmark metrics, and retraining.
 
+## 💬 Digital Grid Assistant (Minimal Prototype)
+The application includes a floating chatbot widget allowing users to ask natural-language questions about grid safety, active violations, line loadings, scenario execution outcomes, and forecasting metrics. The backend (`POST /api/chat` via `src/chat_tools.py`) uses OpenRouter function calling to strictly ground answers in real system numbers, falling back to deterministic tool outputs if `OPEN_ROUTER_API_KEY` (or `GROQ_API_KEY`) is unconfigured. This minimal first pass demonstrates grounded tool-calling without hallucinated grid state (full multi-tool orchestration and LangGraph workflow are specified in PRD v3).
+
 ---
 
 ## 📁 Repository Structure
