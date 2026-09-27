@@ -54,6 +54,38 @@ def test_canned_fallback():
     assert "only answer questions about this grid system" in res_unknown["reply"]
 
 
+def test_grid_summary_fallback_uses_available_voltage_metrics(monkeypatch):
+    import src.chat_tools as chat_tools
+
+    monkeypatch.setattr(chat_tools, "get_grid_summary_tool", lambda: {
+        "vm_pu_min": 0.9438,
+        "vm_pu_max": 1.03,
+        "max_line_loading_percent": 65.97,
+    })
+
+    result = handle_canned_fallback("What is the current grid summary?")
+
+    assert "maximum line loading is 65.97%" in result["reply"]
+    assert "Minimum voltage is 0.9438 p.u." in result["reply"]
+    assert "maximum voltage is 1.03 p.u." in result["reply"]
+    assert "N/A" not in result["reply"]
+    assert ".." not in result["reply"]
+
+
+def test_grid_summary_fallback_explains_missing_metrics(monkeypatch):
+    import src.chat_tools as chat_tools
+
+    monkeypatch.setattr(chat_tools, "get_grid_summary_tool", lambda: {
+        "max_line_loading_percent": None,
+    })
+
+    result = handle_canned_fallback("What is the current grid summary?")
+
+    assert "maximum line loading is not available" in result["reply"]
+    assert "Minimum voltage is not available" in result["reply"]
+    assert "maximum voltage is not available" in result["reply"]
+
+
 def test_process_chat_request_grounded():
     res = process_chat_request("Is the grid safe right now?")
     assert "reply" in res
