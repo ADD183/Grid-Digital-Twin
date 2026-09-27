@@ -214,11 +214,28 @@ def handle_canned_fallback(user_message: str) -> Dict[str, Any]:
 # Main Chat Request Handler
 # ---------------------------------------------------------------------------
 
+def _load_env_file():
+    """Load key-value pairs from a local .env file into os.environ if present."""
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    env_path = os.path.join(root_dir, ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, val = line.split("=", 1)
+                        os.environ.setdefault(key.strip(), val.strip().strip("'\""))
+        except Exception:
+            pass
+
+
 def process_chat_request(user_message: str) -> Dict[str, Any]:
     """
     Process a chat message using OpenRouter function calling, falling back
     to deterministic tool response if the API call fails or key is missing.
     """
+    _load_env_file()
     api_key = os.environ.get("OPEN_ROUTER_API_KEY") or os.environ.get("GROQ_API_KEY") or DEFAULT_OPENROUTER_KEY
 
     if not api_key or not str(api_key).strip():
