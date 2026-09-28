@@ -8,8 +8,7 @@ import TelemetryTables from './components/TelemetryTables';
 import ForecastPanel from './components/ForecastPanel';
 import ViolationEnginePanel from './components/ViolationEnginePanel';
 import ChatWidget from './components/ChatWidget';
-
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE } from './config';
 
 export default function App() {
   const [apiOnline, setApiOnline] = useState(false);
@@ -62,7 +61,7 @@ export default function App() {
       setError(null);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError('Failed to load solar/demand data for selected date range (Check if backend API at localhost:8000 is online).');
+      setError('Failed to load solar/demand data for selected date range (Check if backend API is online).');
     } finally {
       setLoading(false);
     }

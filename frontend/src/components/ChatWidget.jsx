@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Sparkles, ChevronDown, ChevronRight, CheckCircle2, AlertTriangle } from 'lucide-react';
 import './ChatWidget.css';
+import { API_BASE } from '../config';
 
-const API_BASE = 'http://127.0.0.1:8000';
 const MIN_VISIBLE = 60;
 
 const EVIDENCE_LABELS = {

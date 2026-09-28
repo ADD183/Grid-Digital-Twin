@@ -10,8 +10,7 @@ import {
   Legend,
   Brush
 } from 'recharts';
-
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE } from '../config';
 
 export default function ForecastPanel() {
   const [metrics, setMetrics] = useState(null);

@@ -26,14 +26,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for React frontend (Vite default port 5173 / localhost)
+# Enable CORS for React frontend (Vercel / Vite dev server / all origins)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 def serialize_topology(net) -> Dict[str, Any]:
