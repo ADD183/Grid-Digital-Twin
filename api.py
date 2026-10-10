@@ -274,6 +274,49 @@ async def update1_assistant_chat(
     return await asyncio.to_thread(AssistantOrchestrator(settings).answer, request)
 
 
+class EpisodeRunRequest(BaseModel):
+    episode_steps: int = Field(default=8, ge=1, le=24)
+    initial_soc: float = Field(default=0.5, ge=0.1, le=0.9)
+    inject_error: bool = True
+
+
+@app.get("/api/control/limits")
+def get_control_limits() -> Dict[str, Any]:
+    """Return limits.yaml configuration for multi-step control."""
+    from src.control.state import load_limits_config
+    import yaml
+    with open("config/limits.yaml", "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+@app.get("/api/control/episode/showcase")
+def get_showcase_episode() -> Dict[str, Any]:
+    """Return persisted showcase EpisodeLog JSON."""
+    from pathlib import Path
+    import json
+    from src.control.episode import run_episode
+    p = Path("outputs/evidence/action_logs/cp5_showcase.json")
+    if not p.is_file():
+        log = run_episode(episode_steps=8, initial_soc=0.5, run_id="cp5_showcase")
+        log.export_evidence()
+    with open(p, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@app.post("/api/control/episode/run")
+def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
+    """Run rolling-horizon episode live and return serialized EpisodeLog."""
+    from src.control.episode import run_episode
+    errors = {2: {"solar_mult": 2.0, "load_mult": 0.85, "label": "Midday solar surge"}} if request.inject_error else {}
+    log = run_episode(
+        episode_steps=request.episode_steps,
+        initial_soc=request.initial_soc,
+        injected_errors=errors,
+        run_id="api_run",
+    )
+    return log.to_dict()
+
+
 @app.get("/api/grid/summary")
 def get_summary() -> Dict[str, Any]:
     """Return summary metrics for the baseline CIGRE MV grid power flow."""
@@ -437,6 +480,105 @@ def chat_endpoint(request: ChatRequest) -> Dict[str, Any]:
         return process_chat_request(request.message)
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
+
+
+# -------------------------------------------------------------------------
+# Checkpoint 5: Multi-Step Control & Time Plan Endpoints
+# -------------------------------------------------------------------------
+class EpisodeRunRequest(BaseModel):
+    initial_soc: float = Field(default=0.5, ge=0.1, le=0.9)
+    inject_error: bool = True
+    inject_error_step: int = 2
+    force_infeasible: bool = False
+    force_infeasible_step: int = 5
+    run_id: str = "live_run"
+
+
+@app.get("/api/control/limits")
+def get_control_limits() -> Dict[str, Any]:
+    """Return limits and operational parameters configured for Checkpoint 5 control."""
+    from src.control.state import load_limits_config
+    cfg = load_limits_config()
+    return {
+        "grid": {
+            "v_min": cfg.grid.v_min,
+            "v_max": cfg.grid.v_max,
+            "max_loading_pct": cfg.grid.max_loading_pct,
+        },
+        "battery": {
+            "capacity_mwh": cfg.battery.capacity_mwh,
+            "max_p_mw": cfg.battery.max_p_mw,
+            "soc_min": cfg.battery.soc_min,
+            "soc_max": cfg.battery.soc_max,
+            "eta": cfg.battery.eta,
+            "bus_id": cfg.battery.bus_id,
+        },
+        "control": {
+            "horizon_steps": cfg.control.horizon_steps,
+            "delta_t_h": cfg.control.delta_t_h,
+            "beam_width": cfg.control.beam_width,
+            "max_switches_per_episode": cfg.control.max_switches_per_episode,
+        },
+        "discrete_actions": {
+            "battery_mw": cfg.discrete_actions.battery_mw,
+            "curtail_pct": cfg.discrete_actions.curtail_pct,
+            "switch_actions": cfg.discrete_actions.switch_actions,
+        },
+        "fallback_ladder": cfg.fallback_ladder,
+    }
+
+
+@app.get("/api/control/episode/showcase")
+def get_showcase_episode() -> Dict[str, Any]:
+    """Return the saved Checkpoint 5 showcase episode log or generate if missing."""
+    import json
+    from pathlib import Path
+    from src.control.episode import run_episode
+
+    p = Path("outputs/evidence/action_logs/cp5_showcase.json")
+    if p.is_file():
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    log = run_episode(episode_steps=8, initial_soc=0.5, run_id="cp5_showcase")
+    log.export_evidence()
+    return log.to_dict()
+
+
+@app.post("/api/control/episode/run")
+async def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
+    """Execute rolling-horizon episode with pandapower verifier, drift and fallback ladder."""
+    import asyncio
+    from src.control.episode import run_episode
+
+    errors = {}
+    if request.inject_error:
+        errors[request.inject_error_step] = {
+            "solar_mult": 2.0,
+            "load_mult": 0.85,
+            "label": "Injected midday solar surge",
+        }
+
+    infeasible_steps = [request.force_infeasible_step] if request.force_infeasible else []
+
+    def _execute():
+        log = run_episode(
+            episode_steps=8,
+            initial_soc=request.initial_soc,
+            injected_errors=errors,
+            force_infeasible_steps=infeasible_steps,
+            run_id=request.run_id,
+        )
+        log.export_evidence()
+        return log.to_dict()
+
+    try:
+        return await asyncio.to_thread(_execute)
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Episode execution failed: {err}")
 
 
 if __name__ == "__main__":

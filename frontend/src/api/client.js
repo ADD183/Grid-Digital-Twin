@@ -32,3 +32,12 @@ export const update1Api = {
     body: JSON.stringify({ sample_count: sampleCount }),
   }),
 };
+
+export const controlApi = {
+  getLimits: () => request('/api/control/limits'),
+  getShowcaseEpisode: () => request('/api/control/episode/showcase'),
+  runEpisode: (payload = {}) => request('/api/control/episode/run', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+};

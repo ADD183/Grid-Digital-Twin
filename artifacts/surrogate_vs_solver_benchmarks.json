@@ -1,0 +1,16 @@
+{
+  "train_samples": 25,
+  "validation_samples": 7,
+  "voltage_mae_pu": 0.015896662698528005,
+  "voltage_rmse_pu": 0.02090354090656446,
+  "line_loading_mae_percent": 4.912157222062194,
+  "line_loading_rmse_percent": 9.199047541129904,
+  "false_safe_rate": 1.0,
+  "unsafe_validation_samples": 2,
+  "false_safe_samples": 2,
+  "voltage_limits_pu": [
+    0.95,
+    1.05
+  ],
+  "line_loading_limit_percent": 100.0
+}

@@ -22,7 +22,7 @@ No public Indian distribution feeder data exists at this level of topological de
 Granular smart-meter household demand data for specific feeders is proprietary to DISCOMs. We use a hand-built synthetic diurnal curve representing typical residential and commercial demand (morning ramp, evening peak 6–10 PM, overnight trough), augmented with realistic Gaussian noise.
 
 ## 6. Frontend architecture decision
-The original PRD proposed Streamlit for rapid prototyping. Checkpoint 1 instead delivered a React/Vite control room backed by FastAPI, so the active demo surface is the React SPA while `app/streamlit_app.py` remains a lightweight legacy/reference surface. Backend physics, data, and forecasting stay UI-independent under `src/`.
+The original PRD proposed Streamlit for rapid prototyping. Checkpoint 1 instead delivered a React/Vite control room backed by FastAPI. With Checkpoint 5, all features and tabs (including the Time Plan multi-step control dashboard with SOC trajectory, dispatch timeline, forecast vs observed drift, fallback ladder breakdown, and AC power-flow verification inspector) were fully migrated to the React.js SPA (`frontend/src/components/TimePlanPanel.jsx`), and the legacy Streamlit app directory (`app/`) was completely discarded. React.js is now the sole frontend application for VoltPredict. Backend physics, data, and forecasting stay UI-independent under `src/`.
 
 ## 7. Forecasting benchmark
 Forecasts use a strictly chronological holdout: the final 20% of the time series is never used for fitting. Each model is compared with persistence baselines (the previous hour and the same hour on the previous day); the better naive score is the baseline shown in the UI. Artifacts are persisted with `joblib` so API reads do not retrain models.
@@ -48,4 +48,33 @@ The CIGRE MV benchmark includes three normally-open tie switches:
 - **Switch S2 (Line 12, Bus 6 <-> Bus 7):** Loop tie between remote branches.
 - **Switch S3 (Line 13, Bus 4 <-> Bus 11):** Cross-feeder link.
 Closing tie switch S1 redistributes active power flow across alternative lines, successfully relieving voltage sags and line congestion without requiring generation curtailment.
+
+## 11. Multi-Step Control & Battery State-of-Charge Dynamics (Checkpoint 5)
+
+### 11.1 Battery SOC Update Formula
+Let $C$ represent the battery total capacity in MWh (`capacity_mwh`), $\Delta t$ the discrete time-step duration in hours (`dt_hours`), and $\eta \in (0, 1]$ the one-way electrical conversion efficiency (`efficiency`, nominal 0.95).
+Let $P_t$ denote the signed active dispatch in MW (`Action.battery_mw`):
+- **Discharge ($P_t > 0$):** Injects power into the grid (generator behavior) to relieve undervoltage sags or peak feeder demand. Internal electrochemical energy depleted is $\Delta E_{depleted} = \frac{P_t \cdot \Delta t}{\eta}$.
+- **Charge ($P_t < 0$):** Absorbs surplus power from the grid (load behavior) to relieve rooftop PV overvoltages. Internal stored energy increment is $\Delta E_{stored} = (-P_t) \cdot \Delta t \cdot \eta$.
+- **Idle ($P_t = 0$):** No battery power exchanged.
+
+The discrete state transition for State of Charge $SOC \in [0.0, 1.0]$ is:
+$$\text{If } P_t < 0 \text{ (charging): } SOC_{t+1} = SOC_t + \frac{(-P_t) \cdot \Delta t \cdot \eta}{C}$$
+$$\text{If } P_t > 0 \text{ (discharging): } SOC_{t+1} = SOC_t - \frac{P_t \cdot \Delta t}{\eta \cdot C}$$
+$$\text{If } P_t = 0 \text{ (idle): } SOC_{t+1} = SOC_t$$
+
+### 11.2 Pre-Calculation Admissibility Filtering
+Candidate actions must respect hard constraints prior to executing AC power flow:
+1. **Power limits:** $|P_t| \le P_{max}$ (`max_power_mw = 1.0 MW`).
+2. **SOC bounds:** $SOC_{min} \le SOC_{t+1} \le SOC_{max}$ ($SOC_{min} = 0.10$, $SOC_{max} = 0.90$).
+3. **Switching budget:** Number of tie-switch toggles across the planning horizon cannot exceed `switch_budget = 2`.
+
+Actions violating these hard boundaries are filtered out prior to solver evaluation, protecting physical equipment and keeping the beam search tractable.
+
+### 11.3 Fallback Ladder for Infeasible Periods
+When extreme contingencies prevent any normal candidate from clearing all grid constraints:
+1. **Level (a):** Maximum battery support (clamped to available SOC headroom).
+2. **Level (b):** Maximum PV curtailment (100% solar curtailment plus battery support).
+3. **Level (c):** Alternate network switch configuration (closing tie-switch S1/S2/S3).
+4. If violations still remain, the period is explicitly labeled `infeasible = True`, the residual violation severity is logged, and the best partial mitigation is applied rather than obscuring the operational constraint.
 

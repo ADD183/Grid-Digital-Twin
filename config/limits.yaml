@@ -1,0 +1,39 @@
+# Grid limits and control configuration (ENR-02 Final Round)
+# Pinned global seed for reproducibility
+seed: 42
+
+grid:
+  v_min: 0.95
+  v_max: 1.05
+  max_loading_pct: 100.0
+
+battery:
+  capacity_mwh: 2.0
+  max_power_mw: 1.0
+  soc_min: 0.1
+  soc_max: 0.9
+  efficiency: 0.95
+  bus_id: 5
+
+control:
+  dt_hours: 1.0
+  horizon_steps: 8
+  showcase_horizon_steps: 12
+  beam_width: 5
+  curtail_levels: [0.0, 10.0, 25.0, 50.0]
+  battery_levels: [-1.0, -0.5, 0.0, 0.5, 1.0]
+  switch_budget: 2
+  weights:
+    renewable_weight: 10.0
+    switching_penalty: 5.0
+    battery_cycling_penalty: 2.0
+    violation_penalty: 1000.0
+
+surrogate:
+  supported_range:
+    solar_min_pu: 0.0
+    solar_max_pu: 2.5
+    load_min_pu: 0.2
+    load_max_pu: 2.2
+  guard_band: 0.01
+  disagreement_ceiling: 0.015
