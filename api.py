@@ -738,6 +738,90 @@ async def run_surrogate_screened_episode(request: EpisodeRunRequest) -> Dict[str
         raise HTTPException(status_code=500, detail=f"Screened episode execution failed: {err}")
 
 
+# -------------------------------------------------------------------------
+# Checkpoint 8: Showcase Scenario & Evidence Pack Endpoints
+# -------------------------------------------------------------------------
+@app.get("/api/control/episode/showcase12")
+def get_showcase12_episode() -> Dict[str, Any]:
+    """Return 12-step Checkpoint 8 showcase episode log with all 6 required events."""
+    import json
+    from pathlib import Path
+    action_log_path = Path("outputs/evidence/action_logs/cp8_showcase_12step.json")
+    if action_log_path.is_file():
+        try:
+            with open(action_log_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    from src.control.showcase import run_showcase_episode
+    log = run_showcase_episode(run_id="cp8_showcase_12step")
+    log.export_evidence()
+    return log.to_dict()
+
+
+from fastapi.responses import FileResponse, Response
+
+@app.get("/api/evidence/download")
+def download_evidence_file(file_path: str = Query(..., description="Relative file path under outputs/evidence/")):
+    """Download any file from outputs/evidence/ directory as file attachment."""
+    from pathlib import Path
+    clean_rel = file_path.replace("\\", "/").lstrip("/")
+    full_p = Path(clean_rel)
+    if not full_p.is_file():
+        full_p = Path("outputs/evidence") / clean_rel
+    if not full_p.is_file():
+        raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+
+    filename = full_p.name
+    media_type = "text/csv" if filename.endswith(".csv") else "application/json" if filename.endswith(".json") else "text/plain"
+    return FileResponse(path=str(full_p), filename=filename, media_type=media_type)
+
+
+@app.get("/api/evidence/export-csv")
+def export_evidence_csv():
+    """Download the 12-step showcase episode execution table as a CSV file for Excel."""
+    from pathlib import Path
+    csv_p = Path("outputs/evidence/action_logs/cp8_showcase_12step_full_table.csv")
+    if not csv_p.is_file():
+        csv_p = Path("outputs/evidence/soc_traces/cp8_showcase_12step_soc.csv")
+    if not csv_p.is_file():
+        from src.control.showcase import run_showcase_episode
+        log = run_showcase_episode(run_id="cp8_showcase_12step")
+        log.export_evidence()
+        csv_p = Path("outputs/evidence/action_logs/cp8_showcase_12step_full_table.csv")
+
+    return FileResponse(
+        path=str(csv_p),
+        filename="cp8_showcase_12step_evidence_table.csv",
+        media_type="text/csv",
+    )
+
+
+@app.get("/api/evidence/index")
+def get_evidence_index() -> Dict[str, Any]:
+    """Return Checkpoint 8 evidence pack index markdown and artifact map."""
+    from pathlib import Path
+    p = Path("outputs/evidence/EVIDENCE_INDEX.md")
+    content = p.read_text(encoding="utf-8") if p.is_file() else ""
+    return {
+        "status": "success",
+        "index_markdown": content,
+        "evidence_files": [
+            "outputs/evidence/solver_config.json",
+            "outputs/evidence/action_logs/cp8_showcase_12step_full_table.csv",
+            "outputs/evidence/action_logs/cp8_showcase_12step.json",
+            "outputs/evidence/action_logs/cp8_showcase_12step.jsonl",
+            "outputs/evidence/soc_traces/cp8_showcase_12step_soc.csv",
+            "outputs/evidence/verification/cp8_showcase_12step_verification.csv",
+            "outputs/evidence/verification/cp8_showcase_12step_verification.json",
+            "outputs/evidence/metrics/ab_screening_comparison.json",
+            "outputs/evidence/metrics/surrogate_evaluation.json",
+            "outputs/evidence/surrogate/surrogate_metadata.json",
+        ],
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)

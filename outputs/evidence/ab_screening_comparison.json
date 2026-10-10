@@ -1,27 +1,27 @@
 {
-  "timestamp": "2026-10-10T23:46:46.123220",
-  "episode_steps": 8,
+  "timestamp": "2026-10-11T02:51:16.999681",
+  "episode_steps": 4,
   "initial_soc": 0.5,
   "null_screener_baseline": {
     "screener_name": "NullScreener",
-    "total_solver_calls": 308,
-    "wall_time_ms": 61617.69,
+    "total_solver_calls": 146,
+    "wall_time_ms": 42367.54,
     "all_actions_solver_verified": true,
     "replan_count": 1
   },
   "surrogate_screener": {
     "screener_name": "SurrogateScreener",
-    "total_solver_calls": 160,
-    "wall_time_ms": 1008.99,
+    "total_solver_calls": 80,
+    "wall_time_ms": 361.52,
     "all_actions_solver_verified": true,
     "replan_count": 1
   },
   "comparison_metrics": {
-    "solver_calls_reduction_pct": 48.05,
-    "speedup_factor": 61.07,
+    "solver_calls_reduction_pct": 45.21,
+    "speedup_factor": 117.19,
     "action_agreement_pct": 100.0,
-    "matching_action_steps": 8,
-    "total_steps": 8,
+    "matching_action_steps": 4,
+    "total_steps": 4,
     "zero_unverified_actions_guaranteed": true
   },
   "disagreement_events": []

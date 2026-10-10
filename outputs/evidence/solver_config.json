@@ -1,4 +1,5 @@
 {
+  "solver": "pandapower",
   "algorithm": "nr",
   "tolerance_mva": 1e-06,
   "max_iteration": 50,
@@ -6,11 +7,5 @@
   "numba": false,
   "v_min_pu": 0.95,
   "v_max_pu": 1.05,
-  "max_loading_pct": 100.0,
-  "seed": 42,
-  "timestamp": "2026-10-10T12:00:00Z",
-  "libraries": {
-    "pandapower": "2.14.11",
-    "python": "3.12.5"
-  }
+  "max_loading_pct": 100.0
 }

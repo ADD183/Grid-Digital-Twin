@@ -1,0 +1,15 @@
+{
+  "calibrated_guard_band": 0.04935695233196014,
+  "disagreement_ceiling": 0.015,
+  "supported_bounds": {
+    "p_mw_min": -35.99441256868404,
+    "p_mw_max": 2.4676947111113723,
+    "q_mvar_min": -8.442481425677228,
+    "q_mvar_max": 0.0
+  },
+  "seeds": [
+    42,
+    43,
+    44
+  ]
+}

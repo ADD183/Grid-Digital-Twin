@@ -5,15 +5,15 @@
     43,
     44
   ],
-  "train_samples": 500,
-  "val_samples": 150,
-  "calibrated_guard_band": 0.04936,
+  "train_samples": 30,
+  "val_samples": 20,
+  "calibrated_guard_band": 0.68062,
   "disagreement_ceiling": 0.015,
-  "checkpoint_path": "models\\surrogate_ensemble.pt",
+  "checkpoint_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\pytest-of-ASUS\\pytest-16\\test_surrogate_ensemble_traini0\\models\\surrogate_ensemble.pt",
   "supported_bounds": {
-    "p_mw_min": -35.99441256868404,
-    "p_mw_max": 2.4676947111113723,
-    "q_mvar_min": -8.442481425677228,
+    "p_mw_min": -35.33380658408934,
+    "p_mw_max": 2.1723690666527,
+    "q_mvar_min": -8.287536439591129,
     "q_mvar_max": 0.0
   }
 }

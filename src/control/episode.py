@@ -148,12 +148,19 @@ class EpisodeLog:
             for s in self.steps:
                 f.write(json.dumps(s.to_dict()) + "\n")
 
-        # 3. Save SOC trace CSV
+        # 3. Save SOC trace CSV & Full Tabular CSV for Excel
         rows = []
+        full_rows = []
         for s in self.steps:
+            bus_vms = list(s.verification_result.bus_vm.values()) if s.verification_result.bus_vm else []
+            line_loads = list(s.verification_result.line_loading.values()) if s.verification_result.line_loading else []
+            v_min = min(bus_vms) if bus_vms else 1.0
+            v_max = max(bus_vms) if bus_vms else 1.0
+            max_load = max(line_loads) if line_loads else 0.0
+
             rows.append({
                 "step": s.step,
-                "hour": s.forecast.get("hour", 10 + s.step),
+                "hour": f"{10 + s.step}:00",
                 "soc": round(s.soc, 5),
                 "soc_percent": round(s.soc * 100.0, 2),
                 "battery_mw": round(s.chosen_action.battery_mw, 3),
@@ -163,8 +170,35 @@ class EpisodeLog:
                 "fallback_used": s.fallback_used or "none",
                 "min_margin": round(s.verification_result.min_margin, 5),
             })
+
+            act_desc = getattr(s, "action_description", None) or s.chosen_action.to_dict().get("description", "Optimal Dispatch")
+            full_rows.append({
+                "Step": f"T{s.step}",
+                "Hour": f"{10 + s.step}:00",
+                "Action Description": act_desc,
+                "Battery Power (MW)": round(s.chosen_action.battery_mw, 3),
+                "Solar Curtailment (%)": round(s.chosen_action.curtail_pct, 1),
+                "Switch Toggle": s.chosen_action.switch_toggle if s.chosen_action.switch_toggle is not None else "None",
+                "Battery SOC (%)": round(s.soc * 100.0, 1),
+                "Min Bus Voltage (pu)": round(v_min, 4),
+                "Max Bus Voltage (pu)": round(v_max, 4),
+                "Max Line Loading (%)": round(max_load, 1),
+                "Solar Scale": s.observed.get("solar_scale", 1.0),
+                "Load Scale": s.observed.get("load_scale", 1.0),
+                "Screener Status": s.screener_status,
+                "Solver Verified": "Pass (Safe)" if s.verification_result.is_safe else "Fallback / Alert",
+                "Triggered Event / Label": s.error_label or "Normal Operation",
+            })
+
         df_soc = pd.DataFrame(rows)
         df_soc.to_csv(csv_path, index=False)
+
+        full_csv_path = action_dir / f"{self.run_id}_full_table.csv"
+        df_full = pd.DataFrame(full_rows)
+        df_full.to_csv(full_csv_path, index=False)
+
+        verif_csv_path = verif_dir / f"{self.run_id}_verification.csv"
+        df_full.to_csv(verif_csv_path, index=False)
 
         # 4. Save verification summary
         verif_data = {

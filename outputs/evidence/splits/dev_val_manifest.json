@@ -1,0 +1,17 @@
+{
+  "split_name": "dev_val",
+  "sample_count": 50,
+  "parquet_path": "outputs\\evidence\\splits\\dev_val.parquet",
+  "seed": 42,
+  "features": [
+    "solar_scale",
+    "load_scale",
+    "battery_mw",
+    "switch_state"
+  ],
+  "targets": [
+    "bus_vm",
+    "line_loading",
+    "is_safe"
+  ]
+}

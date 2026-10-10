@@ -73,6 +73,9 @@ class DisagreementEvent:
 class BaseScreener(ABC):
     """Abstract interface for candidate screening."""
 
+    def __init__(self):
+        self.disagreement_events: List[DisagreementEvent] = []
+
     @abstractmethod
     def screen(
         self,
@@ -88,6 +91,9 @@ class NullScreener(BaseScreener):
     Returns 'uncertain' for every candidate so that every candidate reaches
     the physical power-flow solver (pandapower) for evaluation.
     """
+
+    def __init__(self):
+        super().__init__()
 
     def screen(
         self,
@@ -122,10 +128,12 @@ class SurrogateScreener(BaseScreener):
         limits: Optional[LimitsConfig] = None,
         checkpoint_path: str = "models/surrogate_ensemble.pt",
     ):
+        super().__init__()
         self.limits = limits or load_limits_config()
         self.checkpoint_path = checkpoint_path
         self.ensemble = None
         self.metadata = None
+        self.disagreement_events: List[DisagreementEvent] = []
         self._load_model()
 
     def _load_model(self):
