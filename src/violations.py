@@ -14,7 +14,7 @@ import numpy as np
 
 
 # Standard distribution grid operating thresholds (aligned with CIGRE MV baseline in Checkpoint 1)
-DEFAULT_V_MIN_PU = 0.94
+DEFAULT_V_MIN_PU = 0.95
 DEFAULT_V_MAX_PU = 1.05
 DEFAULT_MAX_LINE_LOADING_PCT = 100.0
 DEFAULT_MAX_TRAFO_LOADING_PCT = 100.0

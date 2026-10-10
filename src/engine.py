@@ -36,7 +36,7 @@ DEMO_SCENARIOS = {
     "evening_peak": {
         "id": "evening_peak",
         "name": "🌆 Evening Demand Peak (Thermal Sag)",
-        "description": "Evening residential load surge with zero solar generation creates severe voltage sags (< 0.94 p.u.) and line loading stress.",
+        "description": "Evening residential load surge with zero solar generation creates severe voltage sags (< 0.95 p.u.) and line loading stress.",
         "primary_violation": "UNDERVOLTAGE",
         "default_magnitude": 1.30,
     },
@@ -381,7 +381,7 @@ def generate_decision_explanation(
             )
         elif w_type == "CURTAILMENT":
             explanation = (
-                f"{w_name} is selected. It fully eliminated all {init_count} grid violations. "
+                f"{w_name} is selected. It fully resolved all {init_count} grid violations. "
                 f"While curtailment wastes a portion of renewable generation ({100.0 - w_clean:.0f}% curtailed, cost proxy {w_cost}/3), "
                 f"it was mathematically necessary as passive switching and available battery capacity alone could not clear all thermal/voltage constraints."
             )

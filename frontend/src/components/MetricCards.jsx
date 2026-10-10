@@ -7,13 +7,13 @@ export default function MetricCards({ summary }) {
   const {
     bus_count = 15,
     der_count = 13,
-    vm_pu_min = 0.9438,
-    vm_pu_max = 1.0300,
-    max_line_loading_percent = 65.97,
-    converged = true
+    vm_pu_min,
+    vm_pu_max,
+    max_line_loading_percent,
+    converged
   } = summary;
 
-  const isVoltageSafe = vm_pu_min >= 0.94 && vm_pu_max <= 1.05;
+  const isVoltageSafe = converged && vm_pu_min >= 0.95 && vm_pu_max <= 1.05;
   const isLineSafe = max_line_loading_percent <= 100;
 
   const cards = [
@@ -36,7 +36,7 @@ export default function MetricCards({ summary }) {
       value: `${vm_pu_min.toFixed(4)} - ${vm_pu_max.toFixed(4)} p.u.`,
       sub: isVoltageSafe ? 'Safe Band (0.95 ± 0.05 p.u.)' : 'Voltage Warning',
       icon: Activity,
-      color: isVoltageSafe ? '#10b981' : '#f59e0b'
+      color: isVoltageSafe ? '#10b981' : '#ef4444'
     },
     {
       title: 'Max Thermal Line Load',

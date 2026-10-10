@@ -1,0 +1,1 @@
+"""Configuration and application services for the Update1 backend."""

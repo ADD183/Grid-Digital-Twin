@@ -69,12 +69,13 @@ export default function ChatWidget() {
   const [isDragging, setIsDragging] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 480);
   const [input, setInput] = useState('');
+  const [audienceMode, setAudienceMode] = useState('operator');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'assistant',
-      text: 'Hello! I am your Digital Grid Assistant. Ask me about grid safety, active violations, line loading, scenario results, or forecasts.',
+      text: 'Hello! Ask me about telemetry, solver-verified grid states, eight-step plans, saved scenarios, or project methods.',
       evidence: null,
       showEvidence: false,
     },
@@ -157,10 +158,10 @@ export default function ChatWidget() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/chat`, {
+      const response = await fetch(`${API_BASE}/api/update1/assistant/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: query }),
+        headers: { 'Content-Type': 'application/json', 'X-Audience-Mode': audienceMode },
+        body: JSON.stringify({ message: query, audience_mode: audienceMode }),
       });
 
       if (!response.ok) {
@@ -259,9 +260,16 @@ export default function ChatWidget() {
                 <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Digital Grid Assistant</div>
                 <div style={{ fontSize: '0.7rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-                  Grounded Tool-Calling Active
+                  Project evidence · {audienceMode}
                 </div>
               </div>
+            </div>
+            <div role="group" aria-label="Assistant audience mode" style={{ display: 'flex', gap: '3px', padding: '3px', background: 'rgba(15,23,42,.75)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+              {['operator', 'executive'].map((mode) => (
+                <button key={mode} onClick={() => setAudienceMode(mode)} aria-pressed={audienceMode === mode} style={{ background: audienceMode === mode ? 'rgba(6,182,212,.2)' : 'transparent', color: audienceMode === mode ? '#67e8f9' : 'var(--text-muted)', borderRadius: '4px', padding: '4px 6px', fontSize: '.65rem', textTransform: 'capitalize' }}>
+                  {mode}
+                </button>
+              ))}
             </div>
             <button className="chat-close-btn" onClick={() => {
               setIsOpen(false);

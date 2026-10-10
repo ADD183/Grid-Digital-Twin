@@ -19,6 +19,9 @@ def load_cigre_network() -> pp.pandapowerNet:
         pp.pandapowerNet: The initialized pandapower network instance.
     """
     net = ppn.create_cigre_network_mv(with_der="all")
+    # The reference case's default source setpoint yields 0.9438 p.u. at a
+    # remote bus. Use a documented operating setpoint that respects PRD limits.
+    net.ext_grid.loc[:, "vm_pu"] = 1.036
     return net
 
 

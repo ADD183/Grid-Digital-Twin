@@ -7,6 +7,7 @@ import TimeSeriesChart from './components/TimeSeriesChart';
 import TelemetryTables from './components/TelemetryTables';
 import ForecastPanel from './components/ForecastPanel';
 import ViolationEnginePanel from './components/ViolationEnginePanel';
+import MpcControlPanel from './components/MpcControlPanel';
 import ChatWidget from './components/ChatWidget';
 import { API_BASE } from './config';
 
@@ -73,6 +74,7 @@ export default function App() {
 
   const showGrid = activeTab === 'all' || activeTab === 'grid';
   const tabs = [
+    ['mpc', '⚙️ Predictive MPC (Update1)', '#34d399'],
     ['engine', '🛡️ Action Engine (Checkpoint 3)', '#f87171'],
     ['forecast', '🧠 AI Forecaster (Checkpoint 2)', '#c084fc'],
     ['grid', '⚡ Grid Topology & Power Flow (Checkpoint 1)', '#38bdf8'],
@@ -116,6 +118,7 @@ export default function App() {
 
         {showGrid && <MetricCards summary={summary} />}
         {(activeTab === 'all' || activeTab === 'engine') && <ViolationEnginePanel />}
+        {activeTab === 'mpc' && <MpcControlPanel />}
         {showGrid && <NetworkTopologyCanvas topology={topology} />}
         {showGrid && <TimeSeriesChart data={solarLoadData} startDate={startDate} endDate={endDate} />}
         {(activeTab === 'all' || activeTab === 'forecast') && <ForecastPanel />}

@@ -59,7 +59,7 @@ def test_detect_bus_overvoltage():
 
 
 def test_detect_bus_undervoltage():
-    """Verify violation detector flags bus voltages that fall below lower limit (0.94 p.u.)."""
+    """Verify violation detector flags bus voltages that fall below lower limit (0.95 p.u.)."""
     net = load_cigre_network()
     run_baseline_powerflow(net)
     
@@ -73,7 +73,27 @@ def test_detect_bus_undervoltage():
     
     v6 = next(v for v in report["voltage_violations"] if v["element_id"] == 6)
     assert v6["actual_value"] == 0.9120
-    assert v6["margin"] == round(0.94 - 0.9120, 4)
+    assert v6["limit_value"] == 0.95
+    assert v6["margin"] == round(0.95 - 0.9120, 4)
+
+
+def test_voltage_limit_boundary_is_exactly_0_95_pu():
+    net = load_cigre_network()
+    run_baseline_powerflow(net)
+    net.res_bus.loc[6, "vm_pu"] = 0.95
+    at_limit = check_grid_violations(net)
+    net.res_bus.loc[6, "vm_pu"] = 0.9499
+    below_limit = check_grid_violations(net)
+
+    assert not any(
+        violation["element_id"] == 6
+        for violation in at_limit["voltage_violations"]
+    )
+    violation = next(
+        item for item in below_limit["voltage_violations"] if item["element_id"] == 6
+    )
+    assert violation["limit_value"] == 0.95
+    assert violation["margin"] == 0.0001
 
 
 def test_detect_line_overload():
@@ -169,7 +189,7 @@ def test_evening_peak_trigger_creates_violations():
     violations = meta["initial_violations"]
     assert violations["has_violations"] is True
     assert violations["total_violations"] > 0
-    assert violations["summary"]["min_vm_pu"] < 0.94
+    assert violations["summary"]["min_vm_pu"] < 0.95
 
 
 def test_score_action_logic():

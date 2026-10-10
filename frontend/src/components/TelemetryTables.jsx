@@ -66,8 +66,8 @@ export default function TelemetryTables({ topology }) {
             </thead>
             <tbody>
               {buses.map((bus) => {
-                const isSafe = bus.vm_pu >= 0.94 && bus.vm_pu <= 1.05;
-                const statusColor = isSafe ? '#10b981' : '#f59e0b';
+                const isSafe = bus.vm_pu >= 0.95 && bus.vm_pu <= 1.05;
+                const statusColor = isSafe ? '#10b981' : '#ef4444';
                 return (
                   <tr key={bus.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#06b6d4' }}>{bus.id}</td>
@@ -80,7 +80,7 @@ export default function TelemetryTables({ topology }) {
                     <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>{bus.q_mvar.toFixed(3)}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.74rem', backgroundColor: `${statusColor}15`, color: statusColor, border: `1px solid ${statusColor}30` }}>
-                        {isSafe ? 'Normal' : 'Warning'}
+                        {isSafe ? 'Normal' : 'Violation'}
                       </span>
                     </td>
                   </tr>

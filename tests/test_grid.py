@@ -39,11 +39,11 @@ def test_run_baseline_powerflow_convergence():
 
 
 def test_baseline_voltage_limits():
-    """Verify all bus voltages under baseline conditions fall within expected CIGRE bounds [0.94, 1.05] p.u."""
+    """Verify all bus voltages under baseline conditions fall within PRD bounds [0.95, 1.05] p.u."""
     net = load_cigre_network()
     run_baseline_powerflow(net)
     vm_pu = net.res_bus["vm_pu"]
-    assert vm_pu.min() >= 0.94, f"Bus voltage drop below limit: {vm_pu.min()} < 0.94"
+    assert vm_pu.min() >= 0.95, f"Bus voltage drop below limit: {vm_pu.min()} < 0.95"
     assert vm_pu.max() <= 1.05, f"Bus overvoltage above limit: {vm_pu.max()} > 1.05"
 
 
@@ -55,8 +55,8 @@ def test_grid_summary_structure():
     
     assert summary["bus_count"] == len(net.bus)
     assert summary["converged"] is True
-    assert 0.94 <= summary["vm_pu_min"] <= 1.05
-    assert 0.94 <= summary["vm_pu_max"] <= 1.05
+    assert 0.95 <= summary["vm_pu_min"] <= 1.05
+    assert 0.95 <= summary["vm_pu_max"] <= 1.05
     assert summary["max_line_loading_percent"] >= 0.0
 
 

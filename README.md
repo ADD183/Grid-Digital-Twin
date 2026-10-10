@@ -18,8 +18,15 @@ An interactive digital twin of a local power distribution network (CIGRE MV benc
 - **Persistent artifacts:** trained models and evaluation data are stored in `data/processed/models/` and reloaded by the API without retraining.
 - **Forecast control-room panel:** the React SPA provides solar/load toggles, 48-hour/7-day/14-day windows, actual-vs-forecast-vs-naive charts, benchmark metrics, and retraining.
 
-## 💬 Digital Grid Assistant (Minimal Prototype)
-The application includes a floating chatbot widget allowing users to ask natural-language questions about grid safety, active violations, line loadings, scenario execution outcomes, and forecasting metrics. The backend (`POST /api/chat` via `src/chat_tools.py`) uses OpenRouter function calling to strictly ground answers in real system numbers, falling back to deterministic tool outputs if `OPEN_ROUTER_API_KEY` (or `GROQ_API_KEY`) is unconfigured. This minimal first pass demonstrates grounded tool-calling without hallucinated grid state (full multi-tool orchestration and LangGraph workflow are specified in PRD v3).
+## Predictive Control and Assistant (Update1)
+- **Telemetry manager:** Polls a configured read-only REST endpoint with `httpx`; uses a deterministic mock when no feed is configured or a request fails. Forecast drift above 15% or stale telemetry flags replanning.
+- **Physical solver verifier:** Runs the existing CIGRE MV network through pandapower AC power flow and checks the PRD voltage/loading limits. A non-converged solve is always reported unsafe.
+- **Power-flow surrogate:** LightGBM screens candidate operating points only when inputs are within the training hypercube. OOD or missing-model states fall back to the physical solver. The solver remains the safety authority.
+- **Eight-step controller:** Plans eight 15-minute steps, tracks battery energy/efficiency limits, applies bounded curtailment/BESS/load-shedding fallbacks, and records per-step solver evidence. The current model is trained on hourly data; quarter-hour forecasts are interpolated and labeled as such.
+- **Dual-audience assistant:** The floating widget supports operator and executive modes. OpenRouter tool calling uses bounded telemetry, solver, MPC, saved-scenario, and approved-document tools; deterministic evidence-backed responses are used when the provider is not configured or fails.
+- **Evidence export:** `POST /api/export-artifacts` writes surrogate-vs-solver benchmarks, an eight-step MPC trace, the trained surrogate bundle, and train/test CSVs under `artifacts/`.
+
+The new service modules live in `backend/app/` and are additive. Existing `api.py`, `src/`, React dashboard, CIGRE scenarios, and legacy API routes remain available. External telemetry is not connected until `GRID_API_URL` points to a feed implementing `{timestamp, solar_mw, load_mw, forecast_solar_mw}`.
 
 ---
 
@@ -32,6 +39,7 @@ voltpredict/
 ├── CHECKPOINT_1_REPORT.md       # Checkpoint 1 verification report
 ├── CHECKPOINT_2_REPORT.md       # Checkpoint 2 verification report
 ├── api.py                       # FastAPI REST Server
+├── backend/app/                 # Update1 settings, telemetry, solver, surrogate, MPC, assistant, exports
 ├── main.py                      # CLI entrypoint for pure backend validation
 ├── data/
 │   ├── raw/                     # Cached PVGIS solar data
@@ -58,6 +66,10 @@ voltpredict/
 ```bash
 # Python dependencies
 pip install -r requirements.txt
+
+# Configure optional integrations: create .env only if it does not already exist.
+# If .env exists, merge any needed names from .env.example; do not overwrite secrets.
+if not exist .env copy .env.example .env
 
 # Node.js dependencies
 cd frontend
@@ -88,3 +100,19 @@ npm run build
 ```
 
 The forecast panel is available from the **AI Forecaster (Checkpoint 2)** tab after the FastAPI server is running.
+
+## Update1 API
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/health` | Deployment health with UTC timestamp |
+| `GET` | `/api/update1/telemetry` | Latest telemetry, drift, freshness, and fallback state |
+| `GET` | `/api/update1/forecast/horizon?steps=8` | Recursive forecast inputs plus resolution/scaling provenance |
+| `POST` | `/api/update1/solver/verify` | AC solver verification for one operating point |
+| `POST` | `/api/update1/surrogate/train` | Generate CIGRE solver samples and train the surrogate |
+| `GET` | `/api/update1/surrogate/status` | Model availability and validation metrics |
+| `POST` | `/api/update1/mpc/plan` | Physically verified eight-step plan |
+| `POST` | `/api/update1/assistant/chat` | Tool-grounded answer; select persona with `X-Audience-Mode: operator|executive` |
+| `POST` | `/api/export-artifacts` | Export the hackathon evidence bundle |
+
+The API and frontend can run in containers. From the repository root, build the backend with `docker build -f backend/Dockerfile -t voltpredict-api .`; build the frontend with `docker build -f frontend/Dockerfile --build-arg VITE_API_BASE_URL=http://localhost:8000 -t voltpredict-ui frontend`. For hosted deployments, set `VITE_API_BASE_URL` to the backend URL and replace the wildcard `CORS_ORIGINS` value in Render with the exact frontend origin.

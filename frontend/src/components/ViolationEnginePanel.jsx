@@ -158,6 +158,11 @@ export default function ViolationEnginePanel() {
       : scenarioData?.violations || evaluationData?.initial_violations;
 
   const winner = evaluationData?.recommended_action;
+  const afterResolved = Boolean(evaluationData?.fully_resolved && winner?.resolved);
+  const residualCount = winner?.residual_violations_count ?? 0;
+  const activeSummary = activeViewMode === 'after'
+    ? evaluationData?.after_grid_summary
+    : evaluationData?.before_grid_summary;
   const rankedActions = evaluationData?.ranked_actions || [];
 
   const filteredActions = rankedActions.filter((act) => {
@@ -181,10 +186,10 @@ export default function ViolationEnginePanel() {
     }
   };
 
-  // Node color helper with strict utility bounds [0.94, 1.05]
+  // Node color helper with strict utility bounds [0.95, 1.05]
   const getNodeColor = (vm_pu) => {
     if (vm_pu > 1.05) return '#ef4444'; // Red (Overvoltage)
-    if (vm_pu < 0.94) return '#f59e0b'; // Amber (Undervoltage)
+    if (vm_pu < 0.95) return '#ef4444'; // Red (Undervoltage)
     return '#10b981'; // Green (Safe)
   };
 
@@ -253,7 +258,7 @@ export default function ViolationEnginePanel() {
                   animation: currentViolations?.has_violations ? 'pulse-ring 1.5s infinite ease-in-out' : 'none'
                 }} 
               />
-              {currentViolations?.has_violations ? `${currentViolations.total_violations} Violations Active` : 'Grid In Safe Band (0.94-1.05 p.u.)'}
+              {currentViolations?.has_violations ? `${currentViolations.total_violations} Violations Active` : 'Grid In Safe Band (0.95-1.05 p.u.)'}
             </div>
           </div>
         </div>
@@ -262,7 +267,7 @@ export default function ViolationEnginePanel() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginBottom: '18px' }}>
           {[
             { id: 'solar_spike', icon: Sun, title: 'Midday Solar Surge', desc: 'High rooftop PV + low demand triggers overvoltage (>1.05 p.u.)' },
-            { id: 'evening_peak', icon: BatteryCharging, title: 'Evening Demand Peak', desc: 'Sunset + peak appliance load causes voltage sags (<0.94 p.u.)' },
+            { id: 'evening_peak', icon: BatteryCharging, title: 'Evening Demand Peak', desc: 'Sunset + peak appliance load causes voltage sags (<0.95 p.u.)' },
             { id: 'line_congestion', icon: Zap, title: 'Feeder Line Overload', desc: 'Heavy branch demand pushes line loading past 100% thermal limit' },
             { id: 'cloudy_drop', icon: AlertTriangle, title: 'Cloudy-Day Solar Drop', desc: 'Sudden generation collapse forces a rapid support response and residual stress' },
             { id: 'infeasible', icon: XCircle, title: 'Infeasible Stress Event', desc: 'Deliberately exceeds the corrective-action envelope and must remain unresolved' },
@@ -346,7 +351,7 @@ export default function ViolationEnginePanel() {
             }}
           >
             <Zap size={16} />
-            {evaluating ? 'Propose-Verify Loop Running...' : '🤖 Re-Run AI Decision Engine'}
+            {evaluating ? 'Propose-Verify Loop Running...' : 'Re-run deterministic engine'}
           </button>
         </div>
 
@@ -407,7 +412,7 @@ export default function ViolationEnginePanel() {
               }}
             >
               <CheckCircle2 size={14} />
-              ✅ After Action (Resolved by AI)
+              After Action
             </button>
             {customResult && (
               <button
@@ -434,8 +439,8 @@ export default function ViolationEnginePanel() {
             padding: '12px 16px',
             borderRadius: '8px',
             marginBottom: '16px',
-            backgroundColor: activeViewMode === 'after' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-            border: `1px solid ${activeViewMode === 'after' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+            backgroundColor: activeViewMode === 'after' && afterResolved ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+            border: `1px solid ${activeViewMode === 'after' && afterResolved ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -444,20 +449,24 @@ export default function ViolationEnginePanel() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {activeViewMode === 'after' ? (
+            {activeViewMode === 'after' && afterResolved ? (
               <CheckCircle2 size={20} color="#10b981" />
             ) : (
               <AlertTriangle size={20} color="#ef4444" />
             )}
             <div>
-              <div style={{ fontWeight: 600, color: activeViewMode === 'after' ? '#34d399' : '#f87171', fontSize: '0.88rem' }}>
-                {activeViewMode === 'after' 
-                  ? `Grid Healed: ${winner?.name || 'Corrective Action Applied'}`
+              <div style={{ fontWeight: 600, color: activeViewMode === 'after' && afterResolved ? '#34d399' : '#f87171', fontSize: '0.88rem' }}>
+                {activeViewMode === 'after' && afterResolved
+                  ? `Grid within limits: ${winner?.name || 'Corrective Action Applied'}`
+                  : activeViewMode === 'after'
+                  ? `Residual constraints remain after ${winner?.name || 'the best action'}`
                   : `Grid Under Stress: ${scenarioData?.scenario?.name || 'Constraint Active'}`}
               </div>
               <div style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>
-                {activeViewMode === 'after'
-                  ? 'All bus voltages restored within [0.94, 1.05] p.u. Safe operating envelope.'
+                {activeViewMode === 'after' && afterResolved
+                  ? 'The physical solver reports zero residual voltage and equipment violations.'
+                  : activeViewMode === 'after'
+                  ? `${residualCount} residual violation(s) remain. This result is not fully resolved.`
                   : `${currentViolations?.total_violations || 0} active violation constraints detected. Voltage limits violated.`}
               </div>
             </div>
@@ -466,25 +475,27 @@ export default function ViolationEnginePanel() {
           {/* Delta Metrics Badges */}
           <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Worst Bus Voltage</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: activeViewMode === 'after' ? '#34d399' : '#f87171', fontFamily: 'var(--font-mono)' }}>
-                {activeViewMode === 'after'
-                  ? `${evaluationData?.after_grid_summary?.vm_pu_max || winner?.max_vm_pu || '1.048'} p.u. (Safe)`
-                  : `${evaluationData?.before_grid_summary?.vm_pu_max || '1.065'} p.u. (High)`}
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Voltage Range</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: activeViewMode === 'after' && afterResolved ? '#34d399' : '#f87171', fontFamily: 'var(--font-mono)' }}>
+                {activeSummary?.vm_pu_min != null && activeSummary?.vm_pu_max != null
+                  ? `${activeSummary.vm_pu_min}–${activeSummary.vm_pu_max} p.u.`
+                  : 'Not available'}
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Max Line Loading</div>
               <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-                {activeViewMode === 'after'
-                  ? `${evaluationData?.after_grid_summary?.max_line_loading_percent || '45.9'}%`
-                  : `${evaluationData?.before_grid_summary?.max_line_loading_percent || '65.9'}%`}
+                {activeSummary?.max_line_loading_percent != null
+                  ? `${activeSummary.max_line_loading_percent}%`
+                  : 'Not available'}
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Violations Count</div>
               <div style={{ fontSize: '0.9rem', fontWeight: 700, color: activeViewMode === 'after' ? '#34d399' : '#f87171', fontFamily: 'var(--font-mono)' }}>
-                {activeViewMode === 'after' ? '0 Violations (Clean)' : `${evaluationData?.initial_violations?.total_violations || 9} Violations`}
+                {activeViewMode === 'after'
+                  ? `${residualCount} residual violation(s)`
+                  : `${evaluationData?.initial_violations?.total_violations ?? currentViolations?.total_violations ?? 'Not available'} violations`}
               </div>
             </div>
           </div>
@@ -620,7 +631,7 @@ export default function ViolationEnginePanel() {
             }}
           >
             <CheckCircle2 size={16} color="#10b981" />
-            <span>✓ All 15 buses and feeder lines are operating within safe tolerances [0.94 - 1.05 p.u., ≤ 100% load]. 0 active violations.</span>
+            <span>✓ All 15 buses and feeder lines are operating within safe tolerances [0.95 - 1.05 p.u., ≤ 100% load]. 0 active violations.</span>
           </div>
         )}
 
@@ -688,11 +699,11 @@ export default function ViolationEnginePanel() {
                 const cx = mapX(bus.x);
                 const cy = mapY(bus.y);
                 const color = getNodeColor(bus.vm_pu);
-                const isViolation = bus.vm_pu > 1.05 || bus.vm_pu < 0.94;
+                const isViolation = bus.vm_pu > 1.05 || bus.vm_pu < 0.95;
 
                 return (
                   <g key={`b-${bus.id}`}>
-                    <title>{`Bus ${bus.id} (${bus.name}): Voltage ${bus.vm_pu.toFixed(4)} p.u. ${bus.vm_pu > 1.05 ? '⚠️ OVERVOLTAGE VIOLATION' : bus.vm_pu < 0.94 ? '⚠️ UNDERVOLTAGE VIOLATION' : '✓ Normal'}`}</title>
+                    <title>{`Bus ${bus.id} (${bus.name}): Voltage ${bus.vm_pu.toFixed(4)} p.u. ${bus.vm_pu > 1.05 ? '⚠️ OVERVOLTAGE VIOLATION' : bus.vm_pu < 0.95 ? '⚠️ UNDERVOLTAGE VIOLATION' : '✓ Normal'}`}</title>
                     {/* Glowing ring for violation */}
                     {isViolation && (
                       <circle
@@ -737,7 +748,7 @@ export default function ViolationEnginePanel() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#06b6d4', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
             <Award size={18} />
-            <span>AI Optimal Recommendation (#1 Ranked Corrective Action)</span>
+            <span>Deterministic Engine Recommendation (#1 Ranked Corrective Action)</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
@@ -756,8 +767,8 @@ export default function ViolationEnginePanel() {
                     </span>
                   );
                 })()}
-                <span style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34d399', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
-                  ✓ 100% Resolved (0 Residual Violations)
+                <span style={{ backgroundColor: winner.resolved ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${winner.resolved ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`, color: winner.resolved ? '#34d399' : '#f87171', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
+                  {winner.resolved ? 'Fully resolved · 0 residual violations' : `Best partial action · ${winner.residual_violations_count} residual violations`}
                 </span>
                 <span style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.35)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
                   Score: {winner.score} pts

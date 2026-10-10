@@ -3,7 +3,11 @@ FastAPI REST API Server for VoltPredict.
 Exposes backend grid topology, power flow calculation results, and time-series solar/load data to the React.js frontend.
 """
 
-from fastapi import FastAPI, Query, HTTPException
+import asyncio
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+
+from fastapi import FastAPI, Query, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any, List, Optional
 import pandas as pd
@@ -19,17 +23,68 @@ from src.engine import DEMO_SCENARIOS, evaluate_actions, trigger_scenario
 from src.scenarios import run_scenario
 from src.violations import check_grid_violations
 from src.chat_tools import process_chat_request
+from backend.app.agent_orchestrator import AssistantOrchestrator
+from backend.app.artifact_exporter import generate_evidence_bundle
+from backend.app.config import get_settings
+from backend.app.forecast_adapter import generate_mpc_forecasts
+from backend.app.mpc_engine import MpcEngine
+from backend.app.schemas import (
+    ArtifactExportRequest,
+    AssistantRequest,
+    MpcPlanRequest,
+    SolverRequest,
+    SurrogateTrainingRequest,
+)
+from backend.app.solver_verifier import SolverVerifier
+from backend.app.surrogate import PowerFlowSurrogate, generate_solver_dataset
+from backend.app.telemetry_manager import TelemetryManager
+
+settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Start and cleanly stop the read-only telemetry refresh task."""
+    manager = TelemetryManager(settings)
+    application.state.telemetry_manager = manager
+    application.state.telemetry_status = await manager.get_status()
+    stopping = asyncio.Event()
+
+    async def refresh_telemetry() -> None:
+        while not stopping.is_set():
+            try:
+                application.state.telemetry_status = await manager.get_status()
+            except Exception:
+                application.state.telemetry_status = manager.mock_status(
+                    error="Background telemetry refresh failed"
+                )
+            try:
+                await asyncio.wait_for(stopping.wait(), timeout=settings.telemetry_poll_seconds)
+            except asyncio.TimeoutError:
+                pass
+
+    task = asyncio.create_task(refresh_telemetry())
+    try:
+        yield
+    finally:
+        stopping.set()
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 app = FastAPI(
     title="VoltPredict API",
     description="REST API serving pandapower grid simulations and PVGIS solar/demand datasets",
-    version="1.0.0"
+    version="1.1.0",
+    lifespan=lifespan,
 )
 
 # Enable CORS for React frontend (Vercel / Vite dev server / all origins)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -93,6 +148,130 @@ def serialize_topology(net) -> Dict[str, Any]:
 def health_check() -> Dict[str, str]:
     """Health check endpoint."""
     return {"status": "ok", "version": "1.0.0", "system": "VoltPredict API"}
+
+
+@app.get("/health")
+def standard_health_check() -> Dict[str, str]:
+    """Deployment health endpoint with an explicit UTC timestamp."""
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
+@app.get("/api/update1/telemetry")
+async def update1_telemetry(request: Request) -> Dict[str, Any]:
+    """Return the latest lifespan-refreshed telemetry and drift status."""
+    status = getattr(request.app.state, "telemetry_status", None)
+    if status is None:
+        status = await TelemetryManager(settings).get_status()
+    return status.model_dump(mode="json")
+
+
+@app.get("/api/update1/forecast/horizon")
+async def update1_forecast_horizon(
+    steps: int = Query(8, ge=1, le=8),
+) -> Dict[str, Any]:
+    """Generate recursive forecast values for MPC with resolution provenance."""
+    try:
+        return await asyncio.to_thread(generate_mpc_forecasts, steps)
+    except Exception as err:
+        raise HTTPException(status_code=503, detail=f"Unable to generate MPC forecast: {err}")
+
+
+@app.post("/api/update1/solver/verify")
+async def update1_verify_state(request: SolverRequest) -> Dict[str, Any]:
+    """Run pandapower verification without blocking the API event loop."""
+    try:
+        result = await SolverVerifier(settings).run_power_flow_async(**request.model_dump())
+        return result.model_dump(mode="json")
+    except Exception as err:
+        raise HTTPException(status_code=422, detail=str(err))
+
+
+def _train_update1_surrogate(sample_count: int) -> Dict[str, Any]:
+    features, voltages, loadings = generate_solver_dataset(sample_count=sample_count)
+    model = PowerFlowSurrogate(settings)
+    metrics = model.train(
+        features,
+        voltages,
+        loadings,
+        voltage_bus_ids=list(range(voltages.shape[1])),
+        line_ids=list(range(loadings.shape[1])),
+        save_path=settings.surrogate_model_path,
+    )
+    return {
+        "status": "trained",
+        "metrics": metrics,
+        "model_path": str(settings.surrogate_model_path),
+        "converged_samples": len(features),
+    }
+
+
+@app.post("/api/update1/surrogate/train")
+async def update1_train_surrogate(request: SurrogateTrainingRequest) -> Dict[str, Any]:
+    """Generate physical labels and train the LightGBM surrogate in a worker."""
+    try:
+        return await asyncio.to_thread(_train_update1_surrogate, request.sample_count)
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Surrogate training failed: {err}")
+
+
+@app.get("/api/update1/surrogate/status")
+def update1_surrogate_status() -> Dict[str, Any]:
+    """Return model availability and stored benchmark metrics."""
+    path = settings.surrogate_model_path
+    if not path.is_file():
+        return {"trained": False, "model_path": str(path)}
+    try:
+        model = PowerFlowSurrogate.load(path, settings)
+    except Exception as err:
+        return {"trained": False, "model_path": str(path), "error": str(err)}
+    return {"trained": True, "metrics": model.metrics, "model_path": str(path)}
+
+
+@app.post("/api/update1/mpc/plan")
+async def update1_mpc_plan(request: MpcPlanRequest, http_request: Request) -> Dict[str, Any]:
+    """Execute and physically verify an eight-step candidate plan."""
+    try:
+        forecasts = [item.model_dump() for item in request.forecasts]
+        telemetry = getattr(http_request.app.state, "telemetry_status", None)
+        model_path = settings.surrogate_model_path
+        model = PowerFlowSurrogate.load(model_path, settings) if model_path.is_file() else None
+        engine = MpcEngine(SolverVerifier(settings), model)
+        plan = await asyncio.to_thread(
+            engine.plan,
+            forecasts,
+            initial_state_of_charge_mwh=request.initial_state_of_charge_mwh,
+            telemetry=telemetry,
+        )
+        return plan.model_dump(mode="json")
+    except Exception as err:
+        raise HTTPException(status_code=422, detail=f"MPC plan failed: {err}")
+
+
+@app.post("/api/export-artifacts")
+async def update1_export_artifacts(request: ArtifactExportRequest) -> Dict[str, Any]:
+    """Generate benchmark, MPC trace, model, and train/test evidence files."""
+    try:
+        return await asyncio.to_thread(
+            generate_evidence_bundle,
+            sample_count=request.sample_count,
+            initial_state_of_charge_mwh=request.initial_state_of_charge_mwh,
+            settings=settings,
+        )
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Artifact export failed: {err}")
+
+
+@app.post("/api/update1/assistant/chat")
+async def update1_assistant_chat(
+    request: AssistantRequest,
+    audience_mode: str | None = Header(default=None, alias="X-Audience-Mode"),
+) -> Dict[str, Any]:
+    """Answer with bounded tools and the requested operator/executive voice."""
+    mode = audience_mode or request.audience_mode
+    if mode not in {"operator", "executive"}:
+        raise HTTPException(status_code=422, detail="X-Audience-Mode must be operator or executive")
+    request = request.model_copy(update={"audience_mode": mode})
+    return await asyncio.to_thread(AssistantOrchestrator(settings).answer, request)
 
 
 @app.get("/api/grid/summary")

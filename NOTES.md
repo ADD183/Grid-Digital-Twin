@@ -7,11 +7,13 @@ This document captures key power-systems engineering assumptions and technical r
 ## 1. Why 0.95–1.05 p.u. is used as the safe voltage band
 In electrical power distribution systems, voltage is expressed in per-unit (`p.u.`) relative to nominal design voltage (e.g., 15 kV). Standard utility operating codes (EN 50160 / ANSI C84.1) mandate maintaining steady-state bus voltages within **±5% of nominal (0.95 to 1.05 p.u.)**. Voltages above 1.05 p.u. risk damaging household electronics and tripping inverter protection, while voltages below 0.95 p.u. cause brownouts and motor overheating.
 
+The CIGRE MV reference source setpoint is set to 1.036 p.u. in this demo so its nominal base case stays within the project's 0.95–1.05 p.u. operating band; the built-in default produced a 0.9438 p.u. minimum at a remote bus.
+
 ## 2. Why line loading >100% matters (Thermal Overload Risk)
 Line loading percentage reflects current flow relative to the thermal rating of conductors and transformers. Operating above 100% causes excessive conductor heating, accelerated insulation degradation, physical sag of overhead lines, and eventual thermal breakdown or protective breaker trips.
 
 ## 3. Battery Dispatch Simplification
-Batteries are modeled as active power injection/absorption elements (`storage` or bidirectionally controlled `sgen`/`load` stand-in in pandapower). Positive dispatch injects power into the bus (discharging), while negative dispatch absorbs excess solar generation (charging).
+Batteries are modeled as pandapower `storage` elements, not an electrochemical degradation model. In the implementation's signed dispatch convention, positive `p_mw` charges the battery and absorbs power; negative `p_mw` discharges and injects power. The MPC stores SoC in MWh and applies charge/discharge efficiency at each 15-minute step.
 
 ## 4. Why CIGRE MV + DER Benchmark was chosen
 No public Indian distribution feeder data exists at this level of topological detail due to utility regulatory and security constraints. The **CIGRE Medium-Voltage Distribution Network (with DERs)** published by CIGRE Task Force C6.04.02 is the globally recognized academic and industry benchmark specifically designed for studying renewable integration into distribution grids.
