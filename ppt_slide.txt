@@ -1,0 +1,261 @@
+An agentic chat layer on top of the twin : it explains data, decisions and limits in plain language, only from verified sources.
+Forecast : LightGBM with our ML models predicts next-hour solar and demand, validated on held-out data against a naive baseline.
+Simulate : Power flow on the CIGRE MV network checks voltage and line loading for live data and scenarios.
+Decide : The engine tests curtailment, battery dispatch and feeder reconfiguration, then ranks them and provides insights
+Explain : The Digital Grid Assistant answers questions from verified results only and shows the fault and evidences.
+Image 1 : The image shows an chatbot assistant for quick lookups and natural language based querying and questioning options for both people with technical background and general public. It shows each reply from the AI chatbot is backed with evidence and live proofs.
+
+Image 2 : The image shows live power grid i.e. graphical positioning of individual power buses/feeders. It showcases live values for these and marks them with different colours. User can mavigate and get values for distinct grid components by hovering mouse cursor over it. It shows Reactive power(Q), Active power(P), Voltage level and Max thermal line load of over all grid.
+
+Image 3 : The image shows the graph generated live and dynamically based on the results produced by our Machine Learning models forecasting the power needs and power produced by the solar rooftops. It compares and displays Actual Solar (p.u.), LightGBM ML forecast values, Naive Seasonal Baseline values. It provides buttons for user to toggle between the graph of Solar PV (p.u.) and Grid Load (p.u.), also allows them to filter the graph datapoints based on number of days and a button to refresh/retrain the models for new values. It also provides an slider on x-axis for quick ranging and other information like Mean Absolute Error (MAE), Root Mean Squared Error (RMSE) in comparison to Naive method and % error, Fit Quality (R² Score) etc.
+
+Dual audience
+Plain language for everyone, exact values for professionals.
+Multi-tool
+One question can combine live grid state and project knowledge for proper proofs.
+Predictive, not reactive
+It helps in forecasting violations before they could even happen.
+Reproducible
+It runs on public data (PVGIS, CIGRE benchmark), with no live SCADA needed.
+Least-waste fix
+It compares three action types instead of applying a blanket cap.
+
+
+THE CONTEXT
+Rooftop solar additions surged 125% YoY in early 2026, driven by PM Surya Ghar; residential rooftops now make up the vast majority of new capacity — installed fast, at the edge of the grid, with almost no centralized planning.
+
+ Every one of those rooftops feeds into a low-voltage feeder never designed for two-way power flow.
+THE GAP
+Utilities' current answer is a blanket export cap — safe, but it throws away clean generation whether or not a violation would actually occur that day.
+
+ No accessible, forecast-driven tool exists today that decides, feeder by feeder and hour by hour, whether a cap is even necessary — and what a lighter-touch fix would cost.
+THE TECHNICAL PROBLEM
+On sunny afternoons, hundreds of homes on the same feeder export simultaneously while demand is at its daily low — pushing bus voltage above the safe 1.05 p.u. limit and loading lines beyond thermal rating.    
+
+ This isn't rare or theoretical: it's the direct, mechanical consequence of the adoption curve above, and it happens on ordinary residential feeders, not just at utility scale.
+ABSTRACT
+India's rooftop solar capacity crossed 23.5 GW by March 2026, growing over 100% year-on-year — and DISCOMs are increasingly finding that grid readiness, not installation demand, is the real bottleneck to scaling further.
+
+Rooftop solar additions surged 125% YoY in early 2026, driven by PM Surya Ghar; residential rooftops now make up the vast majority of new capacity — installed fast, at the edge of the grid, with almost no centralized planning.
+
+ Every one of those rooftops feeds into a low-voltage feeder never designed for two-way power flow.
+
+On sunny afternoons, hundreds of homes on the same feeder export simultaneously while demand is at its daily low — pushing bus voltage above the safe 1.05 p.u. limit and loading lines beyond thermal rating.    
+
+ This isn't rare or theoretical: it's the direct, mechanical consequence of the adoption curve above, and it happens on ordinary residential feeders, not just at utility scale.
+
+Utilities' current answer is a blanket export cap — safe, but it throws away clean generation whether or not a violation would actually occur that day.
+
+ No accessible, forecast-driven tool exists today that decides, feeder by feeder and hour by hour, whether a cap is even necessary — and what a lighter-touch fix would cost.
+
+
+TECHNICAL APPROACH
+User / Frontend Layer
+Streamlit Dashboard
+Forecast & 
+Grid Visualization
+Violation Alerts
+Corrective Action 
+Comparison
+Results and Metrics
+Plotly Charts /
+Network Diagrams
+Python Backend / Core Engine
+Data Pipeline
+PVGIS Solar Data
+Synthetic demand profiles
+Pandas/numpy cleaning & 
+       alignment
+Propose → 
+Verify → Repair Decision Loop
+Scenario Runner
+Feed test / demo scenarios
+Run through full pipeline
+Forecasting
+Light GBM / Gradient
+       Boosting Rregressor
+Lag features  + 
+       Calendar metadata
+Corrective Action Engine
+Curtailment
+Battery Dispatch
+Feeder Reconiguration
+Grid Model & 
+Power Flow
+Pandapowerr (CIGRF MV Network with DER)
+runpp()
+Violation Detection
+Voltage limits
+Line loading limits
+Agentic AI
+Operational Scenarios 
+& Evaluation
+High Solar / Low 
+Load
+Evening Peak / Low Solar
+Cloudy Day / Rapid Solar Drop
+Deliberately Infeasible Scenario
+Scenario Results (JSON / CSV)
+Outputs + Chatbot
+Forecast graphs
+Violations & Actions
+Scenario Results
+Chatbot query processing
+Saved Models / Processed Time-Series (joblib)
+Forecast Models
+Processed datasets
+Feature metadata
+Data Pipeline
+Fetch & Prepare Data
+Clean & Align 
+        time-series
+Feature engineering
+Data & Simulation Layer
+Solar Data
+Household 
+Demand
+Grid Topology
+PVGIS via pvlib
+Irradiance
+Generation
+Morning ramo
+Evening peak
+Overnight trough
+Network model
+DER integration
+
+
+Physics-Grounded Digital Twin + AI Grid Defense
+Physics-Based Digital Twin — pandapower + pvlib
+       • CIGRE MV 15-Bus Benchmark Grid + Solar DERs 
+       • Non-linear AC Power Flow (runpp) 
+       • Bus V (p.u.), phase angles, line loading (%) & transformer stress 
+       • PVGIS/Pune irradiance + synthetic residential/commercial demand
+Chronological ML Forecasting — LightGBM
+       • 1–24 h ahead solar & demand forecasting 
+       • Lag features (t−1, t−2, t−3, t−24) + 24-h rolling averages 
+         + sin/cos temporal encoding 
+       • Chronological holdout (no shuffle) 
+       • MAE/RMSE vs. persistence (t−24) baseline
+Deterministic Propose → Verify → Repair — src/engine.py
+       • Multi-strategy mitigation: Feeder Reconfiguration (S1/S2/S3) 
+       • Battery Dispatch, Solar Curtailment & Hybrid Actions 
+       • Every candidate re-simulated using AC Power Flow 
+       • Multi-objective scoring: renewable retention + cost + residual violations
+       • Explicit infeasibility detection
+Grounded Agentic Grid Assistant — LangGraph + OpenRouter LLM
+       • Dual-audience interface: operator-friendly explanations 
+          + engineer-level p.u./bus/line data 
+       • Strict Engine ≠ LLM separation 
+       • Function-calling via System State + Project Knowledge tools 
+       • Zero-Hallucination Contract with verifiable JSON evidence
+
+
+“Why is this a true digital twin instead of just a static dashboard?" 
+We have, Forecaster →  Power-Flow Engine →  Corrective Action Engine
+Most dashboards only show what happened or happening. Our architecture actively runs predictive physics simulations on future forecasts and automatically tests solutions before problems even occur in the physical world. We implement Agentic AI system to ensure no issues make system haywire and we never miss out on anything at all without halucination.
+
+FEASIBILITY AND VIABILITY
+Reliable Physics Engine
+Uses pandapower (runpp) for deterministic, 
+mathematically sound power-flow calculations rather
+ than black-box AI guessing
+Accessible Data
+ Overcomes the lack of proprietary Indian grid data by 
+utilizing the peer-reviewed CIGRE MV benchmark network 
+and free PVGIS solar data
+Efficient Forecasting
+ Employs LightGBM (gradient-boosted trees), which trains quickly, is highly explainable, and sets a strong baseline for short-horizon tabular data
+Independent Testability
+ The pure Python backend (src/) is strictly separated from 
+the Streamlit UI (app/), meaning the core logic is
+ defensible and can be validated by automated tests 
+without UI interference
+Rapid Prototyping Constraints
+  Intentionally avoids heavy deep learning (like LSTMs) and complex build pipelines, making it rapidly deployable and technically feasible for immediate execution.
+
+Honest Reporting
+ Builds utility operator trust by deliberately including 
+an infeasible scenario, transparently reporting "unresolved"
+ instead of hiding limitations
+Prioritizing "Free" Solutions
+Maximizes operational viability by attempting non-disruptive, energy-free actions (like feeder reconfiguration) before forcing solar curtailment.
+Standardized Tolerances
+ Enforces strict real-world safety limits, including a 0.95-1.05 pu voltage band and maximum line loading percentages to prevent thermal overloads
+Robust Scenario Testing
+ Proven across complex conditions: midday high solar, evening demand peaks, and rapid solar drops due to cloud cover.
+Multi-Variable Action Ranking
+The engine doesn't just apply the first fix it finds; it systematically scores proposed actions based on resolution success, clean energy retained, and a cost proxy.
+
+Battery • feeder • curtail
+BATTERY
+FEEDER
+CURTAIL
+✦
+Voltage / loading
+IMPACT AND BENEFITS
+01  SYSTEM-WIDE IMPACT
+BRIDGING THE INFRASTRUCTURE GAP
+Turning grid stress into an actionable, low-waste decision
+SIMULATE
+Power flow
+DETECT
+COMPARE
+ACT
+Safer grid + clean energy
+Absorb rapid rooftop-solar growth without immediately waiting for major physical upgrades.
+Grid resilience
+Detect voltage and thermal stress early to reduce avoidable infrastructure wear.
+Scalable architecture
+Topology-agnostic loop can adapt to real DISCOM networks when local data is available.
+Deferred CapEx
+Use existing infrastructure more safely, potentially delaying large upgrade investments.
+WHAT CHANGES?
+BEFORE
+COMPARE
+AFTER
+Mitigation selected
+✓ safer + less waste
+Stress detected
+⚠ voltage / loading
+CORE IMPACT • Predict Earlier → Choose Smarter → Preserve More Renewable Energy
+02  DIRECT VALUE : BENEFITS
+Clean energy
+Prioritize storage and feeder options before curtailing renewable output.
+Protection
+Flag overvoltage conditions that can affect equipment and inverter protection.
+Operator support
+Convert complex physics into clear before/after action comparisons.
+Battery ROI
+Model charge/discharge timing to absorb midday surplus and support evening demand.
+✦
+⚡
+▣
+🔋
+
+
+
+
+RESEARCH AND REFERENCES
+CIGRE Task Force C6.04.02, "Benchmark Systems for Network Integration of Renewable and Distributed Energy Resources," 
+CIGRE, 2014. https://pandapower.readthedocs.io/en/stable/networks/cigre.html
+European Commission Joint Research Centre, "Photovoltaic Geographical Information System (PVGIS)," 2024. https://re.jrc.ec.europa.eu/
+OpenRouter API:
+https://openrouter.ai/
+Mercom India Research, "Q2 and 1H 2026 India Rooftop Solar Market Report," 2026. [Online].
+https://www.mercomindia.com
+Web Sources:
+Research Papers:
+
+[1] L. Thurner et al., "pandapower, An 
+Open-Source Python Tool for Convenient Modeling, Analysis, and Optimization of Electric Power     Systems," IEEE Trans. Power Syst., vol. 33, no. 6, pp. 6510–6521, Nov. 2018.
+
+[2] G. Ke et al., "LightGBM: A Highly Efficient Gradient Boosting Decision Tree," in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), 2017, pp. 3146–3154.
+
+[3] "Towards Digital Twin of Distribution Grids with High Share of Distributed Energy Systems: Environment for State Estimation and Congestion Management," ResearchGate, 2026.
+
+[4] "Decomposed Phase Analysis Using Convex Inner Approximations: A Methodology for 
+Hosting Capacity in Distribution 
+Systems," arXiv:2310.20185, 2023.
+THE PROJECT IS LIVE DEPLOYED & READY TO TEST !
+ https://grid-digital-twin.vercel.app/
