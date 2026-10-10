@@ -581,6 +581,56 @@ async def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Episode execution failed: {err}")
 
 
+# -------------------------------------------------------------------------
+# Checkpoint 6: Learned Power-Flow Surrogate & Evaluation Endpoints
+# -------------------------------------------------------------------------
+@app.get("/api/surrogate/status")
+def get_surrogate_model_status() -> Dict[str, Any]:
+    """Return availability, trained status, guard band, and supported bounds for surrogate."""
+    import json
+    from pathlib import Path
+
+    meta_path = Path("outputs/evidence/surrogate_model_metadata.json")
+    if not meta_path.is_file():
+        return {"trained": False, "message": "Surrogate ensemble not yet trained"}
+
+    with open(meta_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@app.post("/api/surrogate/train")
+async def train_surrogate_model() -> Dict[str, Any]:
+    """Generate 5 split manifests and train the 3-seed PyTorch surrogate ensemble."""
+    import asyncio
+    from src.surrogate.train import train_surrogate_ensemble
+    from src.surrogate.evaluate import evaluate_surrogate_full
+
+    def _pipeline():
+        meta = train_surrogate_ensemble()
+        eval_report = evaluate_surrogate_full()
+        return {"status": "success", "metadata": meta, "evaluation_summary": eval_report["split_evaluations"]}
+
+    try:
+        return await asyncio.to_thread(_pipeline)
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Surrogate training failed: {err}")
+
+
+@app.get("/api/surrogate/evaluation")
+def get_surrogate_evaluation_report() -> Dict[str, Any]:
+    """Return complete evaluation report across dev_val, test_unseen, test_extended, test_near_limit."""
+    import json
+    from pathlib import Path
+    from src.surrogate.evaluate import evaluate_surrogate_full
+
+    eval_path = Path("outputs/evidence/surrogate_evaluation.json")
+    if not eval_path.is_file():
+        return evaluate_surrogate_full()
+
+    with open(eval_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)

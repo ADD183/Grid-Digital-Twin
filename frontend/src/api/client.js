@@ -41,3 +41,9 @@ export const controlApi = {
     body: JSON.stringify(payload),
   }),
 };
+
+export const surrogateApi = {
+  getStatus: () => request('/api/surrogate/status'),
+  getEvaluationReport: () => request('/api/surrogate/evaluation'),
+  trainEnsemble: () => request('/api/surrogate/train', { method: 'POST' }),
+};

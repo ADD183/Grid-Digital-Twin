@@ -9,6 +9,7 @@ import ForecastPanel from './components/ForecastPanel';
 import ViolationEnginePanel from './components/ViolationEnginePanel';
 import MpcControlPanel from './components/MpcControlPanel';
 import TimePlanPanel from './components/TimePlanPanel';
+import SurrogatePanel from './components/SurrogatePanel';
 import ChatWidget from './components/ChatWidget';
 import { API_BASE } from './config';
 
@@ -17,7 +18,7 @@ export default function App() {
   const [summary, setSummary] = useState(null);
   const [topology, setTopology] = useState(null);
   const [solarLoadData, setSolarLoadData] = useState([]);
-  const [activeTab, setActiveTab] = useState('time_plan');
+  const [activeTab, setActiveTab] = useState('surrogate');
   const [startDate, setStartDate] = useState('2023-01-01');
   const [endDate, setEndDate] = useState('2023-01-31');
   const [loading, setLoading] = useState(false);
@@ -75,6 +76,7 @@ export default function App() {
 
   const showGrid = activeTab === 'all' || activeTab === 'grid';
   const tabs = [
+    ['surrogate', '⚡ Power-Flow Surrogate (Checkpoint 6)', '#c084fc'],
     ['time_plan', '⏱️ Time Plan (Checkpoint 5)', '#10b981'],
     ['mpc', '⚙️ Predictive MPC (Update1)', '#34d399'],
     ['engine', '🛡️ Action Engine (Checkpoint 3)', '#f87171'],
@@ -119,6 +121,7 @@ export default function App() {
         )}
 
         {showGrid && <MetricCards summary={summary} />}
+        {(activeTab === 'all' || activeTab === 'surrogate') && <SurrogatePanel />}
         {(activeTab === 'all' || activeTab === 'time_plan') && <TimePlanPanel />}
         {(activeTab === 'all' || activeTab === 'engine') && <ViolationEnginePanel />}
         {activeTab === 'mpc' && <MpcControlPanel />}
@@ -129,7 +132,7 @@ export default function App() {
 
         <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
           <div>⚡ <strong>VoltPredict</strong> — React.js SPA & FastAPI Backend</div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1–5: Physics Grid • Chronological Forecaster • Corrective Engine • Scenarios • Multi-Step Control.</div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1–6: Physics Grid • Forecaster • Corrective Engine • Scenarios • Multi-Step Control • Power-Flow Surrogate.</div>
         </footer>
       </div>
 

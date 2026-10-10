@@ -1,0 +1,20 @@
+{
+  "split_name": "test_near_limit",
+  "sample_count": 100,
+  "requested_count": 100,
+  "seed": 442,
+  "solar_range": [
+    0.5,
+    2.3
+  ],
+  "load_range": [
+    0.4,
+    2.0
+  ],
+  "dropped_non_converged": 0,
+  "total_attempts": 162,
+  "safe_count": 80,
+  "unsafe_count": 20,
+  "unsafe_pct": 20.0,
+  "near_limit_only": true
+}

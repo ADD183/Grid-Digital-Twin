@@ -1,0 +1,20 @@
+{
+  "split_name": "test_extended",
+  "sample_count": 150,
+  "requested_count": 150,
+  "seed": 342,
+  "solar_range": [
+    2.2,
+    2.8
+  ],
+  "load_range": [
+    0.2,
+    2.5
+  ],
+  "dropped_non_converged": 0,
+  "total_attempts": 150,
+  "safe_count": 62,
+  "unsafe_count": 88,
+  "unsafe_pct": 58.67,
+  "near_limit_only": false
+}

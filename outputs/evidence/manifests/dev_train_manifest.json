@@ -1,0 +1,20 @@
+{
+  "split_name": "dev_train",
+  "sample_count": 500,
+  "requested_count": 500,
+  "seed": 42,
+  "solar_range": [
+    0.2,
+    2.0
+  ],
+  "load_range": [
+    0.3,
+    1.8
+  ],
+  "dropped_non_converged": 0,
+  "total_attempts": 501,
+  "safe_count": 272,
+  "unsafe_count": 228,
+  "unsafe_pct": 45.6,
+  "near_limit_only": false
+}

@@ -1,0 +1,250 @@
+{
+  "timestamp": "2026-10-10T21:27:47.119407",
+  "model_metadata": {
+    "calibrated_guard_band": 0.04935695233196014,
+    "disagreement_ceiling": 0.015,
+    "supported_bounds": {
+      "p_mw_min": -35.99441256868404,
+      "p_mw_max": 2.4676947111113723,
+      "q_mvar_min": -8.442481425677228,
+      "q_mvar_max": 0.0
+    },
+    "seeds": [
+      42,
+      43,
+      44
+    ]
+  },
+  "split_evaluations": {
+    "dev_val": {
+      "split_name": "dev_val",
+      "sample_count": 150,
+      "voltage": {
+        "mae_pu": 0.01605,
+        "rmse_pu": 0.02208,
+        "max_err_pu": 0.15746
+      },
+      "loading": {
+        "mae_pct": 1.971,
+        "rmse_pct": 2.886,
+        "max_err_pct": 13.059
+      },
+      "margin": {
+        "mae": 0.01728,
+        "rmse": 0.02233
+      },
+      "false_safe": {
+        "total_unsafe_samples": 62,
+        "raw": {
+          "false_safe_count": 9,
+          "false_safe_rate_pct": 14.52
+        },
+        "with_guard_band": {
+          "guard_band_pu": 0.04936,
+          "false_safe_count": 0,
+          "false_safe_rate_pct": 0.0,
+          "reduction_pct": 14.52
+        }
+      },
+      "unsupported": {
+        "count": 67,
+        "fraction": 0.4467,
+        "pct": 44.67
+      },
+      "confusion_matrix": {
+        "true_safe": 3,
+        "false_safe": 0,
+        "true_unsafe": 62,
+        "false_unsafe": 85
+      },
+      "latency": {
+        "batch_total_ms": 6.097,
+        "single_sample_ms": 0.0406
+      },
+      "naive_baseline": {
+        "voltage_mae_pu": 0.03425,
+        "loading_mae_pct": 14.343,
+        "margin_mae": 0.12548
+      }
+    },
+    "test_unseen": {
+      "split_name": "test_unseen",
+      "sample_count": 150,
+      "voltage": {
+        "mae_pu": 0.05717,
+        "rmse_pu": 0.07213,
+        "max_err_pu": 0.21936
+      },
+      "loading": {
+        "mae_pct": 5.543,
+        "rmse_pct": 8.309,
+        "max_err_pct": 40.154
+      },
+      "margin": {
+        "mae": 0.05587,
+        "rmse": 0.07117
+      },
+      "false_safe": {
+        "total_unsafe_samples": 150,
+        "raw": {
+          "false_safe_count": 33,
+          "false_safe_rate_pct": 22.0
+        },
+        "with_guard_band": {
+          "guard_band_pu": 0.04936,
+          "false_safe_count": 0,
+          "false_safe_rate_pct": 0.0,
+          "reduction_pct": 22.0
+        }
+      },
+      "unsupported": {
+        "count": 150,
+        "fraction": 1.0,
+        "pct": 100.0
+      },
+      "confusion_matrix": {
+        "true_safe": 0,
+        "false_safe": 0,
+        "true_unsafe": 150,
+        "false_unsafe": 0
+      },
+      "latency": {
+        "batch_total_ms": 3.108,
+        "single_sample_ms": 0.0207
+      },
+      "naive_baseline": {
+        "voltage_mae_pu": 0.0731,
+        "loading_mae_pct": 22.086,
+        "margin_mae": 0.20533
+      }
+    },
+    "test_extended": {
+      "split_name": "test_extended",
+      "sample_count": 150,
+      "voltage": {
+        "mae_pu": 0.0513,
+        "rmse_pu": 0.06903,
+        "max_err_pu": 0.33782
+      },
+      "loading": {
+        "mae_pct": 6.029,
+        "rmse_pct": 9.254,
+        "max_err_pct": 77.999
+      },
+      "margin": {
+        "mae": 0.04803,
+        "rmse": 0.09854
+      },
+      "false_safe": {
+        "total_unsafe_samples": 88,
+        "raw": {
+          "false_safe_count": 18,
+          "false_safe_rate_pct": 20.45
+        },
+        "with_guard_band": {
+          "guard_band_pu": 0.04936,
+          "false_safe_count": 0,
+          "false_safe_rate_pct": 0.0,
+          "reduction_pct": 20.45
+        }
+      },
+      "unsupported": {
+        "count": 150,
+        "fraction": 1.0,
+        "pct": 100.0
+      },
+      "confusion_matrix": {
+        "true_safe": 0,
+        "false_safe": 0,
+        "true_unsafe": 88,
+        "false_unsafe": 62
+      },
+      "latency": {
+        "batch_total_ms": 2.757,
+        "single_sample_ms": 0.0184
+      },
+      "naive_baseline": {
+        "voltage_mae_pu": 0.05581,
+        "loading_mae_pct": 19.011,
+        "margin_mae": 0.16616
+      }
+    },
+    "test_near_limit": {
+      "split_name": "test_near_limit",
+      "sample_count": 100,
+      "voltage": {
+        "mae_pu": 0.01445,
+        "rmse_pu": 0.01836,
+        "max_err_pu": 0.0813
+      },
+      "loading": {
+        "mae_pct": 2.495,
+        "rmse_pct": 3.852,
+        "max_err_pct": 20.161
+      },
+      "margin": {
+        "mae": 0.01851,
+        "rmse": 0.02281
+      },
+      "false_safe": {
+        "total_unsafe_samples": 20,
+        "raw": {
+          "false_safe_count": 14,
+          "false_safe_rate_pct": 70.0
+        },
+        "with_guard_band": {
+          "guard_band_pu": 0.04936,
+          "false_safe_count": 1,
+          "false_safe_rate_pct": 5.0,
+          "reduction_pct": 65.0
+        }
+      },
+      "unsupported": {
+        "count": 40,
+        "fraction": 0.4,
+        "pct": 40.0
+      },
+      "confusion_matrix": {
+        "true_safe": 1,
+        "false_safe": 1,
+        "true_unsafe": 19,
+        "false_unsafe": 79
+      },
+      "latency": {
+        "batch_total_ms": 2.146,
+        "single_sample_ms": 0.0215
+      },
+      "naive_baseline": {
+        "voltage_mae_pu": 0.02664,
+        "loading_mae_pct": 11.959,
+        "margin_mae": 0.08383
+      }
+    }
+  },
+  "latency_benchmark": {
+    "pandapower_single_solve_ms": 128.38,
+    "surrogate_batches": {
+      "batch_1": {
+        "sample_count": 1,
+        "total_ms": 1.207,
+        "per_sample_ms": 1.2073,
+        "pandapower_equiv_ms": 128.38,
+        "speedup_factor": 106.3
+      },
+      "batch_100": {
+        "sample_count": 100,
+        "total_ms": 2.032,
+        "per_sample_ms": 0.0203,
+        "pandapower_equiv_ms": 12838.18,
+        "speedup_factor": 6317.4
+      },
+      "batch_1000": {
+        "sample_count": 1000,
+        "total_ms": 8.858,
+        "per_sample_ms": 0.0089,
+        "pandapower_equiv_ms": 128381.8,
+        "speedup_factor": 14494.0
+      }
+    }
+  }
+}

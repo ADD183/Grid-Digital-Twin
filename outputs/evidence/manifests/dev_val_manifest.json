@@ -1,0 +1,20 @@
+{
+  "split_name": "dev_val",
+  "sample_count": 150,
+  "requested_count": 150,
+  "seed": 142,
+  "solar_range": [
+    0.2,
+    2.0
+  ],
+  "load_range": [
+    0.3,
+    1.8
+  ],
+  "dropped_non_converged": 0,
+  "total_attempts": 150,
+  "safe_count": 88,
+  "unsafe_count": 62,
+  "unsafe_pct": 41.33,
+  "near_limit_only": false
+}
