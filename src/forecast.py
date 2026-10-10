@@ -291,9 +291,12 @@ def train_all_models(
         aligned_csv_path = os.path.join(PROJECT_ROOT, aligned_csv_path)
     aligned_csv_path = os.path.abspath(aligned_csv_path)
     if not os.path.exists(aligned_csv_path) or os.path.getsize(aligned_csv_path) < 1000:
-        build_aligned_dataset(start_date="2023-01-01", end_date="2023-12-31", output_path=aligned_csv_path)
+        df = build_aligned_dataset(start_date="2023-01-01", end_date="2023-12-31", output_path=aligned_csv_path)
+    else:
+        df = pd.read_csv(aligned_csv_path, index_col=0, parse_dates=True)
+        if len(df) < 200:
+            df = build_aligned_dataset(start_date="2023-01-01", end_date="2023-12-31", output_path=aligned_csv_path)
 
-    df = pd.read_csv(aligned_csv_path, index_col=0, parse_dates=True)
     if hasattr(df.index, "tz") and df.index.tz is not None:
         df.index = df.index.tz_localize(None)
 
@@ -400,17 +403,39 @@ def get_forecast_chart_data(max_points: int = 168) -> Dict[str, Any]:
     solar_slice = solar_df.tail(max_points)
     load_slice = load_df.tail(max_points)
 
+    # Compute 90% confidence margins (1.645 * RMSE)
+    solar_rmse = float(summary.get("solar", {}).get("model_metrics", {}).get("rmse", 0.045))
+    load_rmse = float(summary.get("load", {}).get("model_metrics", {}).get("rmse", 0.055))
+    s_margin = round(solar_rmse * 1.645, 4)
+    l_margin = round(load_rmse * 1.645, 4)
+
     chart_series = []
     for ts in solar_slice.index:
         iso_str = ts.strftime("%Y-%m-%d %H:%M")
+        s_act = round(float(solar_slice.loc[ts, "actual"]), 4)
+        s_pred = round(float(solar_slice.loc[ts, "predicted"]), 4)
+        s_naive = round(float(solar_slice.loc[ts, "naive_persistence"]), 4)
+        s_lower = round(max(0.0, s_pred - s_margin), 4)
+        s_upper = round(min(1.0, s_pred + s_margin), 4)
+
+        l_act = round(float(load_slice.loc[ts, "actual"]), 4) if ts in load_slice.index else 0.0
+        l_pred = round(float(load_slice.loc[ts, "predicted"]), 4) if ts in load_slice.index else 0.0
+        l_naive = round(float(load_slice.loc[ts, "naive_persistence"]), 4) if ts in load_slice.index else 0.0
+        l_lower = round(max(0.0, l_pred - l_margin), 4)
+        l_upper = round(min(2.0, l_pred + l_margin), 4)
+
         chart_series.append({
             "timestamp": iso_str,
-            "solar_actual": round(float(solar_slice.loc[ts, "actual"]), 4),
-            "solar_pred": round(float(solar_slice.loc[ts, "predicted"]), 4),
-            "solar_naive": round(float(solar_slice.loc[ts, "naive_persistence"]), 4),
-            "load_actual": round(float(load_slice.loc[ts, "actual"]), 4) if ts in load_slice.index else 0.0,
-            "load_pred": round(float(load_slice.loc[ts, "predicted"]), 4) if ts in load_slice.index else 0.0,
-            "load_naive": round(float(load_slice.loc[ts, "naive_persistence"]), 4) if ts in load_slice.index else 0.0,
+            "solar_actual": s_act,
+            "solar_pred": s_pred,
+            "solar_naive": s_naive,
+            "solar_lower": s_lower,
+            "solar_upper": s_upper,
+            "load_actual": l_act,
+            "load_pred": l_pred,
+            "load_naive": l_naive,
+            "load_lower": l_lower,
+            "load_upper": l_upper,
         })
 
     return {

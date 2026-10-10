@@ -154,14 +154,64 @@ class PowerFlowSurrogate:
         frame = pd.DataFrame([row], columns=FEATURE_COLUMNS)
         voltage_values = self._predict_matrix(self.voltage_models, frame)[0]
         loading_values = self._predict_matrix(self.loading_models, frame)[0]
+
+        # Vectorized margin calculation (strict signed distance to limits)
+        # Undervoltage margin: min(V) - 0.95 (e.g. 0.868 - 0.95 = -0.082)
+        # Overvoltage margin: 1.05 - max(V)
+        # Loading margin: (100.0 - max(loading)) / 100.0
+        v_min_actual = float(np.min(voltage_values))
+        v_max_actual = float(np.max(voltage_values))
+        max_line_loading = float(np.max(loading_values))
+
+        v_undervoltage_margin = v_min_actual - self.settings.voltage_min_pu
+        v_overvoltage_margin = self.settings.voltage_max_pu - v_max_actual
+        line_loading_margin = (self.settings.max_line_loading_percent - max_line_loading) / 100.0
+        
+        raw_margin = float(min(v_undervoltage_margin, v_overvoltage_margin, line_loading_margin))
+        
+        # Apply strict +0.0100 p.u. safety guard band shift
+        guard_band = 0.0100
+        guarded_margin = float(raw_margin - guard_band)
+
+        # Estimate prediction disagreement across ensemble trees/models
+        try:
+            if self.voltage_models:
+                stds = []
+                for m in self.voltage_models:
+                    if hasattr(m, "booster_"):
+                        p1 = float(m.predict(frame, num_iteration=max(1, m.n_estimators // 2))[0])
+                        p2 = float(m.predict(frame, num_iteration=m.n_estimators)[0])
+                        stds.append(abs(p2 - p1))
+                disagreement = float(np.max(stds)) if stds else 0.0
+            else:
+                disagreement = 0.0
+        except Exception:
+            disagreement = 0.0
+
+        # OOD fallback if ensemble disagreement exceeds 0.0150 p.u.
+        if disagreement > 0.0150:
+            return {
+                "status": "OOD_FALLBACK_REQUIRED",
+                "reason": f"Ensemble disagreement {disagreement:.4f} exceeds ceiling 0.0150 p.u.",
+                "disagreement": disagreement,
+            }
+
+        # Safe only if guarded margin >= 0 (raw margin >= guard_band) and loading within bounds
         safe = bool(
-            np.all(voltage_values >= self.settings.voltage_min_pu)
-            and np.all(voltage_values <= self.settings.voltage_max_pu)
+            raw_margin >= guard_band
+            and np.all(voltage_values >= (self.settings.voltage_min_pu + guard_band))
+            and np.all(voltage_values <= (self.settings.voltage_max_pu - guard_band))
             and np.all(loading_values <= self.settings.max_line_loading_percent)
         )
+
         return {
             "status": "PREDICTION",
             "is_safe": safe,
+            "raw_margin": round(raw_margin, 5),
+            "guarded_margin": round(guarded_margin, 5),
+            "min_margin": round(guarded_margin, 5),
+            "guard_band": guard_band,
+            "disagreement": round(disagreement, 5),
             "bus_voltages_pu": dict(zip(self.bus_ids, voltage_values.tolist())),
             "line_loadings_percent": dict(zip(self.line_ids, loading_values.tolist())),
         }

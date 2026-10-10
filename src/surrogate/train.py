@@ -7,18 +7,26 @@ Calibrates the safety guard band on dev_val to minimize false-safe rate.
 import json
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import TensorDataset, DataLoader
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    from torch.utils.data import TensorDataset, DataLoader
+    HAS_TORCH = True
+except (ImportError, ModuleNotFoundError):
+    torch = None
+    nn = type("nn", (), {"Module": object})
+    optim = None
+    TensorDataset = None
+    DataLoader = None
+    HAS_TORCH = False
 
 from src.surrogate.sampling import FEATURE_NAMES, TARGET_VM_NAMES, TARGET_LOADING_NAMES, TARGET_NAMES
 from src.control.state import load_limits_config
 
 
 class PowerFlowSurrogateMLP(nn.Module):
+
     """
     Multi-task PyTorch Neural Network for power flow surrogate estimation.
     Features (33): Bus P/Q net injections + switch states.

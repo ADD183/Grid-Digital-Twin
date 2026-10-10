@@ -58,21 +58,25 @@ def _generate_fallback_solar(time_index: pd.DatetimeIndex) -> pd.DataFrame:
 def fetch_pune_solar_data(
     start_date: str = "2023-01-01",
     end_date: str = "2023-01-31",
-    cache_path: str = DEFAULT_SOLAR_CACHE
+    freq: str = "15min",
+    cache_path: Optional[str] = None
 ) -> pd.DataFrame:
     """
-    Fetch hourly solar irradiance data for Pune via pvlib.iotools.get_pvgis_hourly.
-    Caches the raw response to CSV to prevent unnecessary re-fetching.
+    Fetch solar irradiance data for Pune (PVGIS hourly or 15-min sub-hourly synthetic).
+    Caches the response to CSV to prevent unnecessary re-fetching.
     
     Args:
         start_date (str): Start date ISO string.
         end_date (str): End date ISO string.
-        cache_path (str): File path for local cache.
+        freq (str): Time frequency (e.g. '15min', 'h').
+        cache_path (Optional[str]): File path for local cache.
         
     Returns:
         pd.DataFrame: DataFrame indexed by timestamp with solar generation metrics.
     """
     ensure_directories()
+    if cache_path is None:
+        cache_path = os.path.join(RAW_DATA_DIR, f"pvgis_solar_pune_{freq.replace(':', '_')}.csv")
 
     if os.path.exists(cache_path):
         df = pd.read_csv(cache_path, index_col=0, parse_dates=True)
@@ -80,11 +84,9 @@ def fetch_pune_solar_data(
             df.index = df.index.tz_localize(None)
         return df
 
-    time_index = pd.date_range(start=start_date, end=end_date, freq="h")
+    time_index = pd.date_range(start=start_date, end=end_date, freq=freq)
 
     try:
-        # Request PVGIS hourly data
-        # Note: PVGIS start year is usually prior years (e.g. 2020)
         start_year = pd.to_datetime(start_date).year
         end_year = pd.to_datetime(end_date).year
         
@@ -97,7 +99,6 @@ def fetch_pune_solar_data(
         )
         data = res[0]
         
-        # Select GHI column
         if "G(h)" in data.columns:
             ghi = data["G(h)"]
         elif "ghi" in data.columns:
@@ -105,24 +106,30 @@ def fetch_pune_solar_data(
         else:
             ghi = data.iloc[:, 0]
             
-        df = pd.DataFrame({"ghi": ghi}, index=data.index)
-        # Normalize to 0.0 - 1.0 p.u. (assuming 1000 W/m2 peak rating)
-        df["solar_pu"] = (df["ghi"] / 1000.0).clip(lower=0.0, upper=1.0)
-        
-        # Ensure index is timezone naive
-        if df.index.tz is not None:
-            df.index = df.index.tz_localize(None)
+        df_hourly = pd.DataFrame({"ghi": ghi}, index=data.index)
+        if df_hourly.index.tz is not None:
+            df_hourly.index = df_hourly.index.tz_localize(None)
 
-        # Slice to requested date range if necessary
-        df = df.loc[df.index >= time_index[0]]
-        if len(df) == 0:
-            df = _generate_fallback_solar(time_index)
+        # Resample / reindex to requested frequency with stochastic sub-hourly variability
+        if freq in ["15min", "15T"]:
+            df = stochastic_subhourly_solar(df_hourly, time_index)
+        else:
+            reindexed = df_hourly["ghi"].reindex(time_index.union(df_hourly.index)).interpolate(method="time")
+            ghi_vals = reindexed.reindex(time_index).ffill().bfill().values
+            solar_pu = np.clip(ghi_vals / 1000.0, 0.0, 1.0)
+            df = pd.DataFrame({
+                "ghi": ghi_vals,
+                "solar_pu": solar_pu,
+                "solar_lower_pu": np.maximum(0.0, solar_pu - 0.05),
+                "solar_upper_pu": np.minimum(1.0, solar_pu + 0.05),
+            }, index=time_index)
 
     except Exception as err:
-        print(f"[Warning] PVGIS fetch error: {err}. Using deterministic solar model for Pune.")
+        print(f"[Warning] PVGIS fetch error: {err}. Using deterministic/stochastic solar model for Pune.")
         df = _generate_fallback_solar(time_index)
+        df["solar_lower_pu"] = np.maximum(0.0, df["solar_pu"] - 0.05)
+        df["solar_upper_pu"] = np.minimum(1.0, df["solar_pu"] + 0.05)
 
-    # Ensure tz-naive index on return
     if df.index.tz is not None:
         df.index = df.index.tz_localize(None)
 
@@ -130,71 +137,95 @@ def fetch_pune_solar_data(
     return df
 
 
+def stochastic_subhourly_solar(
+    hourly_df: pd.DataFrame,
+    target_index: pd.DatetimeIndex,
+    noise_std: float = 0.04,
+    seed: int = 42,
+) -> pd.DataFrame:
+    """
+    Interpolate hourly solar irradiance to 15-minute intervals with stochastic sub-hourly
+    variability and explicit uncertainty bounds (90% confidence interval).
+    """
+    rng = np.random.default_rng(seed)
+    reindexed = hourly_df["ghi"].reindex(target_index.union(hourly_df.index)).interpolate(method="time")
+    subhourly_ghi = reindexed.reindex(target_index).ffill().bfill().values
+
+    # Add stochastic cloud passing variation
+    hour = target_index.hour + target_index.minute / 60.0
+    day_mask = (hour >= 6.0) & (hour <= 18.5)
+    noise = rng.normal(loc=0.0, scale=noise_std, size=len(target_index))
+    
+    stochastic_factor = np.ones(len(target_index))
+    stochastic_factor[day_mask] = np.clip(1.0 + noise[day_mask], 0.6, 1.25)
+    
+    ghi = np.maximum(0.0, subhourly_ghi * stochastic_factor)
+    solar_pu = np.clip(ghi / 1000.0, 0.0, 1.0)
+    
+    # Explicit 90% uncertainty bounds (+/- 1.645 * std)
+    uncertainty_margin = np.where(day_mask, 1.645 * noise_std * (subhourly_ghi / 1000.0), 0.0)
+    solar_lower_pu = np.clip(solar_pu - uncertainty_margin, 0.0, 1.0)
+    solar_upper_pu = np.clip(solar_pu + uncertainty_margin, 0.0, 1.0)
+
+    return pd.DataFrame({
+        "ghi": ghi,
+        "solar_pu": solar_pu,
+        "solar_lower_pu": solar_lower_pu,
+        "solar_upper_pu": solar_upper_pu,
+    }, index=target_index)
+
+
 def generate_synthetic_load_profile(
     time_index: pd.DatetimeIndex,
     base_kw: float = 100.0,
     peak_kw: float = 250.0,
-    seed: int = 42
+    seed: int = 42,
 ) -> pd.DataFrame:
     """
-    Generate an hourly synthetic customer load profile with documented diurnal pattern.
-    - Overnight trough (00:00-05:00): ~30% peak
-    - Morning ramp (06:00-09:00): ~70% peak
-    - Midday plateau (10:00-16:00): ~65% peak
-    - Evening peak (17:00-22:00): 100% peak
-    - Night drop (23:00): ~40% peak
-    
-    Args:
-        time_index (pd.DatetimeIndex): Target timestamp index.
-        base_kw (float): Baseline demand in kW.
-        peak_kw (float): Peak demand in kW.
-        seed (int): Random seed for reproducibility.
-        
-    Returns:
-        pd.DataFrame: DataFrame containing synthetic load profile in kW and p.u.
+    Generate synthetic customer load profile with documented diurnal pattern and explicit uncertainty bounds.
+    Supports native 15-minute and hourly resolutions.
     """
-    np.random.seed(seed)
-    hours = time_index.hour
+    rng = np.random.default_rng(seed)
+    hours = time_index.hour + time_index.minute / 60.0
 
-    # Define normalized shape by hour of day (0 to 23)
-    diurnal_shape = np.array([
+    # Diurnal shape interpolation
+    hour_anchors = np.arange(24)
+    diurnal_anchors = np.array([
         0.30, 0.28, 0.25, 0.25, 0.28, 0.35,  # 00-05: Overnight trough
         0.55, 0.75, 0.80, 0.70, 0.65, 0.60,  # 06-11: Morning ramp
         0.60, 0.62, 0.65, 0.70, 0.80, 0.95,  # 12-17: Midday to early evening
         1.00, 0.98, 0.90, 0.75, 0.55, 0.40   # 18-23: Evening peak & drop
     ])
-
-    base_profile = diurnal_shape[hours]
-    # Add random Gaussian noise (5% std dev)
-    noise = np.random.normal(loc=0.0, scale=0.04, size=len(time_index))
+    
+    base_profile = np.interp(hours, hour_anchors, diurnal_anchors, period=24)
+    noise_sigma = 0.04
+    noise = rng.normal(loc=0.0, scale=noise_sigma, size=len(time_index))
     noisy_profile = np.clip(base_profile + noise, 0.15, 1.10)
 
     load_kw = base_kw + (peak_kw - base_kw) * noisy_profile
     load_pu = load_kw / peak_kw
 
-    df = pd.DataFrame({
-        "load_kw": load_kw,
-        "load_pu": load_pu
-    }, index=time_index)
+    # 90% confidence uncertainty bounds
+    bound_delta = 1.645 * noise_sigma * ((peak_kw - base_kw) / peak_kw)
+    load_lower_pu = np.clip(load_pu - bound_delta, 0.10, 1.10)
+    load_upper_pu = np.clip(load_pu + bound_delta, 0.10, 1.10)
 
-    return df
+    return pd.DataFrame({
+        "load_kw": load_kw,
+        "load_pu": load_pu,
+        "load_lower_pu": load_lower_pu,
+        "load_upper_pu": load_upper_pu,
+    }, index=time_index)
 
 
 def build_aligned_dataset(
     start_date: str = "2023-01-01",
     end_date: str = "2023-01-31",
+    freq: str = "h",
     output_path: str = DEFAULT_ALIGNED_OUTPUT
 ) -> pd.DataFrame:
     """
     Combine solar generation data and synthetic load profile into a time-aligned DataFrame.
-    
-    Args:
-        start_date (str): Start date string.
-        end_date (str): End date string.
-        output_path (str): Output CSV destination.
-        
-    Returns:
-        pd.DataFrame: Time-aligned dataset containing solar and load series.
     """
     start_ts = pd.to_datetime(start_date)
     end_ts = pd.to_datetime(end_date)
@@ -203,12 +234,11 @@ def build_aligned_dataset(
 
     ensure_directories()
 
-    solar_df = fetch_pune_solar_data(start_date=start_date, end_date=end_date)
+    time_index = pd.date_range(start=start_date, end=end_date, freq=freq)
+    solar_df = fetch_pune_solar_data(start_date=start_date, end_date=end_date, freq=freq)
     if hasattr(solar_df.index, "tz") and solar_df.index.tz is not None:
         solar_df.index = solar_df.index.tz_localize(None)
     
-    # Reindex time if solar_df index length differs
-    time_index = pd.date_range(start=start_date, end=end_date, freq="h")
     load_df = generate_synthetic_load_profile(time_index=time_index)
 
     if len(solar_df) != len(load_df):
@@ -217,9 +247,14 @@ def build_aligned_dataset(
     aligned_df = pd.DataFrame({
         "solar_ghi": solar_df["ghi"].values,
         "solar_pu": solar_df["solar_pu"].values,
+        "solar_lower_pu": solar_df.get("solar_lower_pu", np.maximum(0.0, solar_df["solar_pu"] - 0.05)).values,
+        "solar_upper_pu": solar_df.get("solar_upper_pu", np.minimum(1.0, solar_df["solar_pu"] + 0.05)).values,
         "load_kw": load_df["load_kw"].values,
         "load_pu": load_df["load_pu"].values,
+        "load_lower_pu": load_df.get("load_lower_pu", np.maximum(0.1, load_df["load_pu"] - 0.05)).values,
+        "load_upper_pu": load_df.get("load_upper_pu", np.minimum(1.1, load_df["load_pu"] + 0.05)).values,
     }, index=load_df.index)
 
     aligned_df.to_csv(output_path)
     return aligned_df
+

@@ -38,11 +38,11 @@ export default function Header({ apiOnline }) {
                   fontWeight: 600
                 }}
               >
-                Checkpoints 1–3 Complete
+                Checkpoints 1–8 & Update 1 Active
               </span>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '2px' }}>
-              Physics Engine • Chronological AI Forecaster • Propose-Verify-Repair Action Engine
+              Physics Engine • Chronological AI Forecaster • Multi-Objective Engine • 8-Step Predictive MPC • Power-Flow Surrogate
             </p>
           </div>
         </div>

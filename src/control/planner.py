@@ -175,13 +175,26 @@ class BeamSearchPlanner:
         act_c = Action(battery_mw=batt_a, curtail_pct=100.0, switch_toggle=4)
         res_c = self.verifier.verify(state, act_c, observed_inputs)
         if res_c.is_safe:
-            return act_c, res_c, False, "alternate_switch_state"
+            return act_c, res_c, False, "feeder_reconfiguration"
 
-        # All ladder levels tried; violations remain -> mark INFEASIBLE explicitly
+        # Ladder Step (d): Targeted Load shedding
+        shed_inputs = copy.deepcopy(observed_inputs)
+        orig_load = float(observed_inputs.get("load_scale", observed_inputs.get("load_pu", 1.0)))
+        shed_inputs["load_scale"] = max(0.0, orig_load * 0.75)  # 25% targeted load shed
+        shed_inputs["load_pu"] = max(0.0, float(observed_inputs.get("load_pu", orig_load)) * 0.75)
+        act_d = Action(battery_mw=batt_a, curtail_pct=100.0, switch_toggle=4)
+        res_d = self.verifier.verify(state, act_d, shed_inputs)
+        if res_d.is_safe:
+            return act_d, res_d, False, "load_shedding"
+
+        # All 4 ladder levels tried; violations remain -> mark INFEASIBLE explicitly
         # Select best partial mitigation (highest min_margin / fewest violations)
-        candidates = [(act_a, res_a, "max_battery_support"),
-                      (act_b, res_b, "maximum_curtailment"),
-                      (act_c, res_c, "alternate_switch_state")]
+        candidates = [
+            (act_a, res_a, "max_battery_support"),
+            (act_b, res_b, "maximum_curtailment"),
+            (act_c, res_c, "feeder_reconfiguration"),
+            (act_d, res_d, "load_shedding"),
+        ]
         best_act, best_res, best_name = max(candidates, key=lambda c: c[1].min_margin)
 
         return best_act, best_res, True, f"infeasible_residual_{best_name}"

@@ -284,6 +284,24 @@ export default function TimePlanPanel() {
               minWidth: '280px',
             }}
           >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <span style={{ fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 600 }}>Initial SoC:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="0.9"
+                  step="0.05"
+                  value={initialSoc}
+                  onChange={(e) => setInitialSoc(parseFloat(e.target.value))}
+                  style={{ cursor: 'pointer', accentColor: '#10b981', width: '100px' }}
+                />
+                <span style={{ fontSize: '0.82rem', fontFamily: 'var(--font-mono)', color: '#10b981', fontWeight: 700, minWidth: '36px' }}>
+                  {(initialSoc * 100).toFixed(0)}%
+                </span>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <label
                 style={{

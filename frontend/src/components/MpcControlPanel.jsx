@@ -42,6 +42,7 @@ export default function MpcControlPanel() {
 
   useEffect(() => {
     refreshStatus().catch((err) => setError(err.message));
+    runPlan().catch((err) => setError(err.message));
   }, []);
 
   const runPlan = async () => {

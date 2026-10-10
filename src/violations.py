@@ -41,7 +41,10 @@ def check_grid_violations(
         Dict[str, Any]: Structured dictionary containing detected violations and summary metrics.
     """
     if not hasattr(net, "res_bus") or net.res_bus.empty:
-        pp.runpp(net, numba=False)
+        try:
+            pp.runpp(net, numba=False)
+        except Exception:
+            pass
 
     converged = bool(getattr(net, "converged", False))
     if not converged:

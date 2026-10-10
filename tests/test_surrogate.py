@@ -9,6 +9,9 @@ import pytest
 import numpy as np
 import pandas as pd
 
+torch = pytest.importorskip("torch", reason="PyTorch is required for Checkpoint 6 neural surrogate tests")
+
+
 from src.surrogate.sampling import (
     FEATURE_NAMES,
     TARGET_NAMES,

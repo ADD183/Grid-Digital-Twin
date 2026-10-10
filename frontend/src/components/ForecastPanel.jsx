@@ -16,6 +16,7 @@ export default function ForecastPanel() {
   const [metrics, setMetrics] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [activeSeries, setActiveSeries] = useState('solar'); // 'solar' | 'load'
+  const [showIntervals, setShowIntervals] = useState(true);
   const [windowHours, setWindowHours] = useState(168); // 48, 168, 336
   const [loading, setLoading] = useState(true);
   const [retraining, setRetraining] = useState(false);
@@ -160,6 +161,17 @@ export default function ForecastPanel() {
             <option value={168}>Last 7 Days (168h)</option>
             <option value={336}>Last 14 Days (336h)</option>
           </select>
+
+          {/* 90% Confidence Interval Toggle */}
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#cbd5e1', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showIntervals}
+              onChange={(e) => setShowIntervals(e.target.checked)}
+              style={{ accentColor: '#10b981', cursor: 'pointer' }}
+            />
+            <span>90% Confidence Interval</span>
+          </label>
 
           {/* Retrain Button */}
           <button
@@ -402,6 +414,28 @@ export default function ForecastPanel() {
                     dot={false}
                     strokeDasharray="4 2"
                   />
+                  {showIntervals && (
+                    <>
+                      <Line
+                        type="monotone"
+                        dataKey="solar_upper"
+                        name="90% Upper Bound (p.u.)"
+                        stroke="#10b981"
+                        strokeWidth={1.2}
+                        strokeDasharray="3 3"
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="solar_lower"
+                        name="90% Lower Bound (p.u.)"
+                        stroke="#10b981"
+                        strokeWidth={1.2}
+                        strokeDasharray="3 3"
+                        dot={false}
+                      />
+                    </>
+                  )}
                   <Line
                     type="monotone"
                     dataKey="solar_naive"
@@ -432,6 +466,28 @@ export default function ForecastPanel() {
                     dot={false}
                     strokeDasharray="4 2"
                   />
+                  {showIntervals && (
+                    <>
+                      <Line
+                        type="monotone"
+                        dataKey="load_upper"
+                        name="90% Upper Bound (p.u.)"
+                        stroke="#c084fc"
+                        strokeWidth={1.2}
+                        strokeDasharray="3 3"
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="load_lower"
+                        name="90% Lower Bound (p.u.)"
+                        stroke="#c084fc"
+                        strokeWidth={1.2}
+                        strokeDasharray="3 3"
+                        dot={false}
+                      />
+                    </>
+                  )}
                   <Line
                     type="monotone"
                     dataKey="load_naive"

@@ -24,8 +24,8 @@ from src.engine import (
 
 
 def test_baseline_grid_violation_free():
-    """Verify that under nominal conditions, the CIGRE MV grid has 0 violations."""
-    net = load_cigre_network()
+    """Verify that under nominal conditions with substation regulation, the CIGRE MV grid has 0 violations."""
+    net = load_cigre_network(ext_grid_vm_pu=1.05)
     run_baseline_powerflow(net)
     report = check_grid_violations(net)
     

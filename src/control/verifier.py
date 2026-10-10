@@ -134,8 +134,11 @@ class Verifier:
         # Mutate worker network in-place to avoid expensive pandapower deepcopy
         net = self._worker_net
 
-        # 1. Apply baseline solar and load scaling
+        # 1. Apply baseline solar and load scaling & dynamic voltage setpoint
         curtail_factor = 1.0 - (curtail_pct / 100.0)
+
+        slack_vm = float(observed_inputs.get("ext_grid_vm_pu", observed_inputs.get("voltage_setpoint", 1.0)))
+        net.ext_grid.loc[:, "vm_pu"] = slack_vm
 
         net.sgen.loc[self.pv_mask, "p_mw"] = self._base_sgen_p.loc[self.pv_mask] * (solar_scale * curtail_factor)
         net.load.loc[:, "p_mw"] = self._base_load_p * load_scale

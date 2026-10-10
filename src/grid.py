@@ -11,17 +11,19 @@ import pandapower as pp
 import pandapower.networks as ppn
 
 
-def load_cigre_network() -> pp.pandapowerNet:
+def load_cigre_network(ext_grid_vm_pu: float = 1.0) -> pp.pandapowerNet:
     """
     Load the standard CIGRE medium-voltage (MV) distribution network with DERs.
+    Default slack bus voltage setpoint is nominal 1.0 p.u. (no artificial hardcoded setpoint).
     
+    Args:
+        ext_grid_vm_pu (float): Slack bus voltage setpoint in per-unit (default: nominal 1.0 p.u.).
+        
     Returns:
         pp.pandapowerNet: The initialized pandapower network instance.
     """
     net = ppn.create_cigre_network_mv(with_der="all")
-    # The reference case's default source setpoint yields 0.9438 p.u. at a
-    # remote bus. Use a documented operating setpoint that respects PRD limits.
-    net.ext_grid.loc[:, "vm_pu"] = 1.036
+    net.ext_grid.loc[:, "vm_pu"] = float(ext_grid_vm_pu)
     return net
 
 

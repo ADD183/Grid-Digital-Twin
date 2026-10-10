@@ -315,6 +315,7 @@ def build_default_forecast_profile(steps: int = 16) -> List[Dict[str, Any]]:
             "solar_pu": round(s_val / 25.0, 3),
             "load_scale": round(l_val, 2),
             "load_pu": round(l_val, 3),
+            "ext_grid_vm_pu": 1.03,
         })
     return profile
 

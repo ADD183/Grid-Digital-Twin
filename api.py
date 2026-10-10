@@ -398,6 +398,7 @@ class CustomActionRequest(ScenarioRequest):
     battery_p_mw: float = Field(default=1.5, ge=-2.0, le=2.0)
     battery_bus: int = 5
     switch_name: str = "S1"
+    voltage_setpoint_pu: float = Field(default=1.02, ge=0.90, le=1.10)
 
 
 @app.get("/api/violations/scenarios")
@@ -453,6 +454,9 @@ def apply_custom_violation_action(request: CustomActionRequest) -> Dict[str, Any
             modified_net, action = apply_battery_dispatch(net, request.battery_p_mw, request.battery_bus)
         elif request.action_type == "FEEDER_RECONFIGURATION":
             modified_net, action = apply_feeder_reconfiguration(net, switch_name=request.switch_name)
+        elif request.action_type == "VOLTAGE_SETPOINT":
+            from src.actions import apply_voltage_setpoint
+            modified_net, action = apply_voltage_setpoint(net, request.voltage_setpoint_pu)
         else:
             raise ValueError(f"Unknown action_type: '{request.action_type}'")
 

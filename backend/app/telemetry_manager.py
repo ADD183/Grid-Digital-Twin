@@ -33,6 +33,7 @@ class TelemetryManager:
         self,
         reading: TelemetryReading,
         forecast_solar_mw: float,
+        forecast_load_mw: float | None = None,
         *,
         used_fallback: bool = False,
         error: str | None = None,
@@ -43,12 +44,18 @@ class TelemetryManager:
             checked_at = checked_at.replace(tzinfo=timezone.utc)
         age_seconds = max(0.0, (checked_at - reading.timestamp).total_seconds())
         stale = age_seconds > self.settings.telemetry_stale_after_seconds
-        drift = calculate_forecast_drift(reading.solar_mw, forecast_solar_mw)
+        
+        solar_drift = calculate_forecast_drift(reading.solar_mw, forecast_solar_mw)
+        load_drift = calculate_forecast_drift(reading.load_mw, forecast_load_mw) if forecast_load_mw is not None else 0.0
+        drift = max(solar_drift, load_drift)
+        
+        # If incoming stream deviates by >15% (or is stale), automatically trigger full MPC replan
+        requires_replan = (drift > self.settings.replan_drift_threshold) or stale
         return TelemetryStatus(
             reading=reading,
             forecast_solar_mw=forecast_solar_mw,
             drift=drift,
-            requires_replan=drift > self.settings.replan_drift_threshold or stale,
+            requires_replan=requires_replan,
             is_stale=stale,
             used_fallback=used_fallback,
             error=error,

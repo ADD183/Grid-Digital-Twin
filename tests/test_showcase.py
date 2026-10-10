@@ -7,7 +7,10 @@ import subprocess
 import pytest
 from pathlib import Path
 
+torch = pytest.importorskip("torch", reason="PyTorch is required for evidence pack neural surrogate evaluation")
+
 from src.control.showcase import run_showcase_episode
+
 from src.evidence_pack import export_complete_evidence_pack
 from src.control.state import load_limits_config
 

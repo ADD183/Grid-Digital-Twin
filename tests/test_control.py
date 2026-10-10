@@ -131,7 +131,7 @@ def test_switch_state_toggle():
 def test_verifier_wrapper_runs_powerflow_and_calculates_margin(verifier, limits):
     state = State(t=0, soc=0.5, switch_state=((1, False), (2, False), (4, False)), curtail_level=0.0)
     action = Action(battery_mw=0.0, curtail_pct=0.0, switch_toggle=None)
-    inputs = {"solar_scale": 1.0, "load_scale": 1.0}
+    inputs = {"solar_scale": 1.0, "load_scale": 1.0, "ext_grid_vm_pu": 1.03}
 
     res = verifier.verify(state, action, inputs)
     assert isinstance(res, VerificationResult)
@@ -140,7 +140,7 @@ def test_verifier_wrapper_runs_powerflow_and_calculates_margin(verifier, limits)
     assert len(res.bus_vm) == 15
     assert len(res.line_loading) == 15
 
-    # Check nominal baseline safety
+    # Check nominal baseline safety with voltage setpoint
     assert res.is_safe is True
     assert res.min_margin > 0.0
     assert len(res.violations) == 0
@@ -150,7 +150,7 @@ def test_verifier_detects_overvoltage_with_negative_margin(verifier):
     state = State(t=0, soc=0.5, switch_state=((1, False), (2, False), (4, False)), curtail_level=0.0)
     # Severe solar export spike without mitigation
     action = Action(battery_mw=0.0, curtail_pct=0.0)
-    inputs = {"solar_scale": 25.0, "load_scale": 0.35}
+    inputs = {"solar_scale": 50.0, "load_scale": 0.20, "ext_grid_vm_pu": 1.04}
 
     res = verifier.verify(state, action, inputs)
     assert res.converged is True

@@ -27,6 +27,7 @@ class SolverVerifier:
         battery_charge_mw: float = 0.0,
         battery_discharge_mw: float = 0.0,
         load_shed_mw: float = 0.0,
+        voltage_setpoint_pu: float | None = None,
         network: pp.pandapowerNet | None = None,
     ) -> SolverResult:
         """Run an isolated AC power flow for one dispatch decision."""
@@ -43,6 +44,8 @@ class SolverVerifier:
             raise ValueError("curtailment_fraction must be between 0 and 1")
 
         net = copy.deepcopy(network) if network is not None else load_cigre_network()
+        if voltage_setpoint_pu is not None:
+            net.ext_grid.loc[:, "vm_pu"] = float(voltage_setpoint_pu)
         pv_mask = (
             net.sgen["type"].astype(str).str.upper().str.contains("PV|SOLAR")
             if not net.sgen.empty and "type" in net.sgen.columns
@@ -56,11 +59,39 @@ class SolverVerifier:
             net.sgen.loc[pv_mask, "p_mw"] *= solar_target / base_solar
 
         base_load = float(net.load.p_mw.clip(lower=0).sum()) if not net.load.empty else 0.0
-        load_target = max(0.0, load_mw - load_shed_mw)
         if base_load > 0 and not net.load.empty:
-            scale = load_target / base_load
-            net.load.loc[:, "p_mw"] *= scale
-            net.load.loc[:, "q_mvar"] *= scale
+            # 1. Base scale network load to forecast demand
+            base_scale = load_mw / base_load
+            net.load.loc[:, "p_mw"] *= base_scale
+            net.load.loc[:, "q_mvar"] *= base_scale
+
+            # 2. Apply targeted load shedding to prioritized non-critical feeder branches
+            if load_shed_mw > 0:
+                remaining_shed_mw = float(load_shed_mw)
+                # Prioritize peripheral / non-critical residential feeder end buses
+                priority_buses = [6, 10, 11, 14, 8, 9, 7, 5, 4, 3, 2, 1]
+                for bus_id in priority_buses:
+                    if remaining_shed_mw <= 1e-6:
+                        break
+                    bus_loads = net.load[net.load["bus"] == bus_id]
+                    for idx in bus_loads.index:
+                        current_p = float(net.load.loc[idx, "p_mw"])
+                        if current_p > 0:
+                            shed_amount = min(current_p, remaining_shed_mw)
+                            power_factor_ratio = (current_p - shed_amount) / current_p if current_p > 0 else 0.0
+                            net.load.loc[idx, "p_mw"] -= shed_amount
+                            net.load.loc[idx, "q_mvar"] *= power_factor_ratio
+                            remaining_shed_mw -= shed_amount
+                            if remaining_shed_mw <= 1e-6:
+                                break
+
+                # Fallback: if remaining load shed exceeds priority branches, shed proportionally from remaining
+                if remaining_shed_mw > 1e-6:
+                    current_total_p = float(net.load.p_mw.clip(lower=0).sum())
+                    if current_total_p > 0:
+                        rem_scale = max(0.0, (current_total_p - remaining_shed_mw) / current_total_p)
+                        net.load.loc[:, "p_mw"] *= rem_scale
+                        net.load.loc[:, "q_mvar"] *= rem_scale
 
         battery_p_mw = battery_charge_mw - battery_discharge_mw
         if abs(battery_p_mw) > 0:

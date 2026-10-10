@@ -241,3 +241,45 @@ def apply_feeder_reconfiguration(
     }
 
     return net_copy, metadata
+
+
+def apply_voltage_setpoint(
+    net: pp.pandapowerNet,
+    vm_pu: float,
+    ext_grid_id: int = 0,
+) -> Tuple[pp.pandapowerNet, Dict[str, Any]]:
+    """
+    Dynamically regulate external grid / primary substation voltage setpoint.
+    
+    Args:
+        net (pp.pandapowerNet): Pandapower network.
+        vm_pu (float): Slack bus voltage setpoint in per-unit (e.g. 0.98 to 1.05).
+        ext_grid_id (int): Index in net.ext_grid.
+        
+    Returns:
+        Tuple[pp.pandapowerNet, Dict[str, Any]]: Modified network copy and action metadata.
+    """
+    vm_pu = max(0.95, min(1.05, float(vm_pu)))
+    net_copy = copy.deepcopy(net)
+
+    if not hasattr(net_copy, "ext_grid") or net_copy.ext_grid.empty:
+        raise ValueError("Network contains no external grid elements.")
+
+    target_idx = ext_grid_id if ext_grid_id in net_copy.ext_grid.index else net_copy.ext_grid.index[0]
+    prev_vm = float(net_copy.ext_grid.loc[target_idx, "vm_pu"])
+    net_copy.ext_grid.loc[target_idx, "vm_pu"] = vm_pu
+
+    metadata = {
+        "action_id": f"voltage_setpoint_{vm_pu:.3f}pu",
+        "action_type": "VOLTAGE_SETPOINT",
+        "name": f"Substation Voltage Setpoint ({vm_pu:.3f} p.u.)",
+        "ext_grid_id": int(target_idx),
+        "previous_vm_pu": round(prev_vm, 4),
+        "target_vm_pu": round(vm_pu, 4),
+        "renewable_retained_pct": 100.0,  # Zero renewable curtailment
+        "cost_proxy": 0.5,  # Minimal cost: substation transformer tap / regulator adjust with zero waste
+        "description": f"Adjusted primary substation slack voltage setpoint to {vm_pu:.3f} p.u. (was {prev_vm:.3f} p.u.) to regulate feeder voltage profile.",
+    }
+
+    return net_copy, metadata
+

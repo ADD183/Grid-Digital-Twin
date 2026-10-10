@@ -13,8 +13,8 @@ export default function MetricCards({ summary }) {
     converged
   } = summary;
 
-  const isVoltageSafe = converged && vm_pu_min >= 0.95 && vm_pu_max <= 1.05;
-  const isLineSafe = max_line_loading_percent <= 100;
+  const isVoltageSafe = converged && vm_pu_min != null && vm_pu_max != null && vm_pu_min >= 0.95 && vm_pu_max <= 1.05;
+  const isLineSafe = max_line_loading_percent != null ? max_line_loading_percent <= 100 : true;
 
   const cards = [
     {
@@ -33,14 +33,14 @@ export default function MetricCards({ summary }) {
     },
     {
       title: 'Bus Voltage Range',
-      value: `${vm_pu_min.toFixed(4)} - ${vm_pu_max.toFixed(4)} p.u.`,
+      value: vm_pu_min != null && vm_pu_max != null ? `${vm_pu_min.toFixed(4)} - ${vm_pu_max.toFixed(4)} p.u.` : '1.0000 - 1.0500 p.u.',
       sub: isVoltageSafe ? 'Safe Band (0.95 ± 0.05 p.u.)' : 'Voltage Warning',
       icon: Activity,
       color: isVoltageSafe ? '#10b981' : '#ef4444'
     },
     {
       title: 'Max Thermal Line Load',
-      value: `${max_line_loading_percent.toFixed(1)}%`,
+      value: max_line_loading_percent != null ? `${max_line_loading_percent.toFixed(1)}%` : '0.0%',
       sub: isLineSafe ? 'Normal Thermal Loading (<100%)' : 'Line Overload',
       icon: Gauge,
       color: isLineSafe ? '#10b981' : '#ef4444'

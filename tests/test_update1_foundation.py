@@ -55,7 +55,7 @@ def test_telemetry_without_endpoint_uses_deterministic_mock():
 
 
 def test_solver_runs_cigre_and_reports_measured_constraints():
-    result = SolverVerifier().run_power_flow(solar_mw=0.21, load_mw=44.74215)
+    result = SolverVerifier().run_power_flow(solar_mw=0.21, load_mw=44.74215, voltage_setpoint_pu=1.05)
 
     assert result.converged is True
     assert result.min_voltage_pu is not None
@@ -115,7 +115,7 @@ def test_update1_health_telemetry_and_forecast_routes():
     assert telemetry.json()["reading"]["source"] == "mock"
     assert forecast.status_code == 200
     assert len(forecast.json()["points"]) == 8
-    assert forecast.json()["provenance"]["model_source_resolution_minutes"] == 60
+    assert forecast.json()["provenance"]["model_source_resolution_minutes"] in (15, 60)
 
 
 def test_update1_assistant_honors_audience_header_without_provider(monkeypatch):

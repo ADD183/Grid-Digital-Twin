@@ -91,6 +91,13 @@ export default function ShowcasePanel() {
     };
   });
 
+  const event1 = steps.find((s) => s.forecast_error_injected || s.error_label?.toLowerCase().includes('error') || s.error_label?.toLowerCase().includes('surge')) || steps[2];
+  const event2 = steps.find((s) => (s.soc ?? 0) >= 0.89 || s.error_label?.toLowerCase().includes('saturation')) || steps[4];
+  const event3 = steps.find((s) => s.error_label?.toLowerCase().includes('infeasible') || s.fallback_ladder_used || s.verification_result?.is_safe === false) || steps[6];
+  const event4 = steps.find((s) => s.error_label?.toLowerCase().includes('near-limit') || (s.min_voltage_pu && s.min_voltage_pu <= 0.955)) || steps[7];
+  const event5 = steps.find((s) => s.error_label?.toLowerCase().includes('disagreement') || s.surrogate_disagreement) || steps[8];
+  const event6 = steps.find((s) => (s.soc ?? 1) <= 0.11 || s.error_label?.toLowerCase().includes('depletion')) || steps[11];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '24px' }}>
       {/* Top Banner */}
@@ -129,7 +136,7 @@ export default function ShowcasePanel() {
                   fontWeight: 600,
                 }}
               >
-                12-Step Episode • 6 Labeled Events
+                {steps.length || 12}-Step Episode • 6 Labeled Events
               </span>
             </div>
             <h2
@@ -204,10 +211,10 @@ export default function ShowcasePanel() {
             <span>1. Injected Error</span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            Step 2 (12:00)
+            Step {event1?.step ?? 2} ({10 + (event1?.step ?? 2)}:00)
           </div>
           <div style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '4px' }}>
-            Midday solar surge (+120%)
+            {event1?.error_label || 'Midday solar surge (+120%)'}
           </div>
         </div>
 
@@ -217,10 +224,10 @@ export default function ShowcasePanel() {
             <span>2. Battery Saturation</span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            Step 4 (14:00)
+            Step {event2?.step ?? 4} ({10 + (event2?.step ?? 4)}:00)
           </div>
           <div style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '4px' }}>
-            Reached max SOC limit (0.90)
+            Reached max SOC: {((event2?.soc ?? 0.90) * 100).toFixed(0)}%
           </div>
         </div>
 
@@ -230,10 +237,10 @@ export default function ShowcasePanel() {
             <span>3. Infeasible Period</span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            Step 6 (16:00)
+            Step {event3?.step ?? 6} ({10 + (event3?.step ?? 6)}:00)
           </div>
           <div style={{ fontSize: '0.78rem', color: '#f59e0b', marginTop: '4px' }}>
-            Fallback ladder invoked
+            {event3?.error_label || 'Fallback ladder invoked'}
           </div>
         </div>
 
@@ -243,10 +250,10 @@ export default function ShowcasePanel() {
             <span>4. Near-Limit State</span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            Step 7 (17:00)
+            Step {event4?.step ?? 7} ({10 + (event4?.step ?? 7)}:00)
           </div>
           <div style={{ fontSize: '0.78rem', color: '#38bdf8', marginTop: '4px' }}>
-            V_min = 0.952 pu (within 2%)
+            V_min = {(event4?.min_voltage_pu ?? 0.952).toFixed(3)} pu (near limit)
           </div>
         </div>
 
@@ -256,10 +263,10 @@ export default function ShowcasePanel() {
             <span>5. Surrogate Disagreement</span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            Step 8 (18:00)
+            Step {event5?.step ?? 8} ({10 + (event5?.step ?? 8)}:00)
           </div>
           <div style={{ fontSize: '0.78rem', color: '#ec4899', marginTop: '4px' }}>
-            Safe prediction rejected by solver
+            {event5?.error_label || 'Safe prediction verified by AC solver'}
           </div>
         </div>
 
@@ -269,10 +276,10 @@ export default function ShowcasePanel() {
             <span>6. Battery Depletion</span>
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            Step 11 (21:00)
+            Step {event6?.step ?? 11} ({10 + (event6?.step ?? 11)}:00)
           </div>
           <div style={{ fontSize: '0.78rem', color: '#a855f7', marginTop: '4px' }}>
-            Reached min SOC limit (0.10)
+            Reached min SOC: {((event6?.soc ?? 0.10) * 100).toFixed(0)}%
           </div>
         </div>
       </div>

@@ -35,6 +35,7 @@ export default function ViolationEnginePanel() {
   const [curtailPct, setCurtailPct] = useState(50);
   const [batteryMw, setBatteryMw] = useState(1.5);
   const [switchName, setSwitchName] = useState('S1');
+  const [voltageSetpoint, setVoltageSetpoint] = useState(1.02);
   const [customResult, setCustomResult] = useState(null);
   const [applyingCustom, setApplyingCustom] = useState(false);
 
@@ -119,6 +120,7 @@ export default function ViolationEnginePanel() {
         battery_p_mw: Number(batteryMw),
         battery_bus: 5,
         switch_name: switchName,
+        voltage_setpoint_pu: Number(voltageSetpoint),
       };
       const res = await fetch(`${API_BASE}/api/violations/apply-custom-action`, {
         method: 'POST',
@@ -173,6 +175,8 @@ export default function ViolationEnginePanel() {
   // Action type badge helper
   const getActionBadge = (type) => {
     switch (type) {
+      case 'VOLTAGE_SETPOINT':
+        return { label: 'Voltage Setpoint', bg: 'rgba(52, 211, 153, 0.15)', border: 'rgba(52, 211, 153, 0.35)', color: '#34d399', icon: Sliders };
       case 'FEEDER_RECONFIGURATION':
         return { label: 'Feeder Switching', bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.35)', color: '#38bdf8', icon: GitFork };
       case 'BATTERY_DISPATCH':
@@ -816,7 +820,7 @@ export default function ViolationEnginePanel() {
 
           {/* Action Family Filter Buttons */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {['ALL', 'FEEDER_RECONFIGURATION', 'BATTERY_DISPATCH', 'CURTAILMENT', 'HYBRID'].map((type) => (
+            {['ALL', 'VOLTAGE_SETPOINT', 'FEEDER_RECONFIGURATION', 'BATTERY_DISPATCH', 'CURTAILMENT', 'HYBRID'].map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
@@ -937,6 +941,7 @@ export default function ViolationEnginePanel() {
                 fontSize: '0.85rem'
               }}
             >
+              <option value="VOLTAGE_SETPOINT">Substation Voltage Setpoint (p.u.)</option>
               <option value="FEEDER_RECONFIGURATION">Feeder Reconfiguration (Tie Switch)</option>
               <option value="BATTERY_DISPATCH">Battery Storage Dispatch (MW)</option>
               <option value="CURTAILMENT">Solar Generation Curtailment (%)</option>
@@ -944,6 +949,23 @@ export default function ViolationEnginePanel() {
           </div>
 
           {/* Conditional Parameter Input */}
+          {customType === 'VOLTAGE_SETPOINT' && (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', color: '#cbd5e1', marginBottom: '6px' }}>
+                Slack Bus Voltage Setpoint: <strong>{Number(voltageSetpoint).toFixed(3)} p.u.</strong> (0.980 – 1.050 p.u.)
+              </label>
+              <input
+                type="range"
+                min="0.980"
+                max="1.050"
+                step="0.005"
+                value={voltageSetpoint}
+                onChange={(e) => setVoltageSetpoint(e.target.value)}
+                style={{ width: '100%', accentColor: '#34d399' }}
+              />
+            </div>
+          )}
+
           {customType === 'FEEDER_RECONFIGURATION' && (
             <div>
               <label style={{ display: 'block', fontSize: '0.78rem', color: '#cbd5e1', marginBottom: '6px' }}>Select Tie Switch:</label>

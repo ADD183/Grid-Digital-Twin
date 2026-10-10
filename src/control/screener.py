@@ -219,17 +219,26 @@ class SurrogateScreener(BaseScreener):
         if not candidates:
             return []
 
-        if self.ensemble is None:
-            # Fallback to NullScreener behavior if model not loaded
-            return NullScreener().screen(candidates)
-
-        # Build feature matrix
+        # Build feature matrix & check OOB bounds
         feats_list = []
         oob_flags = []
         for state, action, inputs in candidates:
             f_vec, is_oob = self._build_candidate_features(state, action, inputs)
             feats_list.append(f_vec)
             oob_flags.append(is_oob)
+
+        if self.ensemble is None:
+            # When PyTorch model not loaded, classify OOB inputs as 'unsupported' and in-bounds as 'uncertain'
+            return [
+                ScreenResult(
+                    status="unsupported" if is_oob else "uncertain",
+                    predicted_margin=0.0,
+                    disagreement=0.0,
+                    infer_ms=0.0,
+                    candidate_index=idx,
+                )
+                for idx, is_oob in enumerate(oob_flags)
+            ]
 
         x_raw = np.array(feats_list, dtype=np.float64)
 
