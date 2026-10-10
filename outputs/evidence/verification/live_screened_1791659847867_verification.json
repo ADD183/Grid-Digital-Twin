@@ -1,0 +1,111 @@
+{
+  "run_id": "live_screened_1791659847867",
+  "total_steps": 8,
+  "all_solver_verified": true,
+  "verification_steps": [
+    {
+      "step": 0,
+      "action": {
+        "battery_mw": 0.5,
+        "curtail_pct": 0.0,
+        "switch_toggle": 4
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.006265956908685144,
+      "violations": [],
+      "solve_ms": 167.20020002685487
+    },
+    {
+      "step": 1,
+      "action": {
+        "battery_mw": -0.5,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.0002226593279937017,
+      "violations": [],
+      "solve_ms": 136.01229997584596
+    },
+    {
+      "step": 2,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 100.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.014000000000000012,
+      "violations": [],
+      "solve_ms": 74.17490001535043
+    },
+    {
+      "step": 3,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.006404097351710325,
+      "violations": [],
+      "solve_ms": 78.20609997725114
+    },
+    {
+      "step": 4,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.014000000000000012,
+      "violations": [],
+      "solve_ms": 67.03400000697002
+    },
+    {
+      "step": 5,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.014000000000000012,
+      "violations": [],
+      "solve_ms": 97.73270000005141
+    },
+    {
+      "step": 6,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.003922752803980689,
+      "violations": [],
+      "solve_ms": 105.52019998431206
+    },
+    {
+      "step": 7,
+      "action": {
+        "battery_mw": 0.5,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.0036908643412735254,
+      "violations": [],
+      "solve_ms": 65.68759999936447
+    }
+  ]
+}

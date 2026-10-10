@@ -18,7 +18,7 @@ from src.control.state import (
     is_action_admissible,
 )
 from src.control.verifier import Verifier, VerificationResult
-from src.control.screener import BaseScreener, NullScreener
+from src.control.screener import BaseScreener, NullScreener, DisagreementEvent
 
 
 @dataclass
@@ -33,6 +33,11 @@ class PlanResult:
     fallback_used: Optional[str] = None
     candidates_evaluated: int = 0
     all_step0_candidates: List[Dict[str, Any]] = field(default_factory=list)
+    screener_safe_count: int = 0
+    screener_unsafe_dropped_count: int = 0
+    screener_uncertain_count: int = 0
+    screener_unsupported_count: int = 0
+    disagreement_events: List[DisagreementEvent] = field(default_factory=list)
 
 
 class BeamSearchPlanner:
@@ -211,6 +216,12 @@ class BeamSearchPlanner:
         step0_records: List[Dict[str, Any]] = []
         solve_cache: Dict[Tuple[int, float, float, Any, Any], VerificationResult] = {}
 
+        screener_safe_count = 0
+        screener_unsafe_dropped_count = 0
+        screener_uncertain_count = 0
+        screener_unsupported_count = 0
+        disagreement_events: List[DisagreementEvent] = []
+
         for step_idx in range(horizon_len):
             step_forecast = forecast_horizon[step_idx]
             solar_scale = float(step_forecast.get("solar_scale", step_forecast.get("solar_pu", 1.0)))
@@ -220,11 +231,23 @@ class BeamSearchPlanner:
                 candidates_k = self.generate_candidate_actions(state_k, rem_switches, is_lookahead=(step_idx > 0))
                 candidates_evaluated += len(candidates_k)
 
-                # Batch screening (NullScreener in CP5 returns 'uncertain' for all)
+                # Batch screening (NullScreener returns 'uncertain' for all; SurrogateScreener filters states)
                 batch_for_screener = [(state_k, act, step_forecast) for act in candidates_k]
                 screen_results = self.screener.screen(batch_for_screener)
 
                 for act, s_res in zip(candidates_k, screen_results):
+                    # Count screener statuses
+                    if s_res.status == "unsafe":
+                        screener_unsafe_dropped_count += 1
+                        # Drop unsafe candidate without calling physical solver
+                        continue
+                    elif s_res.status == "safe":
+                        screener_safe_count += 1
+                    elif s_res.status == "unsupported":
+                        screener_unsupported_count += 1
+                    else:
+                        screener_uncertain_count += 1
+
                     # Cache key for instantaneous grid electrical state
                     cache_key = (
                         step_idx,
@@ -239,6 +262,19 @@ class BeamSearchPlanner:
                         verif = self.verifier.verify(state_k, act, step_forecast)
                         solver_calls += 1
                         solve_cache[cache_key] = verif
+
+                    # Log disagreement event if surrogate predicted 'safe' but solver rejected candidate
+                    if s_res.status == "safe" and not verif.is_safe:
+                        disagreement_events.append(
+                            DisagreementEvent(
+                                step=step_idx,
+                                action=act,
+                                predicted_margin=s_res.predicted_margin,
+                                solver_margin=verif.min_margin,
+                                solver_is_safe=verif.is_safe,
+                                solver_violations=verif.violations,
+                            )
+                        )
 
                     step_score = self.score_step_action(act, verif, solar_scale)
                     total_score = cum_score + step_score
@@ -270,6 +306,7 @@ class BeamSearchPlanner:
                             "min_margin": verif.min_margin,
                             "violations_count": len(verif.violations),
                             "score": step_score,
+                            "screener_status": s_res.status,
                         })
 
                     new_beam.append(
@@ -306,6 +343,11 @@ class BeamSearchPlanner:
                 fallback_used=fallback_used,
                 candidates_evaluated=candidates_evaluated,
                 all_step0_candidates=step0_records,
+                screener_safe_count=screener_safe_count,
+                screener_unsafe_dropped_count=screener_unsafe_dropped_count,
+                screener_uncertain_count=screener_uncertain_count,
+                screener_unsupported_count=screener_unsupported_count,
+                disagreement_events=disagreement_events,
             )
 
         return PlanResult(
@@ -318,4 +360,9 @@ class BeamSearchPlanner:
             fallback_used=None,
             candidates_evaluated=candidates_evaluated,
             all_step0_candidates=step0_records,
+            screener_safe_count=screener_safe_count,
+            screener_unsafe_dropped_count=screener_unsafe_dropped_count,
+            screener_uncertain_count=screener_uncertain_count,
+            screener_unsupported_count=screener_unsupported_count,
+            disagreement_events=disagreement_events,
         )

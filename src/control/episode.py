@@ -45,11 +45,30 @@ class StepRecord:
     action_changed_by_replan: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
+        bus_vms = list(self.verification_result.bus_vm.values()) if self.verification_result.bus_vm else [1.0]
+        loadings = list(self.verification_result.line_loading.values()) if self.verification_result.line_loading else [0.0]
+
+        # Action description string
+        act = self.chosen_action
+        parts = []
+        if abs(act.battery_mw) > 0.001:
+            mode = "Discharge" if act.battery_mw > 0 else "Charge"
+            parts.append(f"Battery {act.battery_mw:+.2f} MW ({mode})")
+        if act.curtail_pct > 0.1:
+            parts.append(f"Curtail {act.curtail_pct:.1f}%")
+        if act.switch_toggle is not None:
+            parts.append(f"Toggle Switch {act.switch_toggle}")
+        desc = " + ".join(parts) if parts else "Optimal Base Dispatch"
+
         return {
             "step": int(self.step),
             "state_before": self.state_before.to_dict(),
             "state_after": self.state_after.to_dict(),
             "chosen_action": self.chosen_action.to_dict(),
+            "action_description": desc,
+            "min_voltage_pu": round(float(min(bus_vms)), 4),
+            "max_voltage_pu": round(float(max(bus_vms)), 4),
+            "max_loading_pct": round(float(max(loadings)), 2),
             "forecast": self.forecast,
             "observed": self.observed,
             "forecast_error_injected": bool(self.forecast_error_injected),

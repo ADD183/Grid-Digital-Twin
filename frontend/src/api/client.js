@@ -40,6 +40,11 @@ export const controlApi = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
+  getAbBenchmark: () => request('/api/control/ab-test'),
+  runScreenedEpisode: (payload = {}) => request('/api/control/episode/run-screened', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
 };
 
 export const surrogateApi = {

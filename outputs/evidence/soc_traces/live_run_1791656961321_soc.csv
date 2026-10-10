@@ -1,0 +1,9 @@
+step,hour,soc,soc_percent,battery_mw,curtail_pct,replan_flag,infeasible_flag,fallback_used,min_margin
+0,10,0.23684,23.68,0.5,0.0,False,False,none,0.00627
+1,11,0.47434,47.43,-0.5,0.0,False,False,none,0.00022
+2,12,0.47434,47.43,0.0,100.0,True,False,maximum_curtailment,0.014
+3,13,0.47434,47.43,0.0,0.0,False,False,none,0.0064
+4,14,0.47434,47.43,0.0,0.0,False,False,none,0.014
+5,15,0.47434,47.43,0.0,0.0,False,False,none,0.014
+6,16,0.47434,47.43,0.0,0.0,False,False,none,0.00392
+7,17,0.21118,21.12,0.5,0.0,False,False,none,0.00369

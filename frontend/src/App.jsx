@@ -76,7 +76,7 @@ export default function App() {
 
   const showGrid = activeTab === 'all' || activeTab === 'grid';
   const tabs = [
-    ['surrogate', '⚡ Power-Flow Surrogate (Checkpoint 6)', '#c084fc'],
+    ['surrogate', '⚡ Power-Flow Surrogate & Screening (CP6 & CP7)', '#c084fc'],
     ['time_plan', '⏱️ Time Plan (Checkpoint 5)', '#10b981'],
     ['mpc', '⚙️ Predictive MPC (Update1)', '#34d399'],
     ['engine', '🛡️ Action Engine (Checkpoint 3)', '#f87171'],
@@ -132,7 +132,7 @@ export default function App() {
 
         <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
           <div>⚡ <strong>VoltPredict</strong> — React.js SPA & FastAPI Backend</div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1–6: Physics Grid • Forecaster • Corrective Engine • Scenarios • Multi-Step Control • Power-Flow Surrogate.</div>
+          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1–7: Physics Grid • Forecaster • Corrective Engine • Scenarios • Multi-Step Control • Power-Flow Surrogate • Surrogate-Screened Planning.</div>
         </footer>
       </div>
 

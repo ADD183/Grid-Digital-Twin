@@ -565,9 +565,22 @@ async def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
     infeasible_steps = [request.force_infeasible_step] if request.force_infeasible else []
 
     def _execute():
+        from src.control.screener import NullScreener
+        from src.control.planner import BeamSearchPlanner
+        from src.control.state import load_limits_config
+
+        verifier, _ = get_global_verifier_and_screener()
+        lims = load_limits_config()
+        screener = NullScreener()
+        planner = BeamSearchPlanner(verifier=verifier, screener=screener, limits=lims)
+
         log = run_episode(
             episode_steps=8,
             initial_soc=request.initial_soc,
+            limits=lims,
+            verifier=verifier,
+            planner=planner,
+            screener=screener,
             injected_errors=errors,
             force_infeasible_steps=infeasible_steps,
             run_id=request.run_id,
@@ -629,6 +642,100 @@ def get_surrogate_evaluation_report() -> Dict[str, Any]:
 
     with open(eval_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+# -------------------------------------------------------------------------
+# Checkpoint 7: Surrogate-Screened Planning & A/B Benchmark Endpoints
+# -------------------------------------------------------------------------
+_GLOBAL_VERIFIER = None
+_GLOBAL_SCREENER = None
+
+def get_global_verifier_and_screener():
+    global _GLOBAL_VERIFIER, _GLOBAL_SCREENER
+    if _GLOBAL_VERIFIER is None:
+        from src.control.state import load_limits_config
+        from src.control.verifier import Verifier
+        from src.control.screener import SurrogateScreener
+        lims = load_limits_config()
+        _GLOBAL_VERIFIER = Verifier(lims)
+        try:
+            _GLOBAL_SCREENER = SurrogateScreener(lims)
+        except Exception:
+            _GLOBAL_SCREENER = None
+    return _GLOBAL_VERIFIER, _GLOBAL_SCREENER
+
+
+@app.get("/api/control/ab-test")
+def get_ab_screening_benchmark() -> Dict[str, Any]:
+    """Run/return A/B screening benchmark comparing NullScreener vs SurrogateScreener."""
+    import json
+    from pathlib import Path
+    from src.control.ab_testing import run_ab_screening_benchmark
+
+    p = Path("outputs/evidence/ab_screening_comparison.json")
+    if p.is_file():
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    return run_ab_screening_benchmark()
+
+
+@app.post("/api/control/episode/run-screened")
+async def run_surrogate_screened_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
+    """Execute rolling-horizon episode with SurrogateScreener filtering and solver verification."""
+    import asyncio
+    from src.control.episode import run_episode
+    from src.control.screener import SurrogateScreener
+    from src.control.planner import BeamSearchPlanner
+    from src.control.state import load_limits_config
+
+    errors = {}
+    if request.inject_error:
+        errors[request.inject_error_step] = {
+            "solar_mult": 2.0,
+            "load_mult": 0.85,
+            "label": "Injected midday solar surge",
+        }
+
+    infeasible_steps = [request.force_infeasible_step] if request.force_infeasible else []
+
+    def _execute():
+        verifier, screener = get_global_verifier_and_screener()
+        lims = load_limits_config()
+        if screener is None:
+            screener = SurrogateScreener(lims)
+        planner = BeamSearchPlanner(verifier=verifier, screener=screener, limits=lims)
+
+        log = run_episode(
+            episode_steps=8,
+            initial_soc=request.initial_soc,
+            limits=lims,
+            verifier=verifier,
+            planner=planner,
+            screener=screener,
+            injected_errors=errors,
+            force_infeasible_steps=infeasible_steps,
+            run_id=request.run_id,
+        )
+        log.export_evidence()
+        res = log.to_dict()
+
+        # Attach disagreement events log if present
+        disagreements = []
+        for s in log.steps:
+            if s.error_label and "disagreement" in s.error_label.lower():
+                disagreements.append({"step": s.step, "label": s.error_label})
+
+        res["disagreement_events"] = disagreements
+        return res
+
+    try:
+        return await asyncio.to_thread(_execute)
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Screened episode execution failed: {err}")
 
 
 if __name__ == "__main__":
