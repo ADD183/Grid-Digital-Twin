@@ -11,8 +11,9 @@ Triggers and labels all six required events:
 """
 
 import json
+import random
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Callable, List, Optional
 import copy
 
 from src.control.state import State, Action, LimitsConfig, load_limits_config, update_soc, update_switch_state
@@ -25,6 +26,8 @@ from src.control.episode import StepRecord, EpisodeLog, build_default_forecast_p
 def run_showcase_episode(
     limits: Optional[LimitsConfig] = None,
     run_id: str = "cp8_showcase_12step",
+    scenario_seed: Optional[int] = None,
+    progress_callback: Optional[Callable[[int, int], None]] = None,
 ) -> EpisodeLog:
     """
     Execute the deterministic 12-step Checkpoint 8 showcase episode.
@@ -58,10 +61,20 @@ def run_showcase_episode(
             profile[i]["solar_scale"] = 0.0
             profile[i]["load_scale"] = 2.10
 
+    if scenario_seed is not None:
+        variation = random.Random(scenario_seed)
+        lims.seed = scenario_seed
+        initial_soc = round(variation.uniform(0.40, 0.60), 3)
+        for step_inputs in profile[:steps_count]:
+            step_inputs["solar_scale"] = round(step_inputs["solar_scale"] * variation.uniform(0.96, 1.04), 3)
+            step_inputs["load_scale"] = round(step_inputs["load_scale"] * variation.uniform(0.96, 1.04), 3)
+    else:
+        initial_soc = 0.50
+
     initial_switches = ((1, False), (2, False), (4, False))
     current_state = State(
         t=0,
-        soc=0.50, # Initial 50% SOC
+        soc=initial_soc,
         switch_state=initial_switches,
         curtail_level=0.0,
     )
@@ -199,6 +212,8 @@ def run_showcase_episode(
         )
         step_records.append(record)
         current_state = state_after
+        if progress_callback is not None:
+            progress_callback(t + 1, steps_count)
 
     episode_log = EpisodeLog(
         steps=step_records,

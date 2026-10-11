@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Network, Zap } from 'lucide-react';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function NetworkTopologyCanvas({ topology }) {
   const [selectedBus, setSelectedBus] = useState(null);
@@ -109,14 +110,14 @@ export default function NetworkTopologyCanvas({ topology }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '1.02rem' }}>
           <Network size={20} />
-          <span>CIGRE MV Distribution Grid Topology Map</span>
+          <span>Grid map</span>
         </div>
 
         {/* Legend */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--ok)', display: 'inline-block' }} />
-            <span>Safe (0.95–1.05 p.u.)</span>
+            <span>Normal</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--warn)', display: 'inline-block' }} />
@@ -124,11 +125,12 @@ export default function NetworkTopologyCanvas({ topology }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--danger)', display: 'inline-block' }} />
-            <span>Violation</span>
+            <span>Needs attention</span>
           </div>
         </div>
       </div>
 
+      <ChartDisclosure title="Open the network map" summary="Select a bus to inspect its current reading and connected lines.">
       {/* Main Canvas + Telemetry Sidebar Layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(240px, 280px)', gap: '16px' }}>
         
@@ -261,21 +263,21 @@ export default function NetworkTopologyCanvas({ topology }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
             <Zap size={16} color="var(--accent)" />
             <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>
-              Bus Telemetry Inspector
+              Selected location
             </span>
           </div>
 
           {activeBus ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Target Node</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Location</span>
                 <div style={{ fontSize: '1.02rem', fontWeight: 600, color: 'var(--text)' }}>
                   {activeBus.name} (Bus {activeBus.id})
                 </div>
               </div>
 
               <div style={{ padding: '10px', borderRadius: 'var(--r-sm)', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Voltage Level</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Voltage</span>
                 <div style={{ fontSize: '1.25rem', fontWeight: 600, color: getNodeColor(activeBus.vm_pu), fontFamily: 'var(--font-mono)' }}>
                   {activeBus.vm_pu.toFixed(4)} p.u.
                 </div>
@@ -303,12 +305,13 @@ export default function NetworkTopologyCanvas({ topology }) {
               </div>
             </div>
           ) : (
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Hover or click a node to view real-time AC power flow results.</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Open the map and select a location to view current readings.</div>
           )}
 
         </div>
 
       </div>
+      </ChartDisclosure>
     </div>
   );
 }

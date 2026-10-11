@@ -88,40 +88,40 @@ export default function MpcControlPanel() {
 
   return (
     <section aria-label="Eight-step predictive control">
-      
+
       {/* SECTION 1: HEADER & CONTROLS */}
       <div className="vp-card" style={{ marginBottom: '20px' }}>
         <div className="vp-page-header">
           <div>
             <h2 className="vp-page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Cpu size={22} color="var(--accent)" />
-              <span>Predictive Control · 8 × 15 min Horizon</span>
+              <span>Plan actions for the next two hours</span>
             </h2>
             <p className="vp-page-desc">
-              Surrogate screens candidate dispatch; every selected state is verified with pandapower AC power flow.
+              Set a starting battery level, run a plan, and review its expected impact before applying an action.
             </p>
           </div>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '.84rem' }}>
-            Initial SoC (MWh)
-            <input 
-              aria-label="Initial battery state of charge" 
-              type="number" 
-              min="0" 
-              max="4" 
-              step="0.1" 
-              value={initialSoc} 
-              onChange={(event) => setInitialSoc(event.target.value)} 
-              style={{ 
-                width: '80px', 
-                padding: '6px 10px', 
-                borderRadius: 'var(--r-sm)', 
-                backgroundColor: 'var(--surface-raised)', 
-                color: 'var(--text)', 
+            Starting battery charge (MWh)
+            <input
+              aria-label="Initial battery state of charge"
+              type="number"
+              min="0"
+              max="4"
+              step="0.1"
+              value={initialSoc}
+              onChange={(event) => setInitialSoc(event.target.value)}
+              style={{
+                width: '80px',
+                padding: '6px 10px',
+                borderRadius: 'var(--r-sm)',
+                backgroundColor: 'var(--surface-raised)',
+                color: 'var(--text)',
                 border: '1px solid var(--border)',
                 fontFamily: 'var(--font-mono)',
-                outline: 'none' 
-              }} 
+                outline: 'none'
+              }}
             />
           </label>
         </div>
@@ -129,19 +129,19 @@ export default function MpcControlPanel() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '14px' }}>
           <button className="vp-btn vp-btn-primary" onClick={runPlan} disabled={Boolean(working)}>
             <Play size={15} />
-            <span>{working === 'plan' ? 'Planning…' : 'Run 8-step plan'}</span>
+            <span>{working === 'plan' ? 'Planning…' : 'Run plan'}</span>
           </button>
-          
+
           <button className="vp-btn vp-btn-secondary" onClick={trainSurrogate} disabled={Boolean(working)}>
             <Activity size={15} />
-            <span>{working === 'train' ? 'Training…' : 'Train surrogate'}</span>
+            <span>{working === 'train' ? 'Updating…' : 'Update model'}</span>
           </button>
-          
+
           <button className="vp-btn vp-btn-secondary" onClick={exportEvidence} disabled={Boolean(working)}>
             <Download size={15} />
             <span>{working === 'export' ? 'Exporting…' : 'Export evidence'}</span>
           </button>
-          
+
           <button className="vp-btn vp-btn-ghost" onClick={() => refreshStatus().catch((err) => setError(err.message))} disabled={Boolean(working)} title="Refresh telemetry and surrogate status">
             <RefreshCw size={15} />
             <span>Refresh status</span>
@@ -151,14 +151,14 @@ export default function MpcControlPanel() {
 
       {/* SECTION 2: TELEMETRY & MODEL READINESS */}
       <div className="vp-card" style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: 'var(--text)', marginBottom: '12px' }}>Telemetry and Model Readiness</h3>
+        <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: 'var(--text)', marginBottom: '12px' }}>Current readings</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
           <Metric label="Telemetry Source" value={telemetry?.reading?.source || 'Loading'} tone="info" />
           <Metric label="Solar Actual / Forecast" value={telemetry ? `${telemetry.reading.solar_mw.toFixed(2)} / ${telemetry.forecast_solar_mw.toFixed(2)}` : '—'} unit=" MW" tone="info" />
           <Metric label="Forecast Drift" value={telemetry ? `${(telemetry.drift * 100).toFixed(1)}` : '—'} unit="%" tone={telemetry?.drift > 0.15 ? 'warn' : 'ok'} />
           <Metric label="Surrogate Model" value={surrogate?.trained ? 'Trained' : 'Solver-only fallback'} tone={surrogate?.trained ? 'ok' : 'info'} />
         </div>
-        
+
         {telemetry && (
           <div className="vp-alert" data-tone={telemetry.requires_replan ? 'warn' : 'ok'} style={{ marginTop: '12px' }}>
             <span>
@@ -169,7 +169,7 @@ export default function MpcControlPanel() {
             </span>
           </div>
         )}
-        
+
         {surrogate?.metrics && (
           <p style={{ color: 'var(--text-muted)', fontSize: '.78rem', marginTop: '10px' }}>
             Held-out voltage MAE {surrogate.metrics.voltage_mae_pu?.toFixed(4)} p.u. · line-loading MAE {surrogate.metrics.line_loading_mae_percent?.toFixed(2)}% · false-safe rate {surrogate.metrics.false_safe_rate == null ? 'not measurable (no unsafe validation samples)' : `${(surrogate.metrics.false_safe_rate * 100).toFixed(1)}%`}.
@@ -193,13 +193,13 @@ export default function MpcControlPanel() {
           {/* Time-step Selector */}
           <div role="group" aria-label="MPC time-step selector" className="vp-segmented" style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '4px', marginBottom: '16px', overflowX: 'auto' }}>
             {plan.steps.map((item, index) => (
-              <button 
-                key={item.step} 
-                onClick={() => setSelectedStep(index)} 
-                aria-pressed={selectedStep === index} 
+              <button
+                key={item.step}
+                onClick={() => setSelectedStep(index)}
+                aria-pressed={selectedStep === index}
                 className={`vp-segmented-btn ${selectedStep === index ? 'active' : ''}`}
-                style={{ 
-                  fontFamily: 'var(--font-mono)', 
+                style={{
+                  fontFamily: 'var(--font-mono)',
                   fontWeight: 600,
                   fontSize: '0.82rem',
                   padding: '8px 4px',
@@ -266,4 +266,4 @@ export default function MpcControlPanel() {
       )}
     </section>
   );
-}
+}

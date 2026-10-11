@@ -10,6 +10,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function TimeSeriesChart({ data, startDate, endDate }) {
   const [metricMode, setMetricMode] = useState('pu'); // 'pu' or 'raw'
@@ -62,7 +63,7 @@ export default function TimeSeriesChart({ data, startDate, endDate }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '1.02rem' }}>
           <TrendingUp size={20} />
-          <span>Hourly Solar Generation (Open-Meteo API & PVGIS Pune) vs. Customer Load Demand</span>
+          <span>Solar generation and customer demand</span>
         </div>
 
         {/* Toggle Mode Button */}
@@ -72,21 +73,22 @@ export default function TimeSeriesChart({ data, startDate, endDate }) {
             className={`vp-segmented-btn ${metricMode === 'pu' ? 'active' : ''}`}
             aria-selected={metricMode === 'pu'}
           >
-            Per Unit (p.u.)
+            Standardized
           </button>
           <button
             onClick={() => setMetricMode('raw')}
             className={`vp-segmented-btn ${metricMode === 'raw' ? 'active' : ''}`}
             aria-selected={metricMode === 'raw'}
           >
-            Raw (W/m² & kW)
+            Physical units
           </button>
         </div>
       </div>
 
       {/* Chart Canvas */}
+      <ChartDisclosure title="Show generation and demand trends" summary="Compare the two lines across the selected dates.">
       <div style={{ width: '100%', height: 380 }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={sampledData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="solarGrad" x1="0" y1="0" x2="0" y2="1">
@@ -129,6 +131,7 @@ export default function TimeSeriesChart({ data, startDate, endDate }) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+        </ChartDisclosure>
 
     </div>
   );

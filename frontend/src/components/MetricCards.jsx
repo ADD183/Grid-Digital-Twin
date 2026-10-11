@@ -18,30 +18,30 @@ export default function MetricCards({ summary }) {
 
   const cards = [
     {
-      title: 'Active Grid Buses',
-      value: `${bus_count} Buses`,
-      sub: '15 kV Distribution Network',
+      title: 'Network locations',
+      value: `${bus_count} locations`,
+      sub: 'Across the distribution grid',
       icon: Cpu,
       tone: 'info'
     },
     {
-      title: 'Connected DERs',
-      value: `${der_count} DER Units`,
-      sub: 'Rooftop Solar & Distributed Gen',
+      title: 'Local energy sources',
+      value: `${der_count} sources`,
+      sub: 'Solar and distributed generation',
       icon: Sun,
       tone: 'info'
     },
     {
-      title: 'Bus Voltage Range',
+      title: 'Voltage health',
       value: vm_pu_min != null && vm_pu_max != null ? `${vm_pu_min.toFixed(4)} - ${vm_pu_max.toFixed(4)} p.u.` : '1.0000 - 1.0500 p.u.',
-      sub: isVoltageSafe ? 'Safe Band (0.95 ± 0.05 p.u.)' : 'Voltage Warning',
+      sub: isVoltageSafe ? 'Within normal limits' : 'Needs attention',
       icon: Activity,
       tone: isVoltageSafe ? 'ok' : 'danger'
     },
     {
-      title: 'Max Thermal Line Load',
+      title: 'Line use',
       value: max_line_loading_percent != null ? `${max_line_loading_percent.toFixed(1)}%` : '0.0%',
-      sub: isLineSafe ? 'Normal Thermal Loading (<100%)' : 'Line Overload',
+      sub: isLineSafe ? 'Within normal limits' : 'Needs attention',
       icon: Gauge,
       tone: isLineSafe ? 'ok' : 'danger'
     }

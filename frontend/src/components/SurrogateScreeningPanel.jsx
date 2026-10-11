@@ -26,6 +26,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { controlApi } from '../api/client';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function SurrogateScreeningPanel() {
   const [abData, setAbData] = useState(null);
@@ -181,11 +182,10 @@ export default function SurrogateScreeningPanel() {
                 gap: '10px',
               }}
             >
-              🛡️ Surrogate-Screened Planning & Physical Solver A/B Benchmarks
+              Planning comparison
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0, maxWidth: '820px' }}>
-              SurrogateScreener pre-filters candidate state actions: unsafe candidates are dropped early without physical solver calls.
-              Every selected action is 100% verified by pandapower AC power flow. Disagreement events and unsupported range fallbacks are logged.
+              Compare how different planning approaches handle a grid situation and review their results.
             </p>
           </div>
 
@@ -340,6 +340,7 @@ export default function SurrogateScreeningPanel() {
             </div>
           </div>
 
+          <ChartDisclosure title="Show candidate decisions" summary="See how options were handled at each timepoint.">
           <div style={{ width: '100%', height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stepBreakdownData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
@@ -355,6 +356,7 @@ export default function SurrogateScreeningPanel() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          </ChartDisclosure>
         </div>
 
         {/* A/B Comparison Side-by-Side Table */}

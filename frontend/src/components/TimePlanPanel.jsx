@@ -28,6 +28,7 @@ import {
   Cpu,
 } from 'lucide-react';
 import { controlApi } from '../api/client';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 function CustomChartTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
@@ -68,10 +69,8 @@ export default function TimePlanPanel() {
     async function init() {
       try {
         setLoading(true);
-        const [limitsData, showcaseData] = await Promise.all([
-          controlApi.getLimits(),
-          controlApi.getShowcaseEpisode(),
-        ]);
+        const limitsData = await controlApi.getLimits();
+        const showcaseData = await controlApi.getShowcaseEpisode();
         if (isMounted) {
           setLimits(limitsData);
           setEpisode(showcaseData);
@@ -172,20 +171,13 @@ export default function TimePlanPanel() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
           <div>
             <div className="vp-flex vp-gap-2 vp-mb-2">
-              <span className="vp-badge vp-badge-accent">
-                Checkpoint 5 Multi-Step Control
-              </span>
-              <span className="vp-badge vp-badge-info">
-                AC Newton-Raphson Verified
-              </span>
+              <span className="vp-badge vp-badge-accent">Planning</span>
             </div>
             <h2 className="vp-page-title vp-flex vp-items-center vp-gap-2">
-              <span>⏱️ Rolling-Horizon Time Plan & Physical Solver Verification</span>
+              <span>Plan battery and grid actions</span>
             </h2>
             <p className="vp-page-description" style={{ maxWidth: '820px' }}>
-              Autonomous 8-step rolling-horizon beam-search controller over CIGRE MV grid. Enforces battery SOC
-              admissibility, handles forecast drifts with online replanning, and executes the 4-step Fallback Ladder
-              with AC power flow verification at every step.
+              Review an eight-period plan, adjust the starting battery charge, or test how the plan responds to changing conditions.
             </p>
           </div>
 
@@ -202,7 +194,7 @@ export default function TimePlanPanel() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', fontWeight: 'var(--font-semibold)' }}>Initial SoC:</span>
+              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', fontWeight: 'var(--font-semibold)' }}>Starting battery charge:</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                 <input
                   type="range"
@@ -227,7 +219,7 @@ export default function TimePlanPanel() {
                   onChange={(e) => setInjectError(e.target.checked)}
                   style={{ cursor: 'pointer', accentColor: 'var(--c-soc)' }}
                 />
-                <span>Inject Forecast Error at T2</span>
+                <span>Test a sudden forecast change at T2</span>
               </label>
               <label style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
                 <input
@@ -236,7 +228,7 @@ export default function TimePlanPanel() {
                   onChange={(e) => setForceInfeasible(e.target.checked)}
                   style={{ cursor: 'pointer', accentColor: 'var(--color-danger)' }}
                 />
-                <span title="Inject severe contingency to test fallback ladder">Stress Test (Infeasible)</span>
+                <span title="Test a high-demand situation">Test high demand</span>
               </label>
             </div>
 
@@ -248,12 +240,12 @@ export default function TimePlanPanel() {
                 style={{ flex: 1 }}
               >
                 {loading ? <RefreshCw size={15} className="spin" /> : <Play size={15} />}
-                <span>{loading ? 'Running...' : 'Run Live 8-Step Episode'}</span>
+                <span>{loading ? 'Running...' : 'Run plan'}</span>
               </button>
               <button
                 onClick={handleReloadShowcase}
                 disabled={loading}
-                title="Reset to showcase benchmark"
+                title="Reset to saved plan"
                 className="vp-btn vp-btn-secondary"
               >
                 <RefreshCw size={14} />
@@ -273,13 +265,13 @@ export default function TimePlanPanel() {
       {/* Metric Cards Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
         <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-info)' }}>
-          <div className="vp-kpi-label">Horizon Steps</div>
+          <div className="vp-kpi-label">Periods in plan</div>
           <div className="vp-kpi-value">
             {episode?.total_steps || 8} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>steps (1h dt)</span>
           </div>
           <div className="vp-kpi-subtext vp-flex vp-items-center vp-gap-1" style={{ color: 'var(--color-info)' }}>
             <Clock size={12} />
-            <span>Deterministic lookahead</span>
+            <span>Time covered by this plan</span>
           </div>
         </div>
 
@@ -295,7 +287,7 @@ export default function TimePlanPanel() {
         </div>
 
         <div className="vp-kpi-tile" style={{ borderLeft: `4px solid ${replanSteps.length > 0 ? '#ec4899' : 'var(--color-border)'}` }}>
-          <div className="vp-kpi-label">Replans Triggered</div>
+          <div className="vp-kpi-label">Plan updates</div>
           <div className="vp-kpi-value">
             {replanSteps.length}{' '}
             <span style={{ fontSize: 'var(--font-xs)', color: replanSteps.length > 0 ? '#ec4899' : 'var(--color-fg-muted)' }}>
@@ -303,12 +295,12 @@ export default function TimePlanPanel() {
             </span>
           </div>
           <div className="vp-kpi-subtext" style={{ color: replanSteps.length > 0 ? '#ec4899' : 'var(--color-fg-muted)' }}>
-            {replanSteps.length > 0 ? '⚡ Dynamic plan adjustment' : 'Nominal plan executed'}
+              {replanSteps.length > 0 ? 'Plan adjusted to new conditions' : 'Original plan followed'}
           </div>
         </div>
 
         <div className="vp-kpi-tile" style={{ borderLeft: `4px solid ${infeasibleSteps.length > 0 ? 'var(--color-danger)' : 'var(--color-success)'}` }}>
-          <div className="vp-kpi-label">Infeasible Periods</div>
+          <div className="vp-kpi-label">High-stress periods</div>
           <div className="vp-kpi-value">
             {infeasibleSteps.length}{' '}
             <span style={{ fontSize: 'var(--font-xs)', color: infeasibleSteps.length > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
@@ -321,7 +313,7 @@ export default function TimePlanPanel() {
         </div>
 
         <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #a855f7' }}>
-          <div className="vp-kpi-label">Final Battery SOC</div>
+          <div className="vp-kpi-label">Battery charge at the end</div>
           <div className="vp-kpi-value">
             {(finalSoc * 100).toFixed(1)}%{' '}
             <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
@@ -388,20 +380,21 @@ export default function TimePlanPanel() {
           <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
             <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-soc)' }}>
               <BatteryCharging size={18} />
-              <span>1. Battery State of Charge (SOC) Trajectory & Operating Envelope</span>
+              <span>Battery charge over time</span>
             </div>
             <div className="vp-flex vp-gap-3" style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
               <span className="vp-flex vp-items-center vp-gap-1">
                 <span style={{ width: '10px', height: '2px', backgroundColor: 'var(--color-danger)', borderTop: '2px dashed var(--color-danger)' }} />
-                <span>SOC Max ({socMaxPct}%)</span>
+                <span>Upper charge limit ({socMaxPct}%)</span>
               </span>
               <span className="vp-flex vp-items-center vp-gap-1">
                 <span style={{ width: '10px', height: '2px', backgroundColor: 'var(--color-warning)', borderTop: '2px dashed var(--color-warning)' }} />
-                <span>SOC Min ({socMinPct}%)</span>
+                <span>Reserve limit ({socMinPct}%)</span>
               </span>
             </div>
           </div>
 
+          <ChartDisclosure title="Show battery level" summary="See how much stored energy remains during the plan.">
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
@@ -441,6 +434,7 @@ export default function TimePlanPanel() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+          </ChartDisclosure>
         </div>
 
         {/* 2. Action Dispatch Timeline */}
@@ -448,7 +442,7 @@ export default function TimePlanPanel() {
           <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
             <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-battery)' }}>
               <Zap size={18} />
-              <span>2. Action Dispatch Timeline: Battery Active Power & Solar Curtailment</span>
+              <span>Planned battery and solar actions</span>
             </div>
             <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
               <span style={{ color: 'var(--c-battery)' }}>Positive: Discharge (+MW)</span> •{' '}
@@ -457,6 +451,7 @@ export default function TimePlanPanel() {
             </div>
           </div>
 
+          <ChartDisclosure title="Show planned actions" summary="Review battery output and solar adjustments over time.">
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
@@ -501,6 +496,7 @@ export default function TimePlanPanel() {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+          </ChartDisclosure>
         </div>
 
         {/* 3. Forecast vs Observed Conditions & Replan Markers */}
@@ -508,13 +504,14 @@ export default function TimePlanPanel() {
           <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
             <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-solar)' }}>
               <TrendingUp size={18} />
-              <span>3. Forecast vs Observed Operating Scales & Replan Markers</span>
+              <span>Expected and observed conditions</span>
             </div>
             <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
-              Dashed lines: Forecast • Solid lines: Actual Observed • Pink vertical lines: Replan triggers
+              Compare expected with observed conditions; markers show when the plan changed.
             </div>
           </div>
 
+          <ChartDisclosure title="Show forecast and observed conditions" summary="Compare expected conditions with what the system observed.">
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
@@ -580,6 +577,7 @@ export default function TimePlanPanel() {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          </ChartDisclosure>
         </div>
       </div>
 
@@ -588,7 +586,7 @@ export default function TimePlanPanel() {
         <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-3">
           <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-battery)' }}>
             <Cpu size={18} />
-            <span>4. Step-by-Step AC Power Flow Solver Verification Inspector</span>
+            <span>Details for each period</span>
           </div>
 
           {/* Step Selector Segmented Controls */}
@@ -645,7 +643,7 @@ export default function TimePlanPanel() {
               }}
             >
               <div className="vp-kpi-tile">
-                <div className="vp-kpi-label">AC Newton-Raphson Solver</div>
+                <div className="vp-kpi-label">Grid check</div>
                 <div
                   className="vp-kpi-value"
                   style={{

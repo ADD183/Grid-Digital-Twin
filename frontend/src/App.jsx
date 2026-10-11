@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DateRangePicker from './components/DateRangePicker';
 import MetricCards from './components/MetricCards';
 import NetworkTopologyCanvas from './components/NetworkTopologyCanvas';
@@ -12,6 +12,7 @@ import SurrogatePanel from './components/SurrogatePanel';
 import ShowcasePanel from './components/ShowcasePanel';
 import ChatWidget from './components/ChatWidget';
 import AppShell from './components/layout/AppShell';
+import DashboardOverview from './components/layout/DashboardOverview';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { API_BASE } from './config';
@@ -26,25 +27,47 @@ export default function App() {
   const [endDate, setEndDate] = useState('2023-01-31');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const gridDataRequested = useRef(false);
+  const activeTabRef = useRef(activeTab);
+  const gridSnapshotLoaded = useRef(false);
+  const gridSnapshotLoading = useRef(false);
+
+  const fetchGridSnapshot = async () => {
+    if (gridSnapshotLoaded.current || gridSnapshotLoading.current) return;
+    gridSnapshotLoading.current = true;
+    try {
+      const [summaryResponse, topologyResponse] = await Promise.all([
+        fetch(`${API_BASE}/api/grid/summary`),
+        fetch(`${API_BASE}/api/grid/topology`),
+      ]);
+      if (summaryResponse.ok) setSummary(await summaryResponse.json());
+      if (topologyResponse.ok) setTopology(await topologyResponse.json());
+      gridSnapshotLoaded.current = summaryResponse.ok && topologyResponse.ok;
+    } catch (err) {
+      console.error('Grid snapshot error:', err);
+    } finally {
+      gridSnapshotLoading.current = false;
+    }
+  };
 
   useEffect(() => {
     let interval;
+    let isFetching = false;
     const fetchGridInfo = async () => {
+      if (isFetching) return;
+      isFetching = true;
       try {
         const healthResponse = await fetch(`${API_BASE}/api/health`);
         const online = healthResponse.ok;
         setApiOnline(online);
-        if (online) {
-          const [summaryResponse, topologyResponse] = await Promise.all([
-            fetch(`${API_BASE}/api/grid/summary`),
-            fetch(`${API_BASE}/api/grid/topology`),
-          ]);
-          if (summaryResponse.ok) setSummary(await summaryResponse.json());
-          if (topologyResponse.ok) setTopology(await topologyResponse.json());
+        if (online && (activeTabRef.current === 'grid' || activeTabRef.current === 'all')) {
+          await fetchGridSnapshot();
         }
       } catch (err) {
         console.error('API Error:', err);
         setApiOnline(false);
+      } finally {
+        isFetching = false;
       }
     };
 
@@ -73,17 +96,28 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    fetchTimeSeries(startDate, endDate);
-  }, []);
+  const showGrid = activeTab === 'grid';
 
-  const showGrid = activeTab === 'all' || activeTab === 'grid';
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  const handleSelectTab = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'grid' || tab === 'all') {
+      fetchGridSnapshot();
+    }
+    if (tab === 'grid' && !gridDataRequested.current) {
+      gridDataRequested.current = true;
+      fetchTimeSeries(startDate, endDate);
+    }
+  };
 
   return (
     <ThemeProvider>
       <AppShell
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={handleSelectTab}
         apiOnline={apiOnline}
       >
         {showGrid && (
@@ -114,15 +148,22 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'all' && (
+          <DashboardOverview
+            summary={summary}
+            apiOnline={apiOnline}
+            onNavigate={handleSelectTab}
+          />
+        )}
         {showGrid && <MetricCards summary={summary} />}
-        {(activeTab === 'all' || activeTab === 'showcase') && <ShowcasePanel />}
-        {(activeTab === 'all' || activeTab === 'surrogate') && <SurrogatePanel />}
-        {(activeTab === 'all' || activeTab === 'time_plan') && <TimePlanPanel />}
-        {(activeTab === 'all' || activeTab === 'engine') && <ViolationEnginePanel />}
+        {activeTab === 'showcase' && <ShowcasePanel />}
+        {activeTab === 'surrogate' && <SurrogatePanel />}
+        {activeTab === 'time_plan' && <TimePlanPanel />}
+        {activeTab === 'engine' && <ViolationEnginePanel />}
         {activeTab === 'mpc' && <MpcControlPanel />}
         {showGrid && <NetworkTopologyCanvas topology={topology} />}
         {showGrid && <TimeSeriesChart data={solarLoadData} startDate={startDate} endDate={endDate} />}
-        {(activeTab === 'all' || activeTab === 'forecast') && <ForecastPanel />}
+        {activeTab === 'forecast' && <ForecastPanel />}
         {showGrid && <TelemetryTables topology={topology} />}
       </AppShell>
 

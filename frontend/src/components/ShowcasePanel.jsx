@@ -12,7 +12,6 @@ import {
   ReferenceLine,
 } from 'recharts';
 import {
-  Trophy,
   CheckCircle2,
   AlertTriangle,
   Zap,
@@ -24,8 +23,10 @@ import {
   RefreshCw,
   FolderCheck,
   Layers,
+  Download,
 } from 'lucide-react';
 import { API_BASE } from '../config';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function ShowcasePanel() {
   const [episodeData, setEpisodeData] = useState(null);
@@ -33,20 +34,38 @@ export default function ShowcasePanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [executedAt, setExecutedAt] = useState(null);
+  const [runProgress, setRunProgress] = useState(null);
 
   const loadShowcaseData = async (force = false) => {
     try {
       setLoading(true);
       setError(null);
-      const epPromise = force
-        ? fetch(`${API_BASE}/api/control/episode/showcase12?force=true`, { method: 'POST' }).then((r) => r.json())
-        : fetch(`${API_BASE}/api/control/episode/showcase12`).then((r) => r.json());
+      let epRes;
+      if (force) {
+        setRunProgress(0);
+        const startResponse = await fetch(`${API_BASE}/api/control/episode/showcase12?force=true`, { method: 'POST' });
+        if (!startResponse.ok) throw new Error(`Showcase run failed (${startResponse.status})`);
+        let job = await startResponse.json();
 
-      const [epRes, evRes] = await Promise.all([
-        epPromise,
-        fetch(`${API_BASE}/api/evidence/index`).then((r) => r.json()),
-      ]);
+        while (job.status === 'running') {
+          setRunProgress(job.completed_steps || 0);
+          await new Promise((resolve) => window.setTimeout(resolve, 750));
+          const statusResponse = await fetch(`${API_BASE}/api/control/episode/showcase12/status/${job.job_id}`);
+          if (!statusResponse.ok) throw new Error(`Showcase status failed (${statusResponse.status})`);
+          job = await statusResponse.json();
+        }
 
+        if (job.status !== 'completed') throw new Error(job.error || 'Showcase run did not complete');
+        epRes = job.episode;
+      } else {
+        const episodeResponse = await fetch(`${API_BASE}/api/control/episode/showcase12`);
+        if (!episodeResponse.ok) throw new Error(`Showcase load failed (${episodeResponse.status})`);
+        epRes = await episodeResponse.json();
+      }
+
+      const evidenceResponse = await fetch(`${API_BASE}/api/evidence/index`);
+      if (!evidenceResponse.ok) throw new Error(`Evidence index failed (${evidenceResponse.status})`);
+      const evRes = await evidenceResponse.json();
       setEpisodeData(epRes);
       setEvidenceIndex(evRes);
       if (epRes?.executed_at) {
@@ -58,6 +77,7 @@ export default function ShowcasePanel() {
       setError(err.message || 'Failed to load Checkpoint 8 showcase episode data');
     } finally {
       setLoading(false);
+      setRunProgress(null);
     }
   };
 
@@ -67,10 +87,10 @@ export default function ShowcasePanel() {
 
   if (loading && !episodeData) {
     return (
-      <div className="vp-card vp-text-center" style={{ padding: 'var(--space-8)' }}>
+      <div className="vp-card vp-text-center showcase-loading" style={{ padding: 'var(--space-8)' }}>
         <RefreshCw size={36} className="spin vp-text-accent" style={{ margin: '0 auto var(--space-3)' }} />
         <div style={{ fontSize: 'var(--font-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>
-          Running 12-Step Showcase Episode & Re-Verifying AC Power Flow...
+          Loading the 12-timepoint showcase and its evidence...
         </div>
       </div>
     );
@@ -101,37 +121,41 @@ export default function ShowcasePanel() {
     };
   });
 
+  const evidenceFiles = Array.from(new Set([
+    ...(evidenceIndex?.evidence_files || []),
+    ...(episodeData?.evidence_files || []),
+  ]));
+  const currentEvidenceCsv = episodeData?.evidence_files?.find((file) => file.endsWith('_full_table.csv'));
+
   const event1 = steps.find((s) => s.forecast_error_injected || s.error_label?.toLowerCase().includes('error') || s.error_label?.toLowerCase().includes('surge')) || steps[2];
   const event2 = steps.find((s) => (s.soc ?? 0) >= 0.89 || s.error_label?.toLowerCase().includes('saturation')) || steps[4];
   const event3 = steps.find((s) => s.error_label?.toLowerCase().includes('infeasible') || s.fallback_ladder_used || s.verification_result?.is_safe === false) || steps[6];
-  const event4 = steps.find((s) => s.error_label?.toLowerCase().includes('near-limit') || (s.min_voltage_pu && s.min_voltage_pu <= 0.955)) || steps[7];
+  const event4 = steps.find((s) => s.error_label?.toLowerCase().includes('near-limit') || (s.min_voltage_pu >= 0.95 && s.min_voltage_pu <= 0.955)) || steps[7];
   const event5 = steps.find((s) => s.error_label?.toLowerCase().includes('disagreement') || s.surrogate_disagreement) || steps[8];
   const event6 = steps.find((s) => (s.soc ?? 1) <= 0.11 || s.error_label?.toLowerCase().includes('depletion')) || steps[11];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginBottom: 'var(--space-6)' }}>
+    <div className="showcase-page" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginBottom: 'var(--space-6)' }}>
       {/* Top Banner */}
-      <div className="vp-card vp-card-gradient">
+      <div className="vp-card vp-card-gradient showcase-hero">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
           <div>
             <div className="vp-flex vp-gap-2 vp-mb-2">
-              <span className="vp-badge vp-badge-accent">
-                Checkpoint 8 Submission-Ready Showcase
-              </span>
+              <span className="vp-badge vp-badge-accent">12-timepoint grid simulation</span>
               <span className="vp-badge vp-badge-info">
-                {steps.length || 12}-Step Episode • 6 Labeled Events
+                {steps.length || 12} timepoints · 6 events
               </span>
               {executedAt && (
                 <span className="vp-badge vp-badge-ok">
-                  Last Run: {executedAt}
+                  Last run: {executedAt}
                 </span>
               )}
             </div>
             <h2 className="vp-page-title vp-flex vp-items-center vp-gap-2">
-              <span>🏆 Deterministic 12-Step Showcase Scenario & Evidence Package</span>
+              <span>See how the grid responds over time</span>
             </h2>
             <p className="vp-page-description" style={{ maxWidth: '840px' }}>
-              Reproducible demonstration triggering all 6 required events (Injected Error, Battery Saturation, Infeasible Period, Near-Limit State, Surrogate Disagreement, Battery Depletion) with complete physical AC power flow verification.
+              Follow a changing forecast, battery decisions, and grid conditions across one complete episode. Each timepoint is checked with an AC power-flow solver, and the run records the results for review.
             </p>
           </div>
 
@@ -142,16 +166,23 @@ export default function ShowcasePanel() {
               className="vp-btn vp-btn-primary"
             >
               <RefreshCw size={14} className={loading ? 'spin' : ''} />
-              <span>{loading ? 'Re-Running Episode...' : 'Run Showcase Episode'}</span>
+              <span>{loading ? `Re-Running ${runProgress ?? 0}/12...` : 'Run Showcase Episode'}</span>
             </button>
           </div>
         </div>
+
+        {loading && episodeData && (
+          <div className="vp-alert" data-tone="info" role="status" aria-live="polite" style={{ marginTop: 'var(--space-3)' }}>
+            <RefreshCw size={16} className="spin" />
+            <span>Solver verification complete for {runProgress ?? 0} of 12 timepoints. The new results will appear when the run finishes.</span>
+          </div>
+        )}
 
         {executedAt && (
           <div className="vp-alert vp-alert-ok vp-mt-3" style={{ borderLeft: '4px solid var(--ok)', color: 'var(--text)' }}>
             <CheckCircle2 size={16} style={{ color: 'var(--ok)', flexShrink: 0 }} />
             <span>
-              <strong>Showcase Episode Executed & Solver Verified!</strong> Complete 12-step AC power flow simulation re-calculated at <strong>{executedAt}</strong>. All 6 physical events validated.
+              <strong>Episode loaded and solver verified.</strong> The 12-timepoint AC power-flow run was last calculated at <strong>{executedAt}</strong>.
             </span>
           </div>
         )}
@@ -164,102 +195,128 @@ export default function ShowcasePanel() {
         )}
       </div>
 
+      <section className="vp-card showcase-guide" aria-labelledby="showcase-guide-title">
+        <div className="showcase-section-heading">
+          <span className="showcase-section-kicker">Start here</span>
+          <h3 id="showcase-guide-title">How to read this episode</h3>
+        </div>
+        <div className="showcase-guide-grid">
+          <div>
+            <span className="showcase-guide-index">01</span>
+            <strong>Begin at T0</strong>
+            <p>T0 is the starting grid state. The chart then follows the run through T11.</p>
+          </div>
+          <div>
+            <span className="showcase-guide-index">02</span>
+            <strong>Follow the event markers</strong>
+            <p>Labels use the same T-number as the chart. For example, the forecast error occurs at T2, the third plotted point.</p>
+          </div>
+          <div>
+            <span className="showcase-guide-index">03</span>
+            <strong>Check the evidence</strong>
+            <p>The step log shows each action and solver result. The evidence list contains files you can open or download.</p>
+          </div>
+        </div>
+      </section>
+
       {/* 6 Required Events Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
-        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-danger)' }}>
+      <div className="showcase-events" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
+        <div className="vp-kpi-tile">
           <div className="vp-kpi-label vp-flex vp-items-center vp-gap-1">
-            <Zap size={14} style={{ color: 'var(--color-danger)' }} />
+            <Zap size={14} />
             <span>1. Injected Error</span>
           </div>
           <div className="vp-kpi-value">
-            Step {event1?.step ?? 2} ({10 + (event1?.step ?? 2)}:00)
+            T{event1?.step ?? 2} · {10 + (event1?.step ?? 2)}:00
           </div>
-          <div className="vp-kpi-subtext" style={{ color: 'var(--color-danger)' }}>
+          <div className="vp-kpi-subtext">
             {event1?.error_label || 'Midday solar surge (+120%)'}
           </div>
         </div>
 
-        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-success)' }}>
+        <div className="vp-kpi-tile">
           <div className="vp-kpi-label vp-flex vp-items-center vp-gap-1">
-            <BatteryCharging size={14} style={{ color: 'var(--color-success)' }} />
+            <BatteryCharging size={14} />
             <span>2. Battery Saturation</span>
           </div>
           <div className="vp-kpi-value">
-            Step {event2?.step ?? 4} ({10 + (event2?.step ?? 4)}:00)
+            T{event2?.step ?? 4} · {10 + (event2?.step ?? 4)}:00
           </div>
-          <div className="vp-kpi-subtext" style={{ color: 'var(--color-success)' }}>
+          <div className="vp-kpi-subtext">
             Reached max SOC: {((event2?.soc ?? 0.90) * 100).toFixed(0)}%
           </div>
         </div>
 
-        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-warning)' }}>
+        <div className="vp-kpi-tile">
           <div className="vp-kpi-label vp-flex vp-items-center vp-gap-1">
-            <ShieldAlert size={14} style={{ color: 'var(--color-warning)' }} />
+            <ShieldAlert size={14} />
             <span>3. Infeasible Period</span>
           </div>
           <div className="vp-kpi-value">
-            Step {event3?.step ?? 6} ({10 + (event3?.step ?? 6)}:00)
+            T{event3?.step ?? 6} · {10 + (event3?.step ?? 6)}:00
           </div>
-          <div className="vp-kpi-subtext" style={{ color: 'var(--color-warning)' }}>
+          <div className="vp-kpi-subtext">
             {event3?.error_label || 'Fallback ladder invoked'}
           </div>
         </div>
 
-        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-info)' }}>
+        <div className="vp-kpi-tile">
           <div className="vp-kpi-label vp-flex vp-items-center vp-gap-1">
-            <AlertTriangle size={14} style={{ color: 'var(--color-info)' }} />
+            <AlertTriangle size={14} />
             <span>4. Near-Limit State</span>
           </div>
           <div className="vp-kpi-value">
-            Step {event4?.step ?? 7} ({10 + (event4?.step ?? 7)}:00)
+            T{event4?.step ?? 7} · {10 + (event4?.step ?? 7)}:00
           </div>
-          <div className="vp-kpi-subtext" style={{ color: 'var(--color-info)' }}>
+          <div className="vp-kpi-subtext">
             V_min = {(event4?.min_voltage_pu ?? 0.952).toFixed(3)} pu (near limit)
           </div>
         </div>
 
-        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #ec4899' }}>
+        <div className="vp-kpi-tile">
           <div className="vp-kpi-label vp-flex vp-items-center vp-gap-1">
-            <RefreshCw size={14} style={{ color: '#ec4899' }} />
+            <RefreshCw size={14} />
             <span>5. Surrogate Disagreement</span>
           </div>
           <div className="vp-kpi-value">
-            Step {event5?.step ?? 8} ({10 + (event5?.step ?? 8)}:00)
+            T{event5?.step ?? 8} · {10 + (event5?.step ?? 8)}:00
           </div>
-          <div className="vp-kpi-subtext" style={{ color: '#ec4899' }}>
+          <div className="vp-kpi-subtext">
             {event5?.error_label || 'Safe prediction verified by AC solver'}
           </div>
         </div>
 
-        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #a855f7' }}>
+        <div className="vp-kpi-tile">
           <div className="vp-kpi-label vp-flex vp-items-center vp-gap-1">
-            <Battery size={14} style={{ color: '#a855f7' }} />
+            <Battery size={14} />
             <span>6. Battery Depletion</span>
           </div>
           <div className="vp-kpi-value">
-            Step {event6?.step ?? 11} ({10 + (event6?.step ?? 11)}:00)
+            T{event6?.step ?? 11} · {10 + (event6?.step ?? 11)}:00
           </div>
-          <div className="vp-kpi-subtext" style={{ color: '#a855f7' }}>
+          <div className="vp-kpi-subtext">
             Reached min SOC: {((event6?.soc ?? 0.10) * 100).toFixed(0)}%
           </div>
         </div>
       </div>
 
       {/* 12-Step Interactive Timeline Chart */}
-      <div className="vp-card">
+      <div className="vp-card showcase-trajectory">
         <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
           <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-accent)' }}>
             <Clock size={18} />
-            <span>12-Step Episode Trajectory (SOC % & Bus Voltage Range p.u.)</span>
+            <span>Episode trajectory</span>
           </div>
           <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
-            Green: Battery SOC % • Blue: Max Bus Voltage • Red: Min Bus Voltage
+            Battery state of charge (%) and bus voltage range (p.u.) across T0–T11
           </div>
         </div>
 
-        <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={timelineData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
+        <ChartDisclosure title="Show the episode chart" summary="Compare battery charge and grid voltage across the 12 timepoints.">
+          <div className="showcase-chart-scroll">
+            <div className="showcase-chart-canvas">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={timelineData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
               <XAxis dataKey="stepLabel" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
               <YAxis yAxisId="left" stroke="var(--color-fg-muted)" fontSize={11} domain={[0, 100]} unit="%" />
@@ -272,17 +329,19 @@ export default function ShowcasePanel() {
               <Bar yAxisId="left" dataKey="socPct" name="Battery SOC (%)" fill="var(--color-success)" radius={[4, 4, 0, 0]} opacity={0.6} />
               <Line yAxisId="right" type="monotone" dataKey="vMax" name="Max Bus Voltage (pu)" stroke="var(--color-info)" strokeWidth={2.5} dot={{ r: 4 }} />
               <Line yAxisId="right" type="monotone" dataKey="vMin" name="Min Bus Voltage (pu)" stroke="var(--color-danger)" strokeWidth={2.5} dot={{ r: 4 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </ChartDisclosure>
       </div>
 
       {/* Step-by-Step Executed Log Table */}
-      <div className="vp-card">
+      <div className="vp-card showcase-step-log">
         <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
           <div className="vp-card-title vp-flex vp-items-center vp-gap-2">
             <Layers size={18} style={{ color: 'var(--color-accent)' }} />
-            <span>Showcase Episode Step Details & Event Annotations</span>
+            <span>Actions and solver results</span>
           </div>
           <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
             Run ID: <span style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{episodeData?.run_id || 'cp8_showcase_12step'}</span>
@@ -334,22 +393,25 @@ export default function ShowcasePanel() {
       </div>
 
       {/* Evidence Pack Artifact Browser - Tabular Format */}
-      <div className="vp-card">
+      <div className="vp-card showcase-evidence">
         <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-3">
           <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-info)' }}>
             <FolderCheck size={18} />
-            <span>Evidence Pack Artifact Directory Map (outputs/evidence/)</span>
+            <span>Run evidence and downloads</span>
           </div>
 
           <a
-            href={`${API_BASE}/api/evidence/export-csv`}
-            download="cp8_showcase_12step_evidence_table.csv"
+            href={currentEvidenceCsv
+              ? `${API_BASE}/api/evidence/download?file_path=${encodeURIComponent(currentEvidenceCsv)}`
+              : `${API_BASE}/api/evidence/export-csv`}
+            download={currentEvidenceCsv?.split('/').pop() || 'cp8_showcase_12step_evidence_table.csv'}
             target="_blank"
             rel="noopener noreferrer"
             className="vp-btn vp-btn-secondary"
             style={{ textDecoration: 'none' }}
           >
-            <span>📊 Download Full Evidence Table (Excel CSV)</span>
+            <Download size={15} />
+            <span>Download evidence table (CSV)</span>
           </a>
         </div>
 
@@ -365,7 +427,7 @@ export default function ShowcasePanel() {
               </tr>
             </thead>
             <tbody>
-              {(evidenceIndex?.evidence_files || []).map((file, idx) => {
+              {evidenceFiles.map((file, idx) => {
                 const isCsv = file.endsWith('.csv');
                 const ext = file.split('.').pop().toUpperCase();
 
@@ -404,7 +466,8 @@ export default function ShowcasePanel() {
                         className="vp-btn vp-btn-secondary"
                         style={{ padding: 'var(--space-1) var(--space-2)', fontSize: 'var(--font-xs)', textDecoration: 'none', display: 'inline-flex' }}
                       >
-                        <span>📥 Open / Download {ext}</span>
+                        <Download size={14} />
+                        <span>Open / download {ext}</span>
                       </a>
                     </td>
                   </tr>

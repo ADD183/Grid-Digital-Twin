@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { RefreshCw, Brain } from 'lucide-react';
 import { API_BASE } from '../config';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function ForecastPanel() {
   const [metrics, setMetrics] = useState(null);
@@ -88,14 +89,14 @@ export default function ForecastPanel() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h2 className="vp-page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Brain size={22} color="var(--accent)" />
-              <span>AI Generation & Load Forecasting</span>
+              <span>Generation and demand outlook</span>
             </h2>
             <span className="vp-badge" data-tone="ok">
-              {metrics?.engine_used || 'LightGBM GBDT'}
+              {metrics ? 'Ready' : error ? 'Unavailable' : 'Loading'}
             </span>
           </div>
           <p className="vp-page-desc">
-            Lagged features (t-1, t-2, t-3, t-24) + cyclical calendar features evaluated on chronological holdout test set vs. naive persistence benchmark.
+            Compare expected solar generation and customer demand with observed values. Choose a time range, review accuracy, or update the forecast model.
           </p>
         </div>
 
@@ -109,14 +110,14 @@ export default function ForecastPanel() {
               className={`vp-segmented-btn ${activeSeries === 'solar' ? 'active' : ''}`}
               aria-selected={activeSeries === 'solar'}
             >
-              Solar PV (p.u.)
+              Solar generation
             </button>
             <button
               onClick={() => setActiveSeries('load')}
               className={`vp-segmented-btn ${activeSeries === 'load' ? 'active' : ''}`}
               aria-selected={activeSeries === 'load'}
             >
-              Grid Load (p.u.)
+              Customer demand
             </button>
           </div>
 
@@ -135,9 +136,9 @@ export default function ForecastPanel() {
               cursor: 'pointer'
             }}
           >
-            <option value={48}>Last 48 Hours</option>
-            <option value={168}>Last 7 Days (168h)</option>
-            <option value={336}>Last 14 Days (336h)</option>
+            <option value={48}>Past 2 days</option>
+            <option value={168}>Past 7 days</option>
+            <option value={336}>Past 14 days</option>
           </select>
 
           {/* 90% Confidence Interval Toggle */}
@@ -148,7 +149,7 @@ export default function ForecastPanel() {
               onChange={(e) => setShowIntervals(e.target.checked)}
               style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
             />
-            <span>90% Confidence Interval</span>
+            <span>Show 90% confidence range</span>
           </label>
 
           {/* Retrain Button */}
@@ -158,7 +159,7 @@ export default function ForecastPanel() {
             className="vp-btn vp-btn-primary"
           >
             <RefreshCw size={15} className={retraining ? 'animated-spin' : ''} />
-            <span>{retraining ? 'Retraining...' : 'Retrain Models'}</span>
+            <span>{retraining ? 'Updating...' : 'Update forecast model'}</span>
           </button>
         </div>
       </div>
@@ -188,7 +189,7 @@ export default function ForecastPanel() {
           {/* MAE Comparison */}
           <div className="vp-kpi-tile" data-tone="ok">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="vp-kpi-label">Mean Absolute Error (MAE)</span>
+              <span className="vp-kpi-label">Average forecast error</span>
               <span className="vp-badge" data-tone="ok">
                 -{currentMetrics.mae_improvement_pct}% vs Naive
               </span>
@@ -206,7 +207,7 @@ export default function ForecastPanel() {
           {/* RMSE Comparison */}
           <div className="vp-kpi-tile" data-tone="ok">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="vp-kpi-label">Root Mean Squared Error (RMSE)</span>
+              <span className="vp-kpi-label">Larger forecast misses</span>
               <span className="vp-badge" data-tone="ok">
                 -{currentMetrics.rmse_improvement_pct}% vs Naive
               </span>
@@ -223,7 +224,7 @@ export default function ForecastPanel() {
 
           {/* R-Squared Metric */}
           <div className="vp-kpi-tile" data-tone="info">
-            <span className="vp-kpi-label">Fit Quality (R² Score)</span>
+            <span className="vp-kpi-label">Overall forecast fit</span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '6px' }}>
               <span className="vp-kpi-value" style={{ color: 'var(--accent)' }}>
                 {(currentMetrics.model_metrics.r2 * 100).toFixed(1)}%
@@ -236,7 +237,7 @@ export default function ForecastPanel() {
 
           {/* Dataset Info */}
           <div className="vp-kpi-tile" data-tone="info">
-            <span className="vp-kpi-label">Chronological Holdout Split</span>
+            <span className="vp-kpi-label">Data used to check accuracy</span>
             <div style={{ marginTop: '6px', fontSize: '0.9rem', color: 'var(--text)' }}>
               Train: <strong className="tabular-nums">{currentMetrics.train_samples}h</strong> | Test: <strong className="tabular-nums">{currentMetrics.test_samples}h</strong>
             </div>
@@ -248,6 +249,7 @@ export default function ForecastPanel() {
       )}
 
       {/* Chart Visualization */}
+      <ChartDisclosure title="Compare expected and actual values" summary="Open the chart to see how closely the forecast follows observed conditions.">
       <div style={{ height: '360px', width: '100%', marginTop: '10px' }}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
@@ -405,6 +407,7 @@ export default function ForecastPanel() {
           </ResponsiveContainer>
         )}
       </div>
+      </ChartDisclosure>
 
     </div>
   );

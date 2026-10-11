@@ -14,6 +14,7 @@ import {
   Play
 } from 'lucide-react';
 import { API_BASE } from '../config';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function ViolationEnginePanel() {
   const [selectedScenario, setSelectedScenario] = useState('solar_spike');
@@ -193,18 +194,18 @@ export default function ViolationEnginePanel() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <ShieldAlert size={22} color="var(--danger)" />
               <h2 className="vp-page-title">
-                Violation Detection & Corrective Action Engine
+                Grid actions and alerts
               </h2>
             </div>
             <p className="vp-page-desc">
-              Propose → Verify → Repair Closed-Loop Grid Defense & Optimization
+              Choose a grid condition to explore, then compare actions that may improve it.
             </p>
           </div>
 
           {/* Quick Engine Status Indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span className="vp-badge" data-tone={currentViolations?.has_violations ? 'danger' : 'ok'}>
-              {currentViolations?.has_violations ? `${currentViolations.total_violations} Violations Active` : 'Grid In Safe Band (0.95–1.05 p.u.)'}
+              {currentViolations?.has_violations ? `${currentViolations.total_violations} items need attention` : 'Operating normally'}
             </span>
           </div>
         </div>
@@ -212,11 +213,11 @@ export default function ViolationEnginePanel() {
         {/* Scenario Selection Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginBottom: '18px' }}>
           {[
-            { id: 'solar_spike', icon: Sun, title: 'Midday Solar Surge', desc: 'High rooftop PV + low demand triggers overvoltage (>1.05 p.u.)' },
-            { id: 'evening_peak', icon: BatteryCharging, title: 'Evening Demand Peak', desc: 'Sunset + peak appliance load causes voltage sags (<0.95 p.u.)' },
-            { id: 'line_congestion', icon: Zap, title: 'Feeder Line Overload', desc: 'Heavy branch demand pushes line loading past 100% thermal limit' },
-            { id: 'cloudy_drop', icon: AlertTriangle, title: 'Cloudy-Day Solar Drop', desc: 'Sudden generation collapse forces a rapid support response and residual stress' },
-            { id: 'infeasible', icon: XCircle, title: 'Infeasible Stress Event', desc: 'Deliberately exceeds the corrective-action envelope and must remain unresolved' },
+            { id: 'solar_spike', icon: Sun, title: 'Sudden solar increase', desc: 'Explore what happens when generation rises quickly.' },
+            { id: 'evening_peak', icon: BatteryCharging, title: 'High evening demand', desc: 'See how the grid responds when household use peaks.' },
+            { id: 'line_congestion', icon: Zap, title: 'Busy power lines', desc: 'Review a situation where demand strains a connection.' },
+            { id: 'cloudy_drop', icon: AlertTriangle, title: 'Sudden solar drop', desc: 'Explore how support actions respond when generation falls.' },
+            { id: 'infeasible', icon: XCircle, title: 'Extreme demand', desc: 'Test a situation that available actions cannot fully resolve.' },
           ].map((scen) => {
             const Icon = scen.icon;
             const isSelected = selectedScenario === scen.id;
@@ -265,7 +266,7 @@ export default function ViolationEnginePanel() {
             className="vp-btn vp-btn-danger-outline"
           >
             <ShieldAlert size={16} />
-            <span>{loading ? 'Inducing Constraint...' : 'Trigger Constraint Scenario'}</span>
+            <span>{loading ? 'Loading situation...' : 'Explore this situation'}</span>
           </button>
 
           <button
@@ -274,7 +275,7 @@ export default function ViolationEnginePanel() {
             className="vp-btn vp-btn-primary"
           >
             <Zap size={16} />
-            <span>{evaluating ? 'Propose-Verify Loop Running...' : 'Re-run deterministic engine'}</span>
+            <span>{evaluating ? 'Comparing actions...' : 'Compare possible actions'}</span>
           </button>
         </div>
 
@@ -292,10 +293,10 @@ export default function ViolationEnginePanel() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)' }}>
-              Interactive Grid Topology: Before & After Action
+              Conditions before and after an action
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Toggle between the unmitigated violation state and the AI-corrected network state
+              Compare the original grid conditions with the result after a recommended action.
             </p>
           </div>
 
@@ -306,14 +307,14 @@ export default function ViolationEnginePanel() {
               className={`vp-segmented-btn ${activeViewMode === 'before' ? 'active' : ''}`}
               aria-selected={activeViewMode === 'before'}
             >
-              Before Action (In Violation)
+              Before
             </button>
             <button
               onClick={() => setActiveViewMode('after')}
               className={`vp-segmented-btn ${activeViewMode === 'after' ? 'active' : ''}`}
               aria-selected={activeViewMode === 'after'}
             >
-              After Action
+              After
             </button>
             {customResult && (
               <button
@@ -321,7 +322,7 @@ export default function ViolationEnginePanel() {
                 className={`vp-segmented-btn ${activeViewMode === 'custom' ? 'active' : ''}`}
                 aria-selected={activeViewMode === 'custom'}
               >
-                Custom Sandbox State
+                Custom action
               </button>
             )}
           </div>
@@ -346,7 +347,7 @@ export default function ViolationEnginePanel() {
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                   {activeViewMode === 'after' && afterResolved
-                    ? 'The physical solver reports zero residual voltage and equipment violations.'
+                    ? 'No remaining grid issues were found.'
                     : activeViewMode === 'after'
                     ? `${residualCount} residual violation(s) remain. This result is not fully resolved.`
                     : `${currentViolations?.total_violations || 0} active violation constraints detected. Voltage limits violated.`}
@@ -477,6 +478,7 @@ export default function ViolationEnginePanel() {
 
         {/* Embedded SVG Topology Canvas */}
         {currentTopology && currentTopology.buses && (
+          <ChartDisclosure title="Show the affected network" summary="Open the map to inspect where grid conditions changed.">
           <div style={{ backgroundColor: 'var(--surface-raised)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', overflow: 'hidden' }}>
             <svg viewBox="0 0 860 380" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '420px' }}>
               {/* Background Grid Lines */}
@@ -559,6 +561,7 @@ export default function ViolationEnginePanel() {
               })}
             </svg>
           </div>
+          </ChartDisclosure>
         )}
       </div>
 
@@ -567,7 +570,7 @@ export default function ViolationEnginePanel() {
         <div className="vp-card" style={{ marginBottom: '20px', borderColor: 'var(--accent)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontSize: '0.81rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
             <Award size={18} />
-            <span>Deterministic Engine Recommendation (#1 Ranked Corrective Action)</span>
+            <span>Recommended action</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
@@ -628,10 +631,10 @@ export default function ViolationEnginePanel() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '16px' }}>
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)' }}>
-              Candidate Action Evaluation Matrix ({rankedActions.length} Actions Assessed)
+              Other actions considered ({rankedActions.length})
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Full Propose-Verify-Repair comparison ranked by multi-objective score
+              Options ranked by their expected effect on grid conditions
             </p>
           </div>
 

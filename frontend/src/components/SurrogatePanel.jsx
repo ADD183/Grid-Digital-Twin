@@ -29,6 +29,7 @@ import {
   Info,
 } from 'lucide-react';
 import { surrogateApi, controlApi } from '../api/client';
+import ChartDisclosure from './ui/ChartDisclosure';
 
 export default function SurrogatePanel() {
   const [activeSubTab, setActiveSubTab] = useState('screening'); // 'screening' or 'evaluation'
@@ -134,7 +135,7 @@ export default function SurrogatePanel() {
       <div className="vp-card vp-text-center" style={{ padding: 'var(--space-8)' }}>
         <RefreshCw size={36} className="spin vp-text-accent" style={{ margin: '0 auto var(--space-3)' }} />
         <div style={{ fontSize: 'var(--font-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>
-          Loading Power-Flow Surrogate Engine & Benchmarks...
+          Loading model comparison...
         </div>
       </div>
     );
@@ -199,14 +200,14 @@ export default function SurrogatePanel() {
           <div>
             <div className="vp-flex vp-gap-2 vp-mb-2">
               <span className="vp-badge vp-badge-accent">
-                Power-Flow Surrogate Engine
+                Model comparison
               </span>
             </div>
             <h2 className="vp-page-title vp-flex vp-items-center vp-gap-2">
-              <span>⚡ Power-Flow Neural Surrogate & Candidate Screening</span>
+              <span>Model checks for grid planning</span>
             </h2>
             <p className="vp-page-description" style={{ maxWidth: '840px' }}>
-              Sub-millisecond PyTorch neural power flow prediction integrated into multi-step control to early-filter unsafe branches while maintaining physical AC solver verifications on chosen actions.
+              Compare quick predictions with detailed grid checks. Explore how early screening changes planning speed while keeping selected actions checked.
             </p>
           </div>
 
@@ -217,7 +218,7 @@ export default function SurrogatePanel() {
               className="vp-btn vp-btn-secondary"
             >
               <RefreshCw size={14} className={training ? 'spin' : ''} />
-              <span>{training ? 'Training...' : 'Retrain Ensemble'}</span>
+              <span>{training ? 'Updating...' : 'Update models'}</span>
             </button>
           </div>
         </div>
@@ -238,7 +239,7 @@ export default function SurrogatePanel() {
           style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
         >
           <ShieldCheck size={16} />
-          <span>🛡️ Live Candidate Screening & A/B Benchmark</span>
+          <span>Screen plans</span>
         </button>
 
         <button
@@ -247,7 +248,7 @@ export default function SurrogatePanel() {
           style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
         >
           <Cpu size={16} />
-          <span>🧠 Ensemble Training & Model Evaluation</span>
+          <span>Check prediction accuracy</span>
         </button>
       </div>
 
@@ -260,7 +261,7 @@ export default function SurrogatePanel() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <Sliders size={16} style={{ color: 'var(--color-warning)' }} />
-                  <span style={{ fontSize: 'var(--font-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>Initial SoC:</span>
+                  <span style={{ fontSize: 'var(--font-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>Starting battery charge:</span>
                   <input
                     type="range"
                     min="0.2"
@@ -282,7 +283,7 @@ export default function SurrogatePanel() {
                     onChange={(e) => setInjectError(e.target.checked)}
                     style={{ accentColor: 'var(--color-danger)', cursor: 'pointer' }}
                   />
-                  <span>Inject Midday Solar Surge (Step 2)</span>
+                  <span>Test a sudden solar increase at T2</span>
                 </label>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -297,8 +298,8 @@ export default function SurrogatePanel() {
                       width: 'auto',
                     }}
                   >
-                    <option value="surrogate">SurrogateScreener (CP7 - Fast Filtering)</option>
-                    <option value="null">NullScreener Baseline (CP5 - Unscreened Solver)</option>
+                    <option value="surrogate">Quick screening</option>
+                    <option value="null">Compare without screening</option>
                   </select>
                 </div>
               </div>
@@ -310,7 +311,7 @@ export default function SurrogatePanel() {
                   className="vp-btn vp-btn-primary"
                 >
                   <Play size={15} />
-                  <span>{runningEpisode ? 'Executing Episode...' : `Run ${screenerMode === 'surrogate' ? 'Screened' : 'Unscreened'} Episode`}</span>
+                  <span>{runningEpisode ? 'Running plan...' : 'Run plan comparison'}</span>
                 </button>
               </div>
             </div>
@@ -320,14 +321,14 @@ export default function SurrogatePanel() {
           <div className="vp-alert vp-alert-info">
             <Info size={17} style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
-              <strong>Physical Verification Architecture:</strong> In VoltPredict, 100% of selected control actions undergo pandapower AC power flow solver verification before execution. The Surrogate Screener acts strictly as an early-pruning filter to discard known unsafe trajectory candidate branches, reducing expensive solver iterations without compromising physical grid safety.
+              <strong>How the comparison works:</strong> Quick estimates help narrow the options. Every selected action is still checked against the detailed grid model before it is used.
             </div>
           </div>
 
           {/* Dynamic Metrics Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 'var(--space-3)' }}>
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-              <div className="vp-kpi-label">Solver Calls Reduction</div>
+              <div className="vp-kpi-label">Fewer detailed checks</div>
               <div className="vp-kpi-value">
                 -{compMetrics.solver_calls_reduction_pct != null ? compMetrics.solver_calls_reduction_pct.toFixed(1) : '48.1'}%
               </div>
@@ -337,7 +338,7 @@ export default function SurrogatePanel() {
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-success)' }}>
-              <div className="vp-kpi-label">Wall-Time Speedup</div>
+              <div className="vp-kpi-label">Faster comparison</div>
               <div className="vp-kpi-value">
                 {compMetrics.speedup_factor != null ? compMetrics.speedup_factor.toFixed(1) : '363.9'}x <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>faster</span>
               </div>
@@ -347,7 +348,7 @@ export default function SurrogatePanel() {
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-danger)' }}>
-              <div className="vp-kpi-label">Unsafe Actions Filtered</div>
+              <div className="vp-kpi-label">Options skipped early</div>
               <div className="vp-kpi-value">
                 {compMetrics.unsafe_dropped_count ?? (nullBase.total_solver_calls != null && surrScreen.total_solver_calls != null ? Math.max(0, nullBase.total_solver_calls - surrScreen.total_solver_calls) : 148)} candidates
               </div>
@@ -357,7 +358,7 @@ export default function SurrogatePanel() {
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #ec4899' }}>
-              <div className="vp-kpi-label">Disagreements Logged</div>
+              <div className="vp-kpi-label">Model disagreements</div>
               <div className="vp-kpi-value">
                 {abData?.disagreement_events?.length ?? 0}
               </div>
@@ -387,6 +388,7 @@ export default function SurrogatePanel() {
                 </button>
               </div>
 
+              <ChartDisclosure title="Show candidate decisions" summary="See how many options were accepted, rejected, or sent for review at each step.">
               <div style={{ width: '100%', height: 320 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stepBreakdownData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
@@ -402,6 +404,7 @@ export default function SurrogatePanel() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              </ChartDisclosure>
             </div>
 
             {/* A/B Screener Benchmark Comparison Table */}
@@ -409,7 +412,7 @@ export default function SurrogatePanel() {
               <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
                 <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-info)' }}>
                   <Award size={18} />
-                  <span>A/B Screener Benchmark Comparison</span>
+                  <span>Compare planning approaches</span>
                 </div>
                 <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-success)', fontWeight: 'var(--font-semibold)' }}>
                   {compMetrics.speedup_factor ?? 71.0}x Speedup
@@ -462,7 +465,7 @@ export default function SurrogatePanel() {
             <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
               <div className="vp-card-title vp-flex vp-items-center vp-gap-2">
                 <Clock size={18} style={{ color: 'var(--color-warning)' }} />
-                <span>Executed Episode Step Details & Verification Status</span>
+                <span>How each plan performed</span>
               </div>
               <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
                 Run ID: <span style={{ color: 'var(--color-info)', fontFamily: 'var(--font-mono)' }}>{screenedEpisode?.run_id || 'live_run'}</span>
@@ -526,15 +529,15 @@ export default function SurrogatePanel() {
           {/* Model Evaluation Summary Metric Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 'var(--space-3)' }}>
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #c084fc' }}>
-              <div className="vp-kpi-label">Ensemble Architecture</div>
-              <div className="vp-kpi-value">3 PyTorch MLPs</div>
+              <div className="vp-kpi-label">Models compared</div>
+              <div className="vp-kpi-value">3 models</div>
               <div className="vp-kpi-subtext" style={{ color: '#c084fc' }}>
-                Seeds 42, 101, 2024 • 33 In / 31 Out
+                Combined to improve prediction consistency
               </div>
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-success)' }}>
-              <div className="vp-kpi-label">Calibrated Guard Band</div>
+              <div className="vp-kpi-label">Model safety buffer</div>
               <div className="vp-kpi-value">
                 +{(modelMeta.calibrated_guard_band ?? 0.008).toFixed(4)} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>p.u.</span>
               </div>
@@ -544,7 +547,7 @@ export default function SurrogatePanel() {
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-info)' }}>
-              <div className="vp-kpi-label">False-Safe Rate</div>
+              <div className="vp-kpi-label">Missed unsafe cases</div>
               <div className="vp-kpi-value">
                 {falseSafeData.raw?.false_safe_rate_pct ?? 14.5}% →{' '}
                 <span style={{ color: 'var(--color-success)' }}>
@@ -557,7 +560,7 @@ export default function SurrogatePanel() {
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-              <div className="vp-kpi-label">Inference Latency</div>
+              <div className="vp-kpi-label">Prediction speed</div>
               <div className="vp-kpi-value">
                 {latency.surrogate_batches?.batch_1000?.per_sample_ms ?? 0.01} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>ms/sample</span>
               </div>
@@ -572,14 +575,14 @@ export default function SurrogatePanel() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
               <div className="vp-flex vp-items-center vp-gap-2" style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--font-sm)' }}>
                 <Layers size={18} style={{ color: '#c084fc' }} />
-                <span>Select Dataset Split Manifest for Analysis:</span>
+                <span>Choose conditions to review:</span>
               </div>
               <div className="vp-segmented" style={{ flexWrap: 'wrap' }}>
                 {[
-                  ['dev_val', 'dev_val (Development Validation)'],
-                  ['test_unseen', 'test_unseen (Held-out Parameters)'],
-                  ['test_extended', 'test_extended (Extrapolation Range)'],
-                  ['test_near_limit', 'test_near_limit (Near-Limit Boundary)'],
+                  ['dev_val', 'Validation sample'],
+                  ['test_unseen', 'New conditions'],
+                  ['test_extended', 'Unusual conditions'],
+                  ['test_near_limit', 'Near-limit conditions'],
                 ].map(([id, label]) => (
                   <button
                     key={id}
@@ -599,13 +602,14 @@ export default function SurrogatePanel() {
               <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
                 <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-info)' }}>
                   <TrendingUp size={18} />
-                  <span>Bus Voltage Parity Plot (Predicted vs AC Solver)</span>
+                  <span>Voltage estimate accuracy</span>
                 </div>
                 <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
-                  MAE: <strong style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{activeEval?.voltage?.mae_pu ?? '0.0028'} p.u.</strong>
+                  Typical difference: <strong style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{activeEval?.voltage?.mae_pu ?? '0.0028'} p.u.</strong>
                 </div>
               </div>
 
+              <ChartDisclosure title="Show voltage comparison" summary="Compare model estimates with measured grid values.">
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
@@ -619,19 +623,21 @@ export default function SurrogatePanel() {
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
+              </ChartDisclosure>
             </div>
 
             <div className="vp-card">
               <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
                 <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-warning)' }}>
                   <Activity size={18} />
-                  <span>Line Loading Parity Plot (Predicted vs AC Solver %)</span>
+                  <span>Line-use estimate accuracy</span>
                 </div>
                 <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
-                  MAE: <strong style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{activeEval?.loading?.mae_pct ?? '1.42'}%</strong>
+                  Typical difference: <strong style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{activeEval?.loading?.mae_pct ?? '1.42'}%</strong>
                 </div>
               </div>
 
+              <ChartDisclosure title="Show line-use comparison" summary="Compare estimated and measured use across the network.">
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
@@ -645,6 +651,7 @@ export default function SurrogatePanel() {
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
+              </ChartDisclosure>
             </div>
           </div>
         </>

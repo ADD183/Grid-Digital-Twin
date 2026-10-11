@@ -10,9 +10,6 @@ import {
   Brain,
   Menu,
   X,
-  MapPin,
-  Server,
-  Activity,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
@@ -20,32 +17,34 @@ const NAV_GROUPS = [
   {
     group: 'Overview',
     items: [
-      { id: 'showcase', label: 'Showcase', icon: Trophy, tooltip: 'Showcase and evidence (Checkpoint 8)' },
-      { id: 'all', label: 'Full overview', icon: Layers, tooltip: 'Full digital twin view' },
+      { id: 'showcase', label: 'Daily story', icon: Trophy, tooltip: 'Full-day grid scenario and evidence' },
+      { id: 'all', label: 'Dashboard', icon: Layers, tooltip: 'All available views' },
     ],
   },
   {
-    group: 'Grid',
+    group: 'Network',
     items: [
-      { id: 'grid', label: 'Grid and power flow', icon: Zap, tooltip: 'Checkpoint 1' },
-      { id: 'forecast', label: 'Forecaster', icon: TrendingUp, tooltip: 'Checkpoint 2' },
+      { id: 'grid', label: 'Grid status', icon: Zap, tooltip: 'Network and power-flow detail' },
+      { id: 'forecast', label: 'Forecasts', icon: TrendingUp, tooltip: 'Generation and demand forecast detail' },
     ],
   },
   {
-    group: 'Control',
+    group: 'Planning',
     items: [
-      { id: 'engine', label: 'Action engine', icon: Sliders, tooltip: 'Checkpoint 3' },
-      { id: 'time_plan', label: 'Time plan', icon: Clock, tooltip: 'Checkpoint 5' },
-      { id: 'mpc', label: 'Predictive MPC', icon: Cpu, tooltip: 'Update 1' },
+      { id: 'engine', label: 'Grid actions', icon: Sliders, tooltip: 'Action selection and constraint scenarios' },
+      { id: 'time_plan', label: 'Plan over time', icon: Clock, tooltip: 'Multi-step control episode' },
+      { id: 'mpc', label: 'Plan settings', icon: Cpu, tooltip: 'Predictive control settings and results' },
     ],
   },
   {
-    group: 'Learning',
+    group: 'Models',
     items: [
-      { id: 'surrogate', label: 'Surrogate and screening', icon: Brain, tooltip: 'Checkpoints 6 and 7' },
+      { id: 'surrogate', label: 'Prediction quality', icon: Brain, tooltip: 'Model screening and evaluation detail' },
     ],
   },
 ];
+
+const GRID_VIEW_SUMMARY = 'Check whether the network is operating normally and compare local generation with customer demand.';
 
 export default function AppShell({
   activeTab,
@@ -185,7 +184,7 @@ export default function AppShell({
               VoltPredict
             </div>
             <div style={{ fontSize: '0.74rem', color: 'var(--text-faint)' }}>
-              Physics Twin & AI Defense
+              Grid operations workspace
             </div>
           </div>
         </div>
@@ -264,36 +263,8 @@ export default function AppShell({
             </h1>
           </div>
 
-          {/* Context Chips & Status */}
+          {/* Theme control remains in the top bar on smaller screens. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="header-chips" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
-                className="vp-badge"
-                data-tone="neutral"
-                style={{ fontSize: '0.74rem' }}
-              >
-                <MapPin size={12} style={{ color: 'var(--text-faint)' }} />
-                <span>Pune, India</span>
-              </span>
-
-              <span
-                className="vp-badge"
-                data-tone="neutral"
-                style={{ fontSize: '0.74rem' }}
-              >
-                <Activity size={12} style={{ color: 'var(--text-faint)' }} />
-                <span>CIGRE MV 15-Bus Grid</span>
-              </span>
-
-              <span
-                className="vp-badge"
-                data-tone="info"
-                style={{ fontSize: '0.74rem' }}
-              >
-                Checkpoints 1–8 Active
-              </span>
-            </div>
-
             <div className="mobile-theme-toggle" style={{ display: 'none' }}>
               <ThemeToggle />
             </div>
@@ -310,6 +281,7 @@ export default function AppShell({
             margin: '0 auto',
           }}
         >
+          {activeTab === 'grid' && <p className="vp-view-summary">{GRID_VIEW_SUMMARY}</p>}
           {children}
         </main>
 
@@ -323,7 +295,7 @@ export default function AppShell({
             color: 'var(--text-faint)',
           }}
         >
-          VoltPredict Digital Twin • Physics-Grounded Grid Simulation & AI Defense Engine
+          VoltPredict · Grid operations workspace
         </footer>
       </div>
 
@@ -340,6 +312,9 @@ export default function AppShell({
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Primary navigation"
             style={{
               width: '280px',
               backgroundColor: 'var(--surface)',

@@ -4,6 +4,10 @@ Exposes backend grid topology, power flow calculation results, and time-series s
 """
 
 import asyncio
+import copy
+import json
+import threading
+from concurrent.futures import ProcessPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
@@ -40,6 +44,29 @@ from backend.app.surrogate import PowerFlowSurrogate, generate_solver_dataset
 from backend.app.telemetry_manager import TelemetryManager
 
 settings = get_settings()
+_SHOWCASE_EXECUTOR = ProcessPoolExecutor(max_workers=1)
+_GRID_SNAPSHOT_LOCK = threading.Lock()
+_GRID_SNAPSHOT = None
+
+
+def _get_grid_snapshot() -> Dict[str, Any]:
+    global _GRID_SNAPSHOT
+
+    if _GRID_SNAPSHOT is not None:
+        return copy.deepcopy(_GRID_SNAPSHOT)
+
+    with _GRID_SNAPSHOT_LOCK:
+        if _GRID_SNAPSHOT is None:
+            network = load_cigre_network()
+            run_baseline_powerflow(network)
+            summary = get_grid_summary(network)
+            summary["violations"] = check_grid_violations(network)
+            _GRID_SNAPSHOT = {
+                "summary": summary,
+                "topology": serialize_topology(network),
+            }
+
+    return copy.deepcopy(_GRID_SNAPSHOT)
 
 
 @asynccontextmanager
@@ -321,12 +348,7 @@ def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
 def get_summary() -> Dict[str, Any]:
     """Return summary metrics for the baseline CIGRE MV grid power flow."""
     try:
-        net = load_cigre_network()
-        run_baseline_powerflow(net)
-        summary = get_grid_summary(net)
-        violations = check_grid_violations(net)
-        summary["violations"] = violations
-        return summary
+        return _get_grid_snapshot()["summary"]
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
 
@@ -335,9 +357,7 @@ def get_summary() -> Dict[str, Any]:
 def get_topology() -> Dict[str, Any]:
     """Return network topology elements (buses, lines, static generators) formatted for UI rendering."""
     try:
-        net = load_cigre_network()
-        run_baseline_powerflow(net)
-        return serialize_topology(net)
+        return _get_grid_snapshot()["topology"]
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
 
@@ -747,14 +767,148 @@ async def run_surrogate_screened_episode(request: EpisodeRunRequest) -> Dict[str
 # -------------------------------------------------------------------------
 # Checkpoint 8: Showcase Scenario & Evidence Pack Endpoints
 # -------------------------------------------------------------------------
+_SHOWCASE_JOBS = {}
+_ACTIVE_SHOWCASE_JOB = None
+
+
+def _execute_showcase_run(scenario_seed: int, progress_path: str) -> Dict[str, Any]:
+    from pathlib import Path
+    from src.control.showcase import run_showcase_episode
+    from src.control.state import load_limits_config
+
+    limits = load_limits_config()
+    limits.control.horizon_steps = 1
+    limits.control.beam_width = 1
+    limits.control.battery_levels = [-limits.battery.max_power_mw, 0.0, limits.battery.max_power_mw]
+    limits.control.curtail_levels = [0.0, 50.0, 100.0]
+    limits.control.switch_budget = 0
+
+    def report_progress(completed_steps: int, total_steps: int) -> None:
+        Path(progress_path).write_text(
+            json.dumps({"completed_steps": completed_steps, "total_steps": total_steps}),
+            encoding="utf-8",
+        )
+
+    run_id = f"cp8_showcase_{scenario_seed}"
+    log = run_showcase_episode(
+        limits=limits,
+        run_id=run_id,
+        scenario_seed=scenario_seed,
+        progress_callback=report_progress,
+    )
+    artifacts = log.export_evidence()
+    episode = log.to_dict()
+    episode["evidence_files"] = [
+        *artifacts.values(),
+        f"outputs/evidence/action_logs/{run_id}_full_table.csv",
+        f"outputs/evidence/verification/{run_id}_verification.csv",
+    ]
+    episode["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S.%f UTC")
+    return episode
+
+
+def _update_showcase_progress(job_id: str, completed_steps: int, total_steps: int) -> None:
+    job = _SHOWCASE_JOBS.get(job_id)
+    if job and job["status"] == "running":
+        job["completed_steps"] = completed_steps
+        job["total_steps"] = total_steps
+
+
+def _save_latest_showcase(episode: Dict[str, Any]) -> None:
+    from pathlib import Path
+
+    latest_path = Path("outputs/evidence/action_logs/showcase_latest.json")
+    latest_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = latest_path.with_suffix(".json.tmp")
+    temporary_path.write_text(json.dumps(episode, indent=2), encoding="utf-8")
+    os.replace(temporary_path, latest_path)
+
+
+@app.get("/api/control/episode/showcase12/status/{job_id}")
+async def get_showcase12_status(job_id: str) -> Dict[str, Any]:
+    job = _SHOWCASE_JOBS.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Showcase run was not found")
+    return job
+
+
 @app.get("/api/control/episode/showcase12")
 @app.post("/api/control/episode/showcase12")
 async def get_showcase12_episode(force: bool = Query(False, description="Force live re-execution of showcase episode")) -> Dict[str, Any]:
     """Return 12-step Checkpoint 8 showcase episode log with all 6 required events."""
     import json
     import asyncio
+    import uuid
     from datetime import datetime, timezone
     from pathlib import Path
+
+    global _ACTIVE_SHOWCASE_JOB
+
+    if force:
+        if _ACTIVE_SHOWCASE_JOB and _SHOWCASE_JOBS.get(_ACTIVE_SHOWCASE_JOB, {}).get("status") == "running":
+            return _SHOWCASE_JOBS[_ACTIVE_SHOWCASE_JOB]
+
+        job_id = uuid.uuid4().hex
+        scenario_seed = int(datetime.now(timezone.utc).timestamp() * 1_000_000)
+        _SHOWCASE_JOBS[job_id] = {
+            "status": "running",
+            "job_id": job_id,
+            "completed_steps": 0,
+            "total_steps": 12,
+        }
+        _ACTIVE_SHOWCASE_JOB = job_id
+        loop = asyncio.get_running_loop()
+        progress_path = os.path.join(os.getenv("TEMP", "."), f"voltpredict_showcase_{job_id}.json")
+
+        async def execute_showcase_job():
+            global _ACTIVE_SHOWCASE_JOB
+            try:
+                future = loop.run_in_executor(
+                    _SHOWCASE_EXECUTOR,
+                    _execute_showcase_run,
+                    scenario_seed,
+                    progress_path,
+                )
+                while not future.done():
+                    try:
+                        with open(progress_path, "r", encoding="utf-8") as progress_file:
+                            progress = json.load(progress_file)
+                        _update_showcase_progress(
+                            job_id,
+                            progress["completed_steps"],
+                            progress["total_steps"],
+                        )
+                    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+                        pass
+                    await asyncio.sleep(0.25)
+
+                episode = await future
+                _save_latest_showcase(episode)
+                _SHOWCASE_JOBS[job_id].update(
+                    status="completed",
+                    completed_steps=12,
+                    episode=episode,
+                )
+            except Exception as err:
+                _SHOWCASE_JOBS[job_id].update(status="failed", error=str(err))
+            finally:
+                try:
+                    os.remove(progress_path)
+                except FileNotFoundError:
+                    pass
+                if _ACTIVE_SHOWCASE_JOB == job_id:
+                    _ACTIVE_SHOWCASE_JOB = None
+
+        asyncio.create_task(execute_showcase_job())
+        return _SHOWCASE_JOBS[job_id]
+
+    latest_run_path = Path("outputs/evidence/action_logs/showcase_latest.json")
+    if not force and latest_run_path.is_file():
+        try:
+            return json.loads(latest_run_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
     action_log_path = Path("outputs/evidence/action_logs/cp8_showcase_12step.json")
     
     if not force and action_log_path.is_file():
@@ -769,7 +923,9 @@ async def get_showcase12_episode(force: bool = Query(False, description="Force l
 
     def _execute():
         from src.control.showcase import run_showcase_episode
-        log = run_showcase_episode(run_id="cp8_showcase_12step")
+        from src.control.state import load_limits_config
+        limits = load_limits_config()
+        log = run_showcase_episode(limits=limits, run_id="cp8_showcase_12step")
         log.export_evidence()
         data = log.to_dict()
         data["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")

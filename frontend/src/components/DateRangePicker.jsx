@@ -50,11 +50,11 @@ export default function DateRangePicker({ startDate, endDate, onApply, loading }
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '0.95rem' }}>
             <Calendar size={18} />
-            <span>Select Simulation Date Window</span>
+            <span>Choose dates to review</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '4px' }}>Presets:</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '4px' }}>Quick select:</span>
             {[
               { label: '1 Month', months: 1 },
               { label: '2 Months', months: 2 },
