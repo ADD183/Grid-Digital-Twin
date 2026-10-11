@@ -5261,8 +5261,8 @@
   ],
   "explanation": "Constraint Alert: No single action completely resolved all violations. Hybrid: Voltage Setpoint (1.03 pu) + Reconfig (S1) provided the best partial mitigation (residual violations: 12, score: -581.86). Additional grid support or combination actions are required.",
   "artifacts": {
-    "json_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\evening_peak.json",
-    "csv_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\evening_peak.csv",
-    "plot_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\evening_peak.png"
+    "json_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\evening_peak.json",
+    "csv_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\evening_peak.csv",
+    "plot_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\evening_peak.png"
   }
 }

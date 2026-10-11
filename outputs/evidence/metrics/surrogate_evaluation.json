@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-11T02:51:17.711393",
+  "timestamp": "2026-10-11T06:15:49.201417",
   "model_metadata": {
     "calibrated_guard_band": 0.04935695233196014,
     "disagreement_ceiling": 0.015,
@@ -20,30 +20,30 @@
       "split_name": "dev_val",
       "sample_count": 50,
       "voltage": {
-        "mae_pu": 0.27799,
-        "rmse_pu": 0.40168,
-        "max_err_pu": 1.67064
+        "mae_pu": 0.22265,
+        "rmse_pu": 0.30633,
+        "max_err_pu": 1.28557
       },
       "loading": {
-        "mae_pct": 35.008,
-        "rmse_pct": 48.409,
-        "max_err_pct": 193.653
+        "mae_pct": 36.48,
+        "rmse_pct": 51.304,
+        "max_err_pct": 244.74
       },
       "margin": {
-        "mae": 0.32245,
-        "rmse": 0.41225
+        "mae": 0.38547,
+        "rmse": 0.47755
       },
       "false_safe": {
-        "total_unsafe_samples": 15,
+        "total_unsafe_samples": 14,
         "raw": {
-          "false_safe_count": 5,
-          "false_safe_rate_pct": 33.33
+          "false_safe_count": 3,
+          "false_safe_rate_pct": 21.43
         },
         "with_guard_band": {
           "guard_band_pu": 0.04936,
           "false_safe_count": 0,
           "false_safe_rate_pct": 0.0,
-          "reduction_pct": 33.33
+          "reduction_pct": 21.43
         }
       },
       "unsupported": {
@@ -54,47 +54,47 @@
       "confusion_matrix": {
         "true_safe": 0,
         "false_safe": 0,
-        "true_unsafe": 15,
-        "false_unsafe": 35
+        "true_unsafe": 14,
+        "false_unsafe": 36
       },
       "latency": {
-        "batch_total_ms": 1.849,
-        "single_sample_ms": 0.037
+        "batch_total_ms": 2.778,
+        "single_sample_ms": 0.0556
       },
       "naive_baseline": {
-        "voltage_mae_pu": 0.02478,
-        "loading_mae_pct": 14.971,
-        "margin_mae": 0.01683
+        "voltage_mae_pu": 0.02518,
+        "loading_mae_pct": 14.922,
+        "margin_mae": 0.01782
       }
     },
     "test_unseen": {
       "split_name": "test_unseen",
       "sample_count": 50,
       "voltage": {
-        "mae_pu": 0.22901,
-        "rmse_pu": 0.34229,
-        "max_err_pu": 1.55751
+        "mae_pu": 0.25694,
+        "rmse_pu": 0.37506,
+        "max_err_pu": 1.71661
       },
       "loading": {
-        "mae_pct": 35.257,
-        "rmse_pct": 48.035,
-        "max_err_pct": 193.225
+        "mae_pct": 35.397,
+        "rmse_pct": 49.238,
+        "max_err_pct": 202.994
       },
       "margin": {
-        "mae": 0.32148,
-        "rmse": 0.40363
+        "mae": 0.31616,
+        "rmse": 0.42701
       },
       "false_safe": {
-        "total_unsafe_samples": 18,
+        "total_unsafe_samples": 9,
         "raw": {
-          "false_safe_count": 8,
-          "false_safe_rate_pct": 44.44
+          "false_safe_count": 2,
+          "false_safe_rate_pct": 22.22
         },
         "with_guard_band": {
           "guard_band_pu": 0.04936,
           "false_safe_count": 0,
           "false_safe_rate_pct": 0.0,
-          "reduction_pct": 44.44
+          "reduction_pct": 22.22
         }
       },
       "unsupported": {
@@ -105,35 +105,35 @@
       "confusion_matrix": {
         "true_safe": 0,
         "false_safe": 0,
-        "true_unsafe": 18,
-        "false_unsafe": 32
+        "true_unsafe": 9,
+        "false_unsafe": 41
       },
       "latency": {
-        "batch_total_ms": 1.589,
-        "single_sample_ms": 0.0318
+        "batch_total_ms": 2.447,
+        "single_sample_ms": 0.0489
       },
       "naive_baseline": {
-        "voltage_mae_pu": 0.02525,
-        "loading_mae_pct": 14.987,
-        "margin_mae": 0.01769
+        "voltage_mae_pu": 0.02513,
+        "loading_mae_pct": 15.142,
+        "margin_mae": 0.01774
       }
     },
     "test_extended": {
       "split_name": "test_extended",
       "sample_count": 50,
       "voltage": {
-        "mae_pu": 0.21872,
-        "rmse_pu": 0.31668,
-        "max_err_pu": 1.40412
+        "mae_pu": 0.28451,
+        "rmse_pu": 0.42736,
+        "max_err_pu": 1.96616
       },
       "loading": {
-        "mae_pct": 36.555,
-        "rmse_pct": 50.616,
-        "max_err_pct": 217.283
+        "mae_pct": 35.515,
+        "rmse_pct": 49.623,
+        "max_err_pct": 206.477
       },
       "margin": {
-        "mae": 0.39757,
-        "rmse": 0.49849
+        "mae": 0.32189,
+        "rmse": 0.42168
       },
       "false_safe": {
         "total_unsafe_samples": 14,
@@ -160,43 +160,43 @@
         "false_unsafe": 36
       },
       "latency": {
-        "batch_total_ms": 1.622,
-        "single_sample_ms": 0.0324
+        "batch_total_ms": 2.91,
+        "single_sample_ms": 0.0582
       },
       "naive_baseline": {
-        "voltage_mae_pu": 0.02491,
-        "loading_mae_pct": 14.905,
-        "margin_mae": 0.0162
+        "voltage_mae_pu": 0.024,
+        "loading_mae_pct": 14.615,
+        "margin_mae": 0.01629
       }
     },
     "test_near_limit": {
       "split_name": "test_near_limit",
       "sample_count": 50,
       "voltage": {
-        "mae_pu": 0.31078,
-        "rmse_pu": 0.42449,
-        "max_err_pu": 1.5806
+        "mae_pu": 0.28363,
+        "rmse_pu": 0.40409,
+        "max_err_pu": 1.62514
       },
       "loading": {
-        "mae_pct": 39.851,
-        "rmse_pct": 54.778,
-        "max_err_pct": 200.267
+        "mae_pct": 34.727,
+        "rmse_pct": 47.043,
+        "max_err_pct": 181.969
       },
       "margin": {
-        "mae": 0.39972,
-        "rmse": 0.49747
+        "mae": 0.30837,
+        "rmse": 0.374
       },
       "false_safe": {
-        "total_unsafe_samples": 14,
+        "total_unsafe_samples": 20,
         "raw": {
-          "false_safe_count": 3,
-          "false_safe_rate_pct": 21.43
+          "false_safe_count": 6,
+          "false_safe_rate_pct": 30.0
         },
         "with_guard_band": {
           "guard_band_pu": 0.04936,
           "false_safe_count": 0,
           "false_safe_rate_pct": 0.0,
-          "reduction_pct": 21.43
+          "reduction_pct": 30.0
         }
       },
       "unsupported": {
@@ -207,43 +207,43 @@
       "confusion_matrix": {
         "true_safe": 0,
         "false_safe": 0,
-        "true_unsafe": 14,
-        "false_unsafe": 36
+        "true_unsafe": 20,
+        "false_unsafe": 30
       },
       "latency": {
-        "batch_total_ms": 1.891,
-        "single_sample_ms": 0.0378
+        "batch_total_ms": 2.395,
+        "single_sample_ms": 0.0479
       },
       "naive_baseline": {
-        "voltage_mae_pu": 0.02561,
-        "loading_mae_pct": 15.068,
-        "margin_mae": 0.0182
+        "voltage_mae_pu": 0.02503,
+        "loading_mae_pct": 14.863,
+        "margin_mae": 0.02027
       }
     }
   },
   "latency_benchmark": {
-    "pandapower_single_solve_ms": 73.48,
+    "pandapower_single_solve_ms": 152.49,
     "surrogate_batches": {
       "batch_1": {
         "sample_count": 1,
-        "total_ms": 0.806,
-        "per_sample_ms": 0.8062,
-        "pandapower_equiv_ms": 73.48,
-        "speedup_factor": 91.1
+        "total_ms": 2.048,
+        "per_sample_ms": 2.0482,
+        "pandapower_equiv_ms": 152.49,
+        "speedup_factor": 74.4
       },
       "batch_100": {
         "sample_count": 100,
-        "total_ms": 2.162,
-        "per_sample_ms": 0.0216,
-        "pandapower_equiv_ms": 7348.0,
-        "speedup_factor": 3398.5
+        "total_ms": 2.825,
+        "per_sample_ms": 0.0283,
+        "pandapower_equiv_ms": 15248.67,
+        "speedup_factor": 5397.4
       },
       "batch_1000": {
         "sample_count": 1000,
-        "total_ms": 7.252,
-        "per_sample_ms": 0.0073,
-        "pandapower_equiv_ms": 73480.0,
-        "speedup_factor": 10132.8
+        "total_ms": 12.538,
+        "per_sample_ms": 0.0125,
+        "pandapower_equiv_ms": 152486.7,
+        "speedup_factor": 12162.0
       }
     }
   }

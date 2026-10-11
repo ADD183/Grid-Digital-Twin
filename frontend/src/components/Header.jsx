@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Zap, MapPin, ShieldCheck } from 'lucide-react';
+import { Activity, Zap, MapPin, ShieldCheck, Sun } from 'lucide-react';
 
 export default function Header({ apiOnline }) {
   return (
@@ -53,6 +53,11 @@ export default function Header({ apiOnline }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#cbd5e1' }}>
             <MapPin size={15} color="#06b6d4" />
             <span>Pune, India (18.52° N, 73.85° E)</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#cbd5e1' }}>
+            <Sun size={15} color="#fbbf24" />
+            <span>Open-Meteo & PVGIS Solar Feed</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#cbd5e1' }}>

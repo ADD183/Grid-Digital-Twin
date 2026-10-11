@@ -575,6 +575,7 @@ async def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
 
         verifier, _ = get_global_verifier_and_screener()
         lims = load_limits_config()
+        lims.control.beam_width = 3
         screener = NullScreener()
         planner = BeamSearchPlanner(verifier=verifier, screener=screener, limits=lims)
 
@@ -709,6 +710,7 @@ async def run_surrogate_screened_episode(request: EpisodeRunRequest) -> Dict[str
     def _execute():
         verifier, screener = get_global_verifier_and_screener()
         lims = load_limits_config()
+        lims.control.beam_width = 3
         if screener is None:
             screener = SurrogateScreener(lims)
         planner = BeamSearchPlanner(verifier=verifier, screener=screener, limits=lims)
@@ -746,22 +748,34 @@ async def run_surrogate_screened_episode(request: EpisodeRunRequest) -> Dict[str
 # Checkpoint 8: Showcase Scenario & Evidence Pack Endpoints
 # -------------------------------------------------------------------------
 @app.get("/api/control/episode/showcase12")
-def get_showcase12_episode() -> Dict[str, Any]:
+@app.post("/api/control/episode/showcase12")
+async def get_showcase12_episode(force: bool = Query(False, description="Force live re-execution of showcase episode")) -> Dict[str, Any]:
     """Return 12-step Checkpoint 8 showcase episode log with all 6 required events."""
     import json
+    import asyncio
+    from datetime import datetime, timezone
     from pathlib import Path
     action_log_path = Path("outputs/evidence/action_logs/cp8_showcase_12step.json")
-    if action_log_path.is_file():
+    
+    if not force and action_log_path.is_file():
         try:
             with open(action_log_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if "executed_at" not in data:
+                    data["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+                return data
         except Exception:
             pass
 
-    from src.control.showcase import run_showcase_episode
-    log = run_showcase_episode(run_id="cp8_showcase_12step")
-    log.export_evidence()
-    return log.to_dict()
+    def _execute():
+        from src.control.showcase import run_showcase_episode
+        log = run_showcase_episode(run_id="cp8_showcase_12step")
+        log.export_evidence()
+        data = log.to_dict()
+        data["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+        return data
+
+    return await asyncio.to_thread(_execute)
 
 
 from fastapi.responses import FileResponse, Response

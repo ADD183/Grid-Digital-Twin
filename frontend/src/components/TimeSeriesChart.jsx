@@ -62,7 +62,7 @@ export default function TimeSeriesChart({ data, startDate, endDate }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '1.02rem' }}>
           <TrendingUp size={20} />
-          <span>Hourly Solar Generation (PVGIS Pune) vs. Customer Load Demand</span>
+          <span>Hourly Solar Generation (Open-Meteo API & PVGIS Pune) vs. Customer Load Demand</span>
         </div>
 
         {/* Toggle Mode Button */}

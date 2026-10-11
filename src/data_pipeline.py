@@ -55,6 +55,53 @@ def _generate_fallback_solar(time_index: pd.DatetimeIndex) -> pd.DataFrame:
     return df
 
 
+def fetch_open_meteo_solar_data(
+    latitude: float = PUNE_LAT,
+    longitude: float = PUNE_LON,
+    start_date: str = "2023-01-01",
+    end_date: str = "2023-01-31",
+) -> pd.DataFrame:
+    """
+    Fetch high-resolution hourly solar irradiance (shortwave_radiation in W/m2) from Open-Meteo API.
+    Supports historical archive and live forecast endpoints.
+    """
+    import httpx
+    
+    start_dt = pd.to_datetime(start_date)
+    end_dt = pd.to_datetime(end_date)
+    now_dt = pd.Timestamp.now()
+    
+    if end_dt > now_dt - pd.Timedelta(days=5):
+        url = (
+            f"https://api.open-meteo.com/v1/forecast?"
+            f"latitude={latitude}&longitude={longitude}&"
+            f"hourly=shortwave_radiation,direct_normal_irradiance&forecast_days=7"
+        )
+    else:
+        url = (
+            f"https://archive-api.open-meteo.com/v1/archive?"
+            f"latitude={latitude}&longitude={longitude}&"
+            f"start_date={start_dt.strftime('%Y-%m-%d')}&"
+            f"end_date={end_dt.strftime('%Y-%m-%d')}&"
+            f"hourly=shortwave_radiation"
+        )
+
+    headers = {"User-Agent": "VoltPredict/1.0"}
+    with httpx.Client(timeout=10.0, headers=headers) as client:
+        resp = client.get(url)
+        resp.raise_for_status()
+        data = resp.json()
+
+    hourly = data.get("hourly", {})
+    times = hourly.get("time", [])
+    ghi = hourly.get("shortwave_radiation", [])
+
+    df = pd.DataFrame({"ghi": ghi}, index=pd.to_datetime(times))
+    if df.index.tz is not None:
+        df.index = df.index.tz_localize(None)
+    return df
+
+
 def fetch_pune_solar_data(
     start_date: str = "2023-01-01",
     end_date: str = "2023-01-31",
@@ -62,7 +109,7 @@ def fetch_pune_solar_data(
     cache_path: Optional[str] = None
 ) -> pd.DataFrame:
     """
-    Fetch solar irradiance data for Pune (PVGIS hourly or 15-min sub-hourly synthetic).
+    Fetch solar irradiance data for Pune (PVGIS or Open-Meteo hourly, or 15-min sub-hourly synthetic).
     Caches the response to CSV to prevent unnecessary re-fetching.
     
     Args:
@@ -86,6 +133,8 @@ def fetch_pune_solar_data(
 
     time_index = pd.date_range(start=start_date, end=end_date, freq=freq)
 
+    # Multi-tier Data Provider Ladder:
+    # 1. Local Cache -> 2. PVGIS JRC -> 3. Open-Meteo API -> 4. Physical Clear-Sky Model
     try:
         start_year = pd.to_datetime(start_date).year
         end_year = pd.to_datetime(end_date).year
@@ -110,31 +159,34 @@ def fetch_pune_solar_data(
         if df_hourly.index.tz is not None:
             df_hourly.index = df_hourly.index.tz_localize(None)
 
-        # Resample / reindex to requested frequency with stochastic sub-hourly variability
-        if freq in ["15min", "15T"]:
-            df = stochastic_subhourly_solar(df_hourly, time_index)
-        else:
-            reindexed = df_hourly["ghi"].reindex(time_index.union(df_hourly.index)).interpolate(method="time")
-            ghi_vals = reindexed.reindex(time_index).ffill().bfill().values
-            solar_pu = np.clip(ghi_vals / 1000.0, 0.0, 1.0)
-            df = pd.DataFrame({
-                "ghi": ghi_vals,
-                "solar_pu": solar_pu,
-                "solar_lower_pu": np.maximum(0.0, solar_pu - 0.05),
-                "solar_upper_pu": np.minimum(1.0, solar_pu + 0.05),
-            }, index=time_index)
+    except Exception as pvgis_err:
+        print(f"[Info] PVGIS unreachable ({pvgis_err}). Querying Open-Meteo Solar API for Pune...")
+        try:
+            df_hourly = fetch_open_meteo_solar_data(PUNE_LAT, PUNE_LON, start_date, end_date)
+        except Exception as om_err:
+            print(f"[Warning] Open-Meteo unreachable ({om_err}). Using physical clear-sky model for Pune.")
+            df_hourly = _generate_fallback_solar(time_index)
 
-    except Exception as err:
-        print(f"[Warning] PVGIS fetch error: {err}. Using deterministic/stochastic solar model for Pune.")
-        df = _generate_fallback_solar(time_index)
-        df["solar_lower_pu"] = np.maximum(0.0, df["solar_pu"] - 0.05)
-        df["solar_upper_pu"] = np.minimum(1.0, df["solar_pu"] + 0.05)
+    # Resample / reindex to requested frequency with stochastic sub-hourly variability
+    if freq in ["15min", "15T"]:
+        df = stochastic_subhourly_solar(df_hourly, time_index)
+    else:
+        reindexed = df_hourly["ghi"].reindex(time_index.union(df_hourly.index)).interpolate(method="time")
+        ghi_vals = reindexed.reindex(time_index).ffill().bfill().values
+        solar_pu = np.clip(ghi_vals / 1000.0, 0.0, 1.0)
+        df = pd.DataFrame({
+            "ghi": ghi_vals,
+            "solar_pu": solar_pu,
+            "solar_lower_pu": np.maximum(0.0, solar_pu - 0.05),
+            "solar_upper_pu": np.minimum(1.0, solar_pu + 0.05),
+        }, index=time_index)
 
     if df.index.tz is not None:
         df.index = df.index.tz_localize(None)
 
     df.to_csv(cache_path)
     return df
+
 
 
 def stochastic_subhourly_solar(

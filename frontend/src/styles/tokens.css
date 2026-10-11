@@ -45,6 +45,44 @@ html[data-theme="dark"] {
   --c-grid: rgba(148, 163, 200, 0.12);
   --c-axis: #7b8ab0;
 
+  /* Compatibility Aliases & Fallbacks */
+  --color-fg-primary: var(--text);
+  --color-fg-secondary: var(--text-muted);
+  --color-fg-muted: var(--text-muted);
+  --color-fg-faint: var(--text-faint);
+  --color-bg-primary: var(--bg);
+  --color-bg-secondary: var(--surface);
+  --color-bg-tertiary: var(--surface-raised);
+  --color-card-bg: var(--surface);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-warning: var(--warn);
+  --color-success: var(--ok);
+  --color-info: var(--info);
+
+  /* Font Sizes & Weights Scale */
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-md: 1.0rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Space Scale Aliases */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
   /* Radii */
   --r-sm: 8px;
   --r-md: 12px;
@@ -86,6 +124,24 @@ html[data-theme="light"] {
   --text: #0f172a;
   --text-muted: #475569;
   --text-faint: #64748b;
+
+  /* Compatibility Aliases & Fallbacks */
+  --color-fg-primary: var(--text);
+  --color-fg-secondary: var(--text-muted);
+  --color-fg-muted: var(--text-muted);
+  --color-fg-faint: var(--text-faint);
+  --color-bg-primary: var(--bg);
+  --color-bg-secondary: var(--surface);
+  --color-bg-tertiary: var(--surface-raised);
+  --color-card-bg: var(--surface);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-warning: var(--warn);
+  --color-success: var(--ok);
+  --color-info: var(--info);
   
   /* Accent & Interactive */
   --accent: #1d4ed8;
@@ -117,3 +173,4 @@ html[data-theme="light"] {
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.05), 0 4px 12px rgba(15, 23, 42, 0.03);
   --shadow-popover: 0 10px 25px rgba(15, 23, 42, 0.12);
 }
+

@@ -12,9 +12,9 @@
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.0022175232223695662,
+      "min_margin": 0.008231550765317674,
       "violations": [],
-      "solve_ms": 79.03999998234212
+      "solve_ms": 777.0492000272498
     },
     {
       "step": 1,
@@ -25,9 +25,9 @@
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.014000000000000012,
+      "min_margin": 0.020000000000000018,
       "violations": [],
-      "solve_ms": 92.78519998770207
+      "solve_ms": 203.89939995948225
     },
     {
       "step": 2,
@@ -38,9 +38,9 @@
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.0008771649755108246,
+      "min_margin": 0.006868984866607253,
       "violations": [],
-      "solve_ms": 81.50329999625683
+      "solve_ms": 155.0639999913983
     },
     {
       "step": 3,
@@ -51,9 +51,9 @@
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.014000000000000012,
+      "min_margin": 0.020000000000000018,
       "violations": [],
-      "solve_ms": 92.78519998770207
+      "solve_ms": 203.89939995948225
     },
     {
       "step": 4,
@@ -64,9 +64,9 @@
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.014000000000000012,
+      "min_margin": 0.020000000000000018,
       "violations": [],
-      "solve_ms": 92.78519998770207
+      "solve_ms": 203.89939995948225
     },
     {
       "step": 5,
@@ -77,7 +77,7 @@
       },
       "converged": true,
       "is_safe": false,
-      "min_margin": -0.0411262740015762,
+      "min_margin": -0.048360792317948875,
       "violations": [
         {
           "element_type": "bus",
@@ -85,12 +85,12 @@
           "element_name": "Bus 2",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9463,
+          "actual_value": 0.9394,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0037,
-          "severity": 0.37,
-          "description": "Bus 2 undervoltage: 0.9463 p.u. falls below lower limit 0.95 p.u. (-0.0037 p.u.)"
+          "margin": 0.0106,
+          "severity": 1.06,
+          "description": "Bus 2 undervoltage: 0.9394 p.u. falls below lower limit 0.95 p.u. (-0.0106 p.u.)"
         },
         {
           "element_type": "bus",
@@ -98,12 +98,12 @@
           "element_name": "Bus 3",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9158,
+          "actual_value": 0.9087,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0342,
-          "severity": 3.42,
-          "description": "Bus 3 undervoltage: 0.9158 p.u. falls below lower limit 0.95 p.u. (-0.0342 p.u.)"
+          "margin": 0.0413,
+          "severity": 4.13,
+          "description": "Bus 3 undervoltage: 0.9087 p.u. falls below lower limit 0.95 p.u. (-0.0413 p.u.)"
         },
         {
           "element_type": "bus",
@@ -111,12 +111,12 @@
           "element_name": "Bus 4",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9132,
+          "actual_value": 0.906,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0368,
-          "severity": 3.68,
-          "description": "Bus 4 undervoltage: 0.9132 p.u. falls below lower limit 0.95 p.u. (-0.0368 p.u.)"
+          "margin": 0.044,
+          "severity": 4.4,
+          "description": "Bus 4 undervoltage: 0.9060 p.u. falls below lower limit 0.95 p.u. (-0.0440 p.u.)"
         },
         {
           "element_type": "bus",
@@ -124,12 +124,12 @@
           "element_name": "Bus 5",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9117,
+          "actual_value": 0.9045,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0383,
-          "severity": 3.83,
-          "description": "Bus 5 undervoltage: 0.9117 p.u. falls below lower limit 0.95 p.u. (-0.0383 p.u.)"
+          "margin": 0.0455,
+          "severity": 4.55,
+          "description": "Bus 5 undervoltage: 0.9045 p.u. falls below lower limit 0.95 p.u. (-0.0455 p.u.)"
         },
         {
           "element_type": "bus",
@@ -137,12 +137,12 @@
           "element_name": "Bus 6",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9089,
+          "actual_value": 0.9016,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0411,
-          "severity": 4.11,
-          "description": "Bus 6 undervoltage: 0.9089 p.u. falls below lower limit 0.95 p.u. (-0.0411 p.u.)"
+          "margin": 0.0484,
+          "severity": 4.84,
+          "description": "Bus 6 undervoltage: 0.9016 p.u. falls below lower limit 0.95 p.u. (-0.0484 p.u.)"
         },
         {
           "element_type": "bus",
@@ -150,12 +150,12 @@
           "element_name": "Bus 7",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9177,
+          "actual_value": 0.9105,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0323,
-          "severity": 3.23,
-          "description": "Bus 7 undervoltage: 0.9177 p.u. falls below lower limit 0.95 p.u. (-0.0323 p.u.)"
+          "margin": 0.0395,
+          "severity": 3.95,
+          "description": "Bus 7 undervoltage: 0.9105 p.u. falls below lower limit 0.95 p.u. (-0.0395 p.u.)"
         },
         {
           "element_type": "bus",
@@ -163,12 +163,12 @@
           "element_name": "Bus 8",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9148,
+          "actual_value": 0.9077,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0352,
-          "severity": 3.52,
-          "description": "Bus 8 undervoltage: 0.9148 p.u. falls below lower limit 0.95 p.u. (-0.0352 p.u.)"
+          "margin": 0.0423,
+          "severity": 4.23,
+          "description": "Bus 8 undervoltage: 0.9077 p.u. falls below lower limit 0.95 p.u. (-0.0423 p.u.)"
         },
         {
           "element_type": "bus",
@@ -176,12 +176,12 @@
           "element_name": "Bus 9",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9133,
+          "actual_value": 0.9061,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0367,
-          "severity": 3.67,
-          "description": "Bus 9 undervoltage: 0.9133 p.u. falls below lower limit 0.95 p.u. (-0.0367 p.u.)"
+          "margin": 0.0439,
+          "severity": 4.39,
+          "description": "Bus 9 undervoltage: 0.9061 p.u. falls below lower limit 0.95 p.u. (-0.0439 p.u.)"
         },
         {
           "element_type": "bus",
@@ -189,12 +189,12 @@
           "element_name": "Bus 10",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.911,
+          "actual_value": 0.9038,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.039,
-          "severity": 3.9,
-          "description": "Bus 10 undervoltage: 0.9110 p.u. falls below lower limit 0.95 p.u. (-0.0390 p.u.)"
+          "margin": 0.0462,
+          "severity": 4.62,
+          "description": "Bus 10 undervoltage: 0.9038 p.u. falls below lower limit 0.95 p.u. (-0.0462 p.u.)"
         },
         {
           "element_type": "bus",
@@ -202,12 +202,12 @@
           "element_name": "Bus 11",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9106,
+          "actual_value": 0.9034,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0394,
-          "severity": 3.94,
-          "description": "Bus 11 undervoltage: 0.9106 p.u. falls below lower limit 0.95 p.u. (-0.0394 p.u.)"
+          "margin": 0.0466,
+          "severity": 4.66,
+          "description": "Bus 11 undervoltage: 0.9034 p.u. falls below lower limit 0.95 p.u. (-0.0466 p.u.)"
         },
         {
           "element_type": "bus",
@@ -215,12 +215,12 @@
           "element_name": "Bus 13",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9388,
+          "actual_value": 0.9318,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0112,
-          "severity": 1.12,
-          "description": "Bus 13 undervoltage: 0.9388 p.u. falls below lower limit 0.95 p.u. (-0.0112 p.u.)"
+          "margin": 0.0182,
+          "severity": 1.82,
+          "description": "Bus 13 undervoltage: 0.9318 p.u. falls below lower limit 0.95 p.u. (-0.0182 p.u.)"
         },
         {
           "element_type": "bus",
@@ -228,12 +228,12 @@
           "element_name": "Bus 14",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9223,
+          "actual_value": 0.9151,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0277,
-          "severity": 2.77,
-          "description": "Bus 14 undervoltage: 0.9223 p.u. falls below lower limit 0.95 p.u. (-0.0277 p.u.)"
+          "margin": 0.0349,
+          "severity": 3.49,
+          "description": "Bus 14 undervoltage: 0.9151 p.u. falls below lower limit 0.95 p.u. (-0.0349 p.u.)"
         },
         {
           "element_type": "trafo",
@@ -242,12 +242,12 @@
           "hv_bus": 0,
           "lv_bus": 1,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 164.53,
+          "actual_value": 165.71,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 64.53,
-          "severity": 64.53,
-          "description": "Trafo 0-1 overload: 164.5% exceeds limit 100.0% (+64.5%)"
+          "margin": 65.71,
+          "severity": 65.71,
+          "description": "Trafo 0-1 overload: 165.7% exceeds limit 100.0% (+65.7%)"
         },
         {
           "element_type": "trafo",
@@ -256,15 +256,15 @@
           "hv_bus": 0,
           "lv_bus": 12,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 167.78,
+          "actual_value": 168.98,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 67.78,
-          "severity": 67.78,
-          "description": "Trafo 0-12 overload: 167.8% exceeds limit 100.0% (+67.8%)"
+          "margin": 68.98,
+          "severity": 68.98,
+          "description": "Trafo 0-12 overload: 169.0% exceeds limit 100.0% (+69.0%)"
         }
       ],
-      "solve_ms": 63.73269995674491
+      "solve_ms": 194.18669998412952
     },
     {
       "step": 6,
@@ -275,7 +275,7 @@
       },
       "converged": true,
       "is_safe": false,
-      "min_margin": -0.3849815174268224,
+      "min_margin": -0.4012415294164103,
       "violations": [
         {
           "element_type": "bus",
@@ -283,12 +283,12 @@
           "element_name": "Bus 1",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9065,
+          "actual_value": 0.8985,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0435,
-          "severity": 4.35,
-          "description": "Bus 1 undervoltage: 0.9065 p.u. falls below lower limit 0.95 p.u. (-0.0435 p.u.)"
+          "margin": 0.0515,
+          "severity": 5.15,
+          "description": "Bus 1 undervoltage: 0.8985 p.u. falls below lower limit 0.95 p.u. (-0.0515 p.u.)"
         },
         {
           "element_type": "bus",
@@ -296,12 +296,12 @@
           "element_name": "Bus 2",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8677,
+          "actual_value": 0.8592,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0823,
-          "severity": 8.23,
-          "description": "Bus 2 undervoltage: 0.8677 p.u. falls below lower limit 0.95 p.u. (-0.0823 p.u.)"
+          "margin": 0.0908,
+          "severity": 9.08,
+          "description": "Bus 2 undervoltage: 0.8592 p.u. falls below lower limit 0.95 p.u. (-0.0908 p.u.)"
         },
         {
           "element_type": "bus",
@@ -309,12 +309,12 @@
           "element_name": "Bus 3",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8071,
+          "actual_value": 0.7979,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1429,
-          "severity": 14.29,
-          "description": "Bus 3 undervoltage: 0.8071 p.u. falls below lower limit 0.95 p.u. (-0.1429 p.u.)"
+          "margin": 0.1521,
+          "severity": 15.21,
+          "description": "Bus 3 undervoltage: 0.7979 p.u. falls below lower limit 0.95 p.u. (-0.1521 p.u.)"
         },
         {
           "element_type": "bus",
@@ -322,12 +322,12 @@
           "element_name": "Bus 4",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8013,
+          "actual_value": 0.7921,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1487,
-          "severity": 14.87,
-          "description": "Bus 4 undervoltage: 0.8013 p.u. falls below lower limit 0.95 p.u. (-0.1487 p.u.)"
+          "margin": 0.1579,
+          "severity": 15.79,
+          "description": "Bus 4 undervoltage: 0.7921 p.u. falls below lower limit 0.95 p.u. (-0.1579 p.u.)"
         },
         {
           "element_type": "bus",
@@ -335,12 +335,12 @@
           "element_name": "Bus 5",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.7974,
+          "actual_value": 0.7881,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1526,
-          "severity": 15.26,
-          "description": "Bus 5 undervoltage: 0.7974 p.u. falls below lower limit 0.95 p.u. (-0.1526 p.u.)"
+          "margin": 0.1619,
+          "severity": 16.19,
+          "description": "Bus 5 undervoltage: 0.7881 p.u. falls below lower limit 0.95 p.u. (-0.1619 p.u.)"
         },
         {
           "element_type": "bus",
@@ -348,12 +348,12 @@
           "element_name": "Bus 6",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.7927,
+          "actual_value": 0.7834,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1573,
-          "severity": 15.73,
-          "description": "Bus 6 undervoltage: 0.7927 p.u. falls below lower limit 0.95 p.u. (-0.1573 p.u.)"
+          "margin": 0.1666,
+          "severity": 16.66,
+          "description": "Bus 6 undervoltage: 0.7834 p.u. falls below lower limit 0.95 p.u. (-0.1666 p.u.)"
         },
         {
           "element_type": "bus",
@@ -361,12 +361,12 @@
           "element_name": "Bus 7",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8087,
+          "actual_value": 0.7995,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1413,
-          "severity": 14.13,
-          "description": "Bus 7 undervoltage: 0.8087 p.u. falls below lower limit 0.95 p.u. (-0.1413 p.u.)"
+          "margin": 0.1505,
+          "severity": 15.05,
+          "description": "Bus 7 undervoltage: 0.7995 p.u. falls below lower limit 0.95 p.u. (-0.1505 p.u.)"
         },
         {
           "element_type": "bus",
@@ -374,12 +374,12 @@
           "element_name": "Bus 8",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8058,
+          "actual_value": 0.7966,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1442,
-          "severity": 14.42,
-          "description": "Bus 8 undervoltage: 0.8058 p.u. falls below lower limit 0.95 p.u. (-0.1442 p.u.)"
+          "margin": 0.1534,
+          "severity": 15.34,
+          "description": "Bus 8 undervoltage: 0.7966 p.u. falls below lower limit 0.95 p.u. (-0.1534 p.u.)"
         },
         {
           "element_type": "bus",
@@ -387,12 +387,12 @@
           "element_name": "Bus 9",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.803,
+          "actual_value": 0.7938,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.147,
-          "severity": 14.7,
-          "description": "Bus 9 undervoltage: 0.8030 p.u. falls below lower limit 0.95 p.u. (-0.1470 p.u.)"
+          "margin": 0.1562,
+          "severity": 15.62,
+          "description": "Bus 9 undervoltage: 0.7938 p.u. falls below lower limit 0.95 p.u. (-0.1562 p.u.)"
         },
         {
           "element_type": "bus",
@@ -400,12 +400,12 @@
           "element_name": "Bus 10",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.7992,
+          "actual_value": 0.79,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1508,
-          "severity": 15.08,
-          "description": "Bus 10 undervoltage: 0.7992 p.u. falls below lower limit 0.95 p.u. (-0.1508 p.u.)"
+          "margin": 0.16,
+          "severity": 16.0,
+          "description": "Bus 10 undervoltage: 0.7900 p.u. falls below lower limit 0.95 p.u. (-0.1600 p.u.)"
         },
         {
           "element_type": "bus",
@@ -413,12 +413,12 @@
           "element_name": "Bus 11",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.7986,
+          "actual_value": 0.7894,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1514,
-          "severity": 15.14,
-          "description": "Bus 11 undervoltage: 0.7986 p.u. falls below lower limit 0.95 p.u. (-0.1514 p.u.)"
+          "margin": 0.1606,
+          "severity": 16.06,
+          "description": "Bus 11 undervoltage: 0.7894 p.u. falls below lower limit 0.95 p.u. (-0.1606 p.u.)"
         },
         {
           "element_type": "bus",
@@ -426,12 +426,12 @@
           "element_name": "Bus 12",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9092,
+          "actual_value": 0.9013,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0408,
-          "severity": 4.08,
-          "description": "Bus 12 undervoltage: 0.9092 p.u. falls below lower limit 0.95 p.u. (-0.0408 p.u.)"
+          "margin": 0.0487,
+          "severity": 4.87,
+          "description": "Bus 12 undervoltage: 0.9013 p.u. falls below lower limit 0.95 p.u. (-0.0487 p.u.)"
         },
         {
           "element_type": "bus",
@@ -439,12 +439,12 @@
           "element_name": "Bus 13",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8545,
+          "actual_value": 0.8459,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0955,
-          "severity": 9.55,
-          "description": "Bus 13 undervoltage: 0.8545 p.u. falls below lower limit 0.95 p.u. (-0.0955 p.u.)"
+          "margin": 0.1041,
+          "severity": 10.41,
+          "description": "Bus 13 undervoltage: 0.8459 p.u. falls below lower limit 0.95 p.u. (-0.1041 p.u.)"
         },
         {
           "element_type": "bus",
@@ -452,12 +452,12 @@
           "element_name": "Bus 14",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8217,
+          "actual_value": 0.8127,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.1283,
-          "severity": 12.83,
-          "description": "Bus 14 undervoltage: 0.8217 p.u. falls below lower limit 0.95 p.u. (-0.1283 p.u.)"
+          "margin": 0.1373,
+          "severity": 13.73,
+          "description": "Bus 14 undervoltage: 0.8127 p.u. falls below lower limit 0.95 p.u. (-0.1373 p.u.)"
         },
         {
           "element_type": "line",
@@ -466,12 +466,12 @@
           "from_bus": 1,
           "to_bus": 2,
           "violation_type": "LINE_OVERLOAD",
-          "actual_value": 137.8,
+          "actual_value": 139.44,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 37.8,
-          "severity": 37.8,
-          "description": "Line 1-2 (Bus 1 -> Bus 2) thermal overload: 137.8% exceeds limit 100.0% (+37.8%)"
+          "margin": 39.44,
+          "severity": 39.44,
+          "description": "Line 1-2 (Bus 1 -> Bus 2) thermal overload: 139.4% exceeds limit 100.0% (+39.4%)"
         },
         {
           "element_type": "line",
@@ -480,12 +480,12 @@
           "from_bus": 2,
           "to_bus": 3,
           "violation_type": "LINE_OVERLOAD",
-          "actual_value": 138.5,
+          "actual_value": 140.12,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 38.5,
-          "severity": 38.5,
-          "description": "Line 2-3 (Bus 2 -> Bus 3) thermal overload: 138.5% exceeds limit 100.0% (+38.5%)"
+          "margin": 40.12,
+          "severity": 40.12,
+          "description": "Line 2-3 (Bus 2 -> Bus 3) thermal overload: 140.1% exceeds limit 100.0% (+40.1%)"
         },
         {
           "element_type": "line",
@@ -494,12 +494,12 @@
           "from_bus": 3,
           "to_bus": 4,
           "violation_type": "LINE_OVERLOAD",
-          "actual_value": 113.36,
+          "actual_value": 114.7,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 13.36,
-          "severity": 13.36,
-          "description": "Line 3-4 (Bus 3 -> Bus 4) thermal overload: 113.4% exceeds limit 100.0% (+13.4%)"
+          "margin": 14.7,
+          "severity": 14.7,
+          "description": "Line 3-4 (Bus 3 -> Bus 4) thermal overload: 114.7% exceeds limit 100.0% (+14.7%)"
         },
         {
           "element_type": "line",
@@ -508,12 +508,12 @@
           "from_bus": 12,
           "to_bus": 13,
           "violation_type": "LINE_OVERLOAD",
-          "actual_value": 110.78,
+          "actual_value": 112.08,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 10.78,
-          "severity": 10.78,
-          "description": "Line 12-13 (Bus 12 -> Bus 13) thermal overload: 110.8% exceeds limit 100.0% (+10.8%)"
+          "margin": 12.08,
+          "severity": 12.08,
+          "description": "Line 12-13 (Bus 12 -> Bus 13) thermal overload: 112.1% exceeds limit 100.0% (+12.1%)"
         },
         {
           "element_type": "line",
@@ -522,12 +522,12 @@
           "from_bus": 13,
           "to_bus": 14,
           "violation_type": "LINE_OVERLOAD",
-          "actual_value": 109.05,
+          "actual_value": 110.33,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 9.05,
-          "severity": 9.05,
-          "description": "Line 13-14 (Bus 13 -> Bus 14) thermal overload: 109.0% exceeds limit 100.0% (+9.1%)"
+          "margin": 10.33,
+          "severity": 10.33,
+          "description": "Line 13-14 (Bus 13 -> Bus 14) thermal overload: 110.3% exceeds limit 100.0% (+10.3%)"
         },
         {
           "element_type": "trafo",
@@ -536,12 +536,12 @@
           "hv_bus": 0,
           "lv_bus": 1,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 260.12,
+          "actual_value": 262.49,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 160.12,
-          "severity": 160.12,
-          "description": "Trafo 0-1 overload: 260.1% exceeds limit 100.0% (+160.1%)"
+          "margin": 162.49,
+          "severity": 162.49,
+          "description": "Trafo 0-1 overload: 262.5% exceeds limit 100.0% (+162.5%)"
         },
         {
           "element_type": "trafo",
@@ -550,78 +550,39 @@
           "hv_bus": 0,
           "lv_bus": 12,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 264.89,
+          "actual_value": 267.31,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 164.89,
-          "severity": 164.89,
-          "description": "Trafo 0-12 overload: 264.9% exceeds limit 100.0% (+164.9%)"
+          "margin": 167.31,
+          "severity": 167.31,
+          "description": "Trafo 0-12 overload: 267.3% exceeds limit 100.0% (+167.3%)"
         }
       ],
-      "solve_ms": 71.48669997695833
+      "solve_ms": 215.12609999626875
     },
     {
       "step": 7,
       "action": {
         "battery_mw": 0.0,
-        "curtail_pct": 0.0,
-        "switch_toggle": 1
-      },
-      "converged": true,
-      "is_safe": true,
-      "min_margin": 0.0018072074478164835,
-      "violations": [],
-      "solve_ms": 63.69370000902563
-    },
-    {
-      "step": 8,
-      "action": {
-        "battery_mw": 0.0,
-        "curtail_pct": 0.0,
-        "switch_toggle": null
+        "curtail_pct": 100.0,
+        "switch_toggle": 4
       },
       "converged": true,
       "is_safe": false,
-      "min_margin": -0.08237523339647168,
+      "min_margin": -0.03725647594387338,
       "violations": [
-        {
-          "element_type": "bus",
-          "element_id": 1,
-          "element_name": "Bus 1",
-          "vn_kv": 20.0,
-          "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9457,
-          "limit_value": 0.95,
-          "unit": "p.u.",
-          "margin": 0.0043,
-          "severity": 0.43,
-          "description": "Bus 1 undervoltage: 0.9457 p.u. falls below lower limit 0.95 p.u. (-0.0043 p.u.)"
-        },
-        {
-          "element_type": "bus",
-          "element_id": 2,
-          "element_name": "Bus 2",
-          "vn_kv": 20.0,
-          "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9187,
-          "limit_value": 0.95,
-          "unit": "p.u.",
-          "margin": 0.0313,
-          "severity": 3.13,
-          "description": "Bus 2 undervoltage: 0.9187 p.u. falls below lower limit 0.95 p.u. (-0.0313 p.u.)"
-        },
         {
           "element_type": "bus",
           "element_id": 3,
           "element_name": "Bus 3",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8762,
+          "actual_value": 0.9194,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0738,
-          "severity": 7.38,
-          "description": "Bus 3 undervoltage: 0.8762 p.u. falls below lower limit 0.95 p.u. (-0.0738 p.u.)"
+          "margin": 0.0306,
+          "severity": 3.06,
+          "description": "Bus 3 undervoltage: 0.9194 p.u. falls below lower limit 0.95 p.u. (-0.0306 p.u.)"
         },
         {
           "element_type": "bus",
@@ -629,12 +590,12 @@
           "element_name": "Bus 4",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8733,
+          "actual_value": 0.917,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0767,
-          "severity": 7.67,
-          "description": "Bus 4 undervoltage: 0.8733 p.u. falls below lower limit 0.95 p.u. (-0.0767 p.u.)"
+          "margin": 0.033,
+          "severity": 3.3,
+          "description": "Bus 4 undervoltage: 0.9170 p.u. falls below lower limit 0.95 p.u. (-0.0330 p.u.)"
         },
         {
           "element_type": "bus",
@@ -642,12 +603,12 @@
           "element_name": "Bus 5",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8717,
+          "actual_value": 0.9153,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0783,
-          "severity": 7.83,
-          "description": "Bus 5 undervoltage: 0.8717 p.u. falls below lower limit 0.95 p.u. (-0.0783 p.u.)"
+          "margin": 0.0347,
+          "severity": 3.47,
+          "description": "Bus 5 undervoltage: 0.9153 p.u. falls below lower limit 0.95 p.u. (-0.0347 p.u.)"
         },
         {
           "element_type": "bus",
@@ -655,12 +616,12 @@
           "element_name": "Bus 6",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8716,
+          "actual_value": 0.9133,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0784,
-          "severity": 7.84,
-          "description": "Bus 6 undervoltage: 0.8716 p.u. falls below lower limit 0.95 p.u. (-0.0784 p.u.)"
+          "margin": 0.0367,
+          "severity": 3.67,
+          "description": "Bus 6 undervoltage: 0.9133 p.u. falls below lower limit 0.95 p.u. (-0.0367 p.u.)"
         },
         {
           "element_type": "bus",
@@ -668,12 +629,12 @@
           "element_name": "Bus 7",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8721,
+          "actual_value": 0.9187,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0779,
-          "severity": 7.79,
-          "description": "Bus 7 undervoltage: 0.8721 p.u. falls below lower limit 0.95 p.u. (-0.0779 p.u.)"
+          "margin": 0.0313,
+          "severity": 3.13,
+          "description": "Bus 7 undervoltage: 0.9187 p.u. falls below lower limit 0.95 p.u. (-0.0313 p.u.)"
         },
         {
           "element_type": "bus",
@@ -681,12 +642,12 @@
           "element_name": "Bus 8",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8728,
+          "actual_value": 0.9157,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0772,
-          "severity": 7.72,
-          "description": "Bus 8 undervoltage: 0.8728 p.u. falls below lower limit 0.95 p.u. (-0.0772 p.u.)"
+          "margin": 0.0343,
+          "severity": 3.43,
+          "description": "Bus 8 undervoltage: 0.9157 p.u. falls below lower limit 0.95 p.u. (-0.0343 p.u.)"
         },
         {
           "element_type": "bus",
@@ -694,12 +655,12 @@
           "element_name": "Bus 9",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8709,
+          "actual_value": 0.9146,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0791,
-          "severity": 7.91,
-          "description": "Bus 9 undervoltage: 0.8709 p.u. falls below lower limit 0.95 p.u. (-0.0791 p.u.)"
+          "margin": 0.0354,
+          "severity": 3.54,
+          "description": "Bus 9 undervoltage: 0.9146 p.u. falls below lower limit 0.95 p.u. (-0.0354 p.u.)"
         },
         {
           "element_type": "bus",
@@ -707,12 +668,12 @@
           "element_name": "Bus 10",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8681,
+          "actual_value": 0.913,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0819,
-          "severity": 8.19,
-          "description": "Bus 10 undervoltage: 0.8681 p.u. falls below lower limit 0.95 p.u. (-0.0819 p.u.)"
+          "margin": 0.037,
+          "severity": 3.7,
+          "description": "Bus 10 undervoltage: 0.9130 p.u. falls below lower limit 0.95 p.u. (-0.0370 p.u.)"
         },
         {
           "element_type": "bus",
@@ -720,51 +681,12 @@
           "element_name": "Bus 11",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8676,
+          "actual_value": 0.9127,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0824,
-          "severity": 8.24,
-          "description": "Bus 11 undervoltage: 0.8676 p.u. falls below lower limit 0.95 p.u. (-0.0824 p.u.)"
-        },
-        {
-          "element_type": "bus",
-          "element_id": 12,
-          "element_name": "Bus 12",
-          "vn_kv": 20.0,
-          "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9474,
-          "limit_value": 0.95,
-          "unit": "p.u.",
-          "margin": 0.0026,
-          "severity": 0.26,
-          "description": "Bus 12 undervoltage: 0.9474 p.u. falls below lower limit 0.95 p.u. (-0.0026 p.u.)"
-        },
-        {
-          "element_type": "bus",
-          "element_id": 13,
-          "element_name": "Bus 13",
-          "vn_kv": 20.0,
-          "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9079,
-          "limit_value": 0.95,
-          "unit": "p.u.",
-          "margin": 0.0421,
-          "severity": 4.21,
-          "description": "Bus 13 undervoltage: 0.9079 p.u. falls below lower limit 0.95 p.u. (-0.0421 p.u.)"
-        },
-        {
-          "element_type": "bus",
-          "element_id": 14,
-          "element_name": "Bus 14",
-          "vn_kv": 20.0,
-          "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8842,
-          "limit_value": 0.95,
-          "unit": "p.u.",
-          "margin": 0.0658,
-          "severity": 6.58,
-          "description": "Bus 14 undervoltage: 0.8842 p.u. falls below lower limit 0.95 p.u. (-0.0658 p.u.)"
+          "margin": 0.0373,
+          "severity": 3.73,
+          "description": "Bus 11 undervoltage: 0.9127 p.u. falls below lower limit 0.95 p.u. (-0.0373 p.u.)"
         },
         {
           "element_type": "trafo",
@@ -773,12 +695,12 @@
           "hv_bus": 0,
           "lv_bus": 1,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 199.32,
+          "actual_value": 124.85,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 99.32,
-          "severity": 99.32,
-          "description": "Trafo 0-1 overload: 199.3% exceeds limit 100.0% (+99.3%)"
+          "margin": 24.85,
+          "severity": 24.85,
+          "description": "Trafo 0-1 overload: 124.9% exceeds limit 100.0% (+24.9%)"
         },
         {
           "element_type": "trafo",
@@ -787,15 +709,239 @@
           "hv_bus": 0,
           "lv_bus": 12,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 203.81,
+          "actual_value": 111.39,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 103.81,
-          "severity": 103.81,
-          "description": "Trafo 0-12 overload: 203.8% exceeds limit 100.0% (+103.8%)"
+          "margin": 11.39,
+          "severity": 11.39,
+          "description": "Trafo 0-12 overload: 111.4% exceeds limit 100.0% (+11.4%)"
         }
       ],
-      "solve_ms": 64.45280002662912
+      "solve_ms": 109.19629997806624
+    },
+    {
+      "step": 8,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 100.0,
+        "switch_toggle": 4
+      },
+      "converged": true,
+      "is_safe": false,
+      "min_margin": -0.09389582488884729,
+      "violations": [
+        {
+          "element_type": "bus",
+          "element_id": 1,
+          "element_name": "Bus 1",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9384,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0116,
+          "severity": 1.16,
+          "description": "Bus 1 undervoltage: 0.9384 p.u. falls below lower limit 0.95 p.u. (-0.0116 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 2,
+          "element_name": "Bus 2",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9105,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0395,
+          "severity": 3.95,
+          "description": "Bus 2 undervoltage: 0.9105 p.u. falls below lower limit 0.95 p.u. (-0.0395 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 3,
+          "element_name": "Bus 3",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8668,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0832,
+          "severity": 8.32,
+          "description": "Bus 3 undervoltage: 0.8668 p.u. falls below lower limit 0.95 p.u. (-0.0832 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 4,
+          "element_name": "Bus 4",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8625,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0875,
+          "severity": 8.75,
+          "description": "Bus 4 undervoltage: 0.8625 p.u. falls below lower limit 0.95 p.u. (-0.0875 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 5,
+          "element_name": "Bus 5",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8596,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0904,
+          "severity": 9.04,
+          "description": "Bus 5 undervoltage: 0.8596 p.u. falls below lower limit 0.95 p.u. (-0.0904 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 6,
+          "element_name": "Bus 6",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8561,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0939,
+          "severity": 9.39,
+          "description": "Bus 6 undervoltage: 0.8561 p.u. falls below lower limit 0.95 p.u. (-0.0939 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 7,
+          "element_name": "Bus 7",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8691,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0809,
+          "severity": 8.09,
+          "description": "Bus 7 undervoltage: 0.8691 p.u. falls below lower limit 0.95 p.u. (-0.0809 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 8,
+          "element_name": "Bus 8",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8662,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0838,
+          "severity": 8.38,
+          "description": "Bus 8 undervoltage: 0.8662 p.u. falls below lower limit 0.95 p.u. (-0.0838 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 9,
+          "element_name": "Bus 9",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8642,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0858,
+          "severity": 8.58,
+          "description": "Bus 9 undervoltage: 0.8642 p.u. falls below lower limit 0.95 p.u. (-0.0858 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 10,
+          "element_name": "Bus 10",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8613,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0887,
+          "severity": 8.87,
+          "description": "Bus 10 undervoltage: 0.8613 p.u. falls below lower limit 0.95 p.u. (-0.0887 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 11,
+          "element_name": "Bus 11",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8609,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0891,
+          "severity": 8.91,
+          "description": "Bus 11 undervoltage: 0.8609 p.u. falls below lower limit 0.95 p.u. (-0.0891 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 12,
+          "element_name": "Bus 12",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9404,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0096,
+          "severity": 0.96,
+          "description": "Bus 12 undervoltage: 0.9404 p.u. falls below lower limit 0.95 p.u. (-0.0096 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 13,
+          "element_name": "Bus 13",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.901,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.049,
+          "severity": 4.9,
+          "description": "Bus 13 undervoltage: 0.9010 p.u. falls below lower limit 0.95 p.u. (-0.0490 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 14,
+          "element_name": "Bus 14",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.8775,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0725,
+          "severity": 7.25,
+          "description": "Bus 14 undervoltage: 0.8775 p.u. falls below lower limit 0.95 p.u. (-0.0725 p.u.)"
+        },
+        {
+          "element_type": "trafo",
+          "element_id": 0,
+          "element_name": "Trafo 0-1",
+          "hv_bus": 0,
+          "lv_bus": 1,
+          "violation_type": "TRAFO_OVERLOAD",
+          "actual_value": 201.41,
+          "limit_value": 100.0,
+          "unit": "%",
+          "margin": 101.41,
+          "severity": 101.41,
+          "description": "Trafo 0-1 overload: 201.4% exceeds limit 100.0% (+101.4%)"
+        },
+        {
+          "element_type": "trafo",
+          "element_id": 1,
+          "element_name": "Trafo 0-12",
+          "hv_bus": 0,
+          "lv_bus": 12,
+          "violation_type": "TRAFO_OVERLOAD",
+          "actual_value": 205.0,
+          "limit_value": 100.0,
+          "unit": "%",
+          "margin": 105.0,
+          "severity": 105.0,
+          "description": "Trafo 0-12 overload: 205.0% exceeds limit 100.0% (+105.0%)"
+        }
+      ],
+      "solve_ms": 108.87799999909475
     },
     {
       "step": 9,
@@ -806,7 +952,7 @@
       },
       "converged": true,
       "is_safe": false,
-      "min_margin": -0.08237523339647168,
+      "min_margin": -0.09389582488884729,
       "violations": [
         {
           "element_type": "bus",
@@ -814,12 +960,12 @@
           "element_name": "Bus 1",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9457,
+          "actual_value": 0.9384,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0043,
-          "severity": 0.43,
-          "description": "Bus 1 undervoltage: 0.9457 p.u. falls below lower limit 0.95 p.u. (-0.0043 p.u.)"
+          "margin": 0.0116,
+          "severity": 1.16,
+          "description": "Bus 1 undervoltage: 0.9384 p.u. falls below lower limit 0.95 p.u. (-0.0116 p.u.)"
         },
         {
           "element_type": "bus",
@@ -827,12 +973,12 @@
           "element_name": "Bus 2",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9187,
+          "actual_value": 0.9105,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0313,
-          "severity": 3.13,
-          "description": "Bus 2 undervoltage: 0.9187 p.u. falls below lower limit 0.95 p.u. (-0.0313 p.u.)"
+          "margin": 0.0395,
+          "severity": 3.95,
+          "description": "Bus 2 undervoltage: 0.9105 p.u. falls below lower limit 0.95 p.u. (-0.0395 p.u.)"
         },
         {
           "element_type": "bus",
@@ -840,12 +986,12 @@
           "element_name": "Bus 3",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8762,
+          "actual_value": 0.8668,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0738,
-          "severity": 7.38,
-          "description": "Bus 3 undervoltage: 0.8762 p.u. falls below lower limit 0.95 p.u. (-0.0738 p.u.)"
+          "margin": 0.0832,
+          "severity": 8.32,
+          "description": "Bus 3 undervoltage: 0.8668 p.u. falls below lower limit 0.95 p.u. (-0.0832 p.u.)"
         },
         {
           "element_type": "bus",
@@ -853,12 +999,12 @@
           "element_name": "Bus 4",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8733,
+          "actual_value": 0.8625,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0767,
-          "severity": 7.67,
-          "description": "Bus 4 undervoltage: 0.8733 p.u. falls below lower limit 0.95 p.u. (-0.0767 p.u.)"
+          "margin": 0.0875,
+          "severity": 8.75,
+          "description": "Bus 4 undervoltage: 0.8625 p.u. falls below lower limit 0.95 p.u. (-0.0875 p.u.)"
         },
         {
           "element_type": "bus",
@@ -866,12 +1012,12 @@
           "element_name": "Bus 5",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8717,
+          "actual_value": 0.8596,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0783,
-          "severity": 7.83,
-          "description": "Bus 5 undervoltage: 0.8717 p.u. falls below lower limit 0.95 p.u. (-0.0783 p.u.)"
+          "margin": 0.0904,
+          "severity": 9.04,
+          "description": "Bus 5 undervoltage: 0.8596 p.u. falls below lower limit 0.95 p.u. (-0.0904 p.u.)"
         },
         {
           "element_type": "bus",
@@ -879,12 +1025,12 @@
           "element_name": "Bus 6",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8716,
+          "actual_value": 0.8561,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0784,
-          "severity": 7.84,
-          "description": "Bus 6 undervoltage: 0.8716 p.u. falls below lower limit 0.95 p.u. (-0.0784 p.u.)"
+          "margin": 0.0939,
+          "severity": 9.39,
+          "description": "Bus 6 undervoltage: 0.8561 p.u. falls below lower limit 0.95 p.u. (-0.0939 p.u.)"
         },
         {
           "element_type": "bus",
@@ -892,12 +1038,12 @@
           "element_name": "Bus 7",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8721,
+          "actual_value": 0.8691,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0779,
-          "severity": 7.79,
-          "description": "Bus 7 undervoltage: 0.8721 p.u. falls below lower limit 0.95 p.u. (-0.0779 p.u.)"
+          "margin": 0.0809,
+          "severity": 8.09,
+          "description": "Bus 7 undervoltage: 0.8691 p.u. falls below lower limit 0.95 p.u. (-0.0809 p.u.)"
         },
         {
           "element_type": "bus",
@@ -905,12 +1051,12 @@
           "element_name": "Bus 8",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8728,
+          "actual_value": 0.8662,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0772,
-          "severity": 7.72,
-          "description": "Bus 8 undervoltage: 0.8728 p.u. falls below lower limit 0.95 p.u. (-0.0772 p.u.)"
+          "margin": 0.0838,
+          "severity": 8.38,
+          "description": "Bus 8 undervoltage: 0.8662 p.u. falls below lower limit 0.95 p.u. (-0.0838 p.u.)"
         },
         {
           "element_type": "bus",
@@ -918,12 +1064,12 @@
           "element_name": "Bus 9",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8709,
+          "actual_value": 0.8642,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0791,
-          "severity": 7.91,
-          "description": "Bus 9 undervoltage: 0.8709 p.u. falls below lower limit 0.95 p.u. (-0.0791 p.u.)"
+          "margin": 0.0858,
+          "severity": 8.58,
+          "description": "Bus 9 undervoltage: 0.8642 p.u. falls below lower limit 0.95 p.u. (-0.0858 p.u.)"
         },
         {
           "element_type": "bus",
@@ -931,12 +1077,12 @@
           "element_name": "Bus 10",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8681,
+          "actual_value": 0.8613,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0819,
-          "severity": 8.19,
-          "description": "Bus 10 undervoltage: 0.8681 p.u. falls below lower limit 0.95 p.u. (-0.0819 p.u.)"
+          "margin": 0.0887,
+          "severity": 8.87,
+          "description": "Bus 10 undervoltage: 0.8613 p.u. falls below lower limit 0.95 p.u. (-0.0887 p.u.)"
         },
         {
           "element_type": "bus",
@@ -944,12 +1090,12 @@
           "element_name": "Bus 11",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8676,
+          "actual_value": 0.8609,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0824,
-          "severity": 8.24,
-          "description": "Bus 11 undervoltage: 0.8676 p.u. falls below lower limit 0.95 p.u. (-0.0824 p.u.)"
+          "margin": 0.0891,
+          "severity": 8.91,
+          "description": "Bus 11 undervoltage: 0.8609 p.u. falls below lower limit 0.95 p.u. (-0.0891 p.u.)"
         },
         {
           "element_type": "bus",
@@ -957,12 +1103,12 @@
           "element_name": "Bus 12",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9474,
+          "actual_value": 0.9404,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0026,
-          "severity": 0.26,
-          "description": "Bus 12 undervoltage: 0.9474 p.u. falls below lower limit 0.95 p.u. (-0.0026 p.u.)"
+          "margin": 0.0096,
+          "severity": 0.96,
+          "description": "Bus 12 undervoltage: 0.9404 p.u. falls below lower limit 0.95 p.u. (-0.0096 p.u.)"
         },
         {
           "element_type": "bus",
@@ -970,12 +1116,12 @@
           "element_name": "Bus 13",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9079,
+          "actual_value": 0.901,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0421,
-          "severity": 4.21,
-          "description": "Bus 13 undervoltage: 0.9079 p.u. falls below lower limit 0.95 p.u. (-0.0421 p.u.)"
+          "margin": 0.049,
+          "severity": 4.9,
+          "description": "Bus 13 undervoltage: 0.9010 p.u. falls below lower limit 0.95 p.u. (-0.0490 p.u.)"
         },
         {
           "element_type": "bus",
@@ -983,12 +1129,12 @@
           "element_name": "Bus 14",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8842,
+          "actual_value": 0.8775,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0658,
-          "severity": 6.58,
-          "description": "Bus 14 undervoltage: 0.8842 p.u. falls below lower limit 0.95 p.u. (-0.0658 p.u.)"
+          "margin": 0.0725,
+          "severity": 7.25,
+          "description": "Bus 14 undervoltage: 0.8775 p.u. falls below lower limit 0.95 p.u. (-0.0725 p.u.)"
         },
         {
           "element_type": "trafo",
@@ -997,12 +1143,12 @@
           "hv_bus": 0,
           "lv_bus": 1,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 199.32,
+          "actual_value": 201.41,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 99.32,
-          "severity": 99.32,
-          "description": "Trafo 0-1 overload: 199.3% exceeds limit 100.0% (+99.3%)"
+          "margin": 101.41,
+          "severity": 101.41,
+          "description": "Trafo 0-1 overload: 201.4% exceeds limit 100.0% (+101.4%)"
         },
         {
           "element_type": "trafo",
@@ -1011,15 +1157,15 @@
           "hv_bus": 0,
           "lv_bus": 12,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 203.81,
+          "actual_value": 205.0,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 103.81,
-          "severity": 103.81,
-          "description": "Trafo 0-12 overload: 203.8% exceeds limit 100.0% (+103.8%)"
+          "margin": 105.0,
+          "severity": 105.0,
+          "description": "Trafo 0-12 overload: 205.0% exceeds limit 100.0% (+105.0%)"
         }
       ],
-      "solve_ms": 64.45280002662912
+      "solve_ms": 1011.520300002303
     },
     {
       "step": 10,
@@ -1030,7 +1176,7 @@
       },
       "converged": true,
       "is_safe": false,
-      "min_margin": -0.08237523339647168,
+      "min_margin": -0.09389582488884729,
       "violations": [
         {
           "element_type": "bus",
@@ -1038,12 +1184,12 @@
           "element_name": "Bus 1",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9457,
+          "actual_value": 0.9384,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0043,
-          "severity": 0.43,
-          "description": "Bus 1 undervoltage: 0.9457 p.u. falls below lower limit 0.95 p.u. (-0.0043 p.u.)"
+          "margin": 0.0116,
+          "severity": 1.16,
+          "description": "Bus 1 undervoltage: 0.9384 p.u. falls below lower limit 0.95 p.u. (-0.0116 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1051,12 +1197,12 @@
           "element_name": "Bus 2",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9187,
+          "actual_value": 0.9105,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0313,
-          "severity": 3.13,
-          "description": "Bus 2 undervoltage: 0.9187 p.u. falls below lower limit 0.95 p.u. (-0.0313 p.u.)"
+          "margin": 0.0395,
+          "severity": 3.95,
+          "description": "Bus 2 undervoltage: 0.9105 p.u. falls below lower limit 0.95 p.u. (-0.0395 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1064,12 +1210,12 @@
           "element_name": "Bus 3",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8762,
+          "actual_value": 0.8668,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0738,
-          "severity": 7.38,
-          "description": "Bus 3 undervoltage: 0.8762 p.u. falls below lower limit 0.95 p.u. (-0.0738 p.u.)"
+          "margin": 0.0832,
+          "severity": 8.32,
+          "description": "Bus 3 undervoltage: 0.8668 p.u. falls below lower limit 0.95 p.u. (-0.0832 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1077,12 +1223,12 @@
           "element_name": "Bus 4",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8733,
+          "actual_value": 0.8625,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0767,
-          "severity": 7.67,
-          "description": "Bus 4 undervoltage: 0.8733 p.u. falls below lower limit 0.95 p.u. (-0.0767 p.u.)"
+          "margin": 0.0875,
+          "severity": 8.75,
+          "description": "Bus 4 undervoltage: 0.8625 p.u. falls below lower limit 0.95 p.u. (-0.0875 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1090,12 +1236,12 @@
           "element_name": "Bus 5",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8717,
+          "actual_value": 0.8596,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0783,
-          "severity": 7.83,
-          "description": "Bus 5 undervoltage: 0.8717 p.u. falls below lower limit 0.95 p.u. (-0.0783 p.u.)"
+          "margin": 0.0904,
+          "severity": 9.04,
+          "description": "Bus 5 undervoltage: 0.8596 p.u. falls below lower limit 0.95 p.u. (-0.0904 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1103,12 +1249,12 @@
           "element_name": "Bus 6",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8716,
+          "actual_value": 0.8561,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0784,
-          "severity": 7.84,
-          "description": "Bus 6 undervoltage: 0.8716 p.u. falls below lower limit 0.95 p.u. (-0.0784 p.u.)"
+          "margin": 0.0939,
+          "severity": 9.39,
+          "description": "Bus 6 undervoltage: 0.8561 p.u. falls below lower limit 0.95 p.u. (-0.0939 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1116,12 +1262,12 @@
           "element_name": "Bus 7",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8721,
+          "actual_value": 0.8691,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0779,
-          "severity": 7.79,
-          "description": "Bus 7 undervoltage: 0.8721 p.u. falls below lower limit 0.95 p.u. (-0.0779 p.u.)"
+          "margin": 0.0809,
+          "severity": 8.09,
+          "description": "Bus 7 undervoltage: 0.8691 p.u. falls below lower limit 0.95 p.u. (-0.0809 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1129,12 +1275,12 @@
           "element_name": "Bus 8",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8728,
+          "actual_value": 0.8662,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0772,
-          "severity": 7.72,
-          "description": "Bus 8 undervoltage: 0.8728 p.u. falls below lower limit 0.95 p.u. (-0.0772 p.u.)"
+          "margin": 0.0838,
+          "severity": 8.38,
+          "description": "Bus 8 undervoltage: 0.8662 p.u. falls below lower limit 0.95 p.u. (-0.0838 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1142,12 +1288,12 @@
           "element_name": "Bus 9",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8709,
+          "actual_value": 0.8642,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0791,
-          "severity": 7.91,
-          "description": "Bus 9 undervoltage: 0.8709 p.u. falls below lower limit 0.95 p.u. (-0.0791 p.u.)"
+          "margin": 0.0858,
+          "severity": 8.58,
+          "description": "Bus 9 undervoltage: 0.8642 p.u. falls below lower limit 0.95 p.u. (-0.0858 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1155,12 +1301,12 @@
           "element_name": "Bus 10",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8681,
+          "actual_value": 0.8613,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0819,
-          "severity": 8.19,
-          "description": "Bus 10 undervoltage: 0.8681 p.u. falls below lower limit 0.95 p.u. (-0.0819 p.u.)"
+          "margin": 0.0887,
+          "severity": 8.87,
+          "description": "Bus 10 undervoltage: 0.8613 p.u. falls below lower limit 0.95 p.u. (-0.0887 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1168,12 +1314,12 @@
           "element_name": "Bus 11",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8676,
+          "actual_value": 0.8609,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0824,
-          "severity": 8.24,
-          "description": "Bus 11 undervoltage: 0.8676 p.u. falls below lower limit 0.95 p.u. (-0.0824 p.u.)"
+          "margin": 0.0891,
+          "severity": 8.91,
+          "description": "Bus 11 undervoltage: 0.8609 p.u. falls below lower limit 0.95 p.u. (-0.0891 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1181,12 +1327,12 @@
           "element_name": "Bus 12",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9474,
+          "actual_value": 0.9404,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0026,
-          "severity": 0.26,
-          "description": "Bus 12 undervoltage: 0.9474 p.u. falls below lower limit 0.95 p.u. (-0.0026 p.u.)"
+          "margin": 0.0096,
+          "severity": 0.96,
+          "description": "Bus 12 undervoltage: 0.9404 p.u. falls below lower limit 0.95 p.u. (-0.0096 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1194,12 +1340,12 @@
           "element_name": "Bus 13",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9079,
+          "actual_value": 0.901,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0421,
-          "severity": 4.21,
-          "description": "Bus 13 undervoltage: 0.9079 p.u. falls below lower limit 0.95 p.u. (-0.0421 p.u.)"
+          "margin": 0.049,
+          "severity": 4.9,
+          "description": "Bus 13 undervoltage: 0.9010 p.u. falls below lower limit 0.95 p.u. (-0.0490 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1207,12 +1353,12 @@
           "element_name": "Bus 14",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8842,
+          "actual_value": 0.8775,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0658,
-          "severity": 6.58,
-          "description": "Bus 14 undervoltage: 0.8842 p.u. falls below lower limit 0.95 p.u. (-0.0658 p.u.)"
+          "margin": 0.0725,
+          "severity": 7.25,
+          "description": "Bus 14 undervoltage: 0.8775 p.u. falls below lower limit 0.95 p.u. (-0.0725 p.u.)"
         },
         {
           "element_type": "trafo",
@@ -1221,12 +1367,12 @@
           "hv_bus": 0,
           "lv_bus": 1,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 199.32,
+          "actual_value": 201.41,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 99.32,
-          "severity": 99.32,
-          "description": "Trafo 0-1 overload: 199.3% exceeds limit 100.0% (+99.3%)"
+          "margin": 101.41,
+          "severity": 101.41,
+          "description": "Trafo 0-1 overload: 201.4% exceeds limit 100.0% (+101.4%)"
         },
         {
           "element_type": "trafo",
@@ -1235,15 +1381,15 @@
           "hv_bus": 0,
           "lv_bus": 12,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 203.81,
+          "actual_value": 205.0,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 103.81,
-          "severity": 103.81,
-          "description": "Trafo 0-12 overload: 203.8% exceeds limit 100.0% (+103.8%)"
+          "margin": 105.0,
+          "severity": 105.0,
+          "description": "Trafo 0-12 overload: 205.0% exceeds limit 100.0% (+105.0%)"
         }
       ],
-      "solve_ms": 64.45280002662912
+      "solve_ms": 1011.520300002303
     },
     {
       "step": 11,
@@ -1254,7 +1400,7 @@
       },
       "converged": true,
       "is_safe": false,
-      "min_margin": -0.08237523339647168,
+      "min_margin": -0.09389582488884729,
       "violations": [
         {
           "element_type": "bus",
@@ -1262,12 +1408,12 @@
           "element_name": "Bus 1",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9457,
+          "actual_value": 0.9384,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0043,
-          "severity": 0.43,
-          "description": "Bus 1 undervoltage: 0.9457 p.u. falls below lower limit 0.95 p.u. (-0.0043 p.u.)"
+          "margin": 0.0116,
+          "severity": 1.16,
+          "description": "Bus 1 undervoltage: 0.9384 p.u. falls below lower limit 0.95 p.u. (-0.0116 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1275,12 +1421,12 @@
           "element_name": "Bus 2",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9187,
+          "actual_value": 0.9105,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0313,
-          "severity": 3.13,
-          "description": "Bus 2 undervoltage: 0.9187 p.u. falls below lower limit 0.95 p.u. (-0.0313 p.u.)"
+          "margin": 0.0395,
+          "severity": 3.95,
+          "description": "Bus 2 undervoltage: 0.9105 p.u. falls below lower limit 0.95 p.u. (-0.0395 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1288,12 +1434,12 @@
           "element_name": "Bus 3",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8762,
+          "actual_value": 0.8668,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0738,
-          "severity": 7.38,
-          "description": "Bus 3 undervoltage: 0.8762 p.u. falls below lower limit 0.95 p.u. (-0.0738 p.u.)"
+          "margin": 0.0832,
+          "severity": 8.32,
+          "description": "Bus 3 undervoltage: 0.8668 p.u. falls below lower limit 0.95 p.u. (-0.0832 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1301,12 +1447,12 @@
           "element_name": "Bus 4",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8733,
+          "actual_value": 0.8625,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0767,
-          "severity": 7.67,
-          "description": "Bus 4 undervoltage: 0.8733 p.u. falls below lower limit 0.95 p.u. (-0.0767 p.u.)"
+          "margin": 0.0875,
+          "severity": 8.75,
+          "description": "Bus 4 undervoltage: 0.8625 p.u. falls below lower limit 0.95 p.u. (-0.0875 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1314,12 +1460,12 @@
           "element_name": "Bus 5",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8717,
+          "actual_value": 0.8596,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0783,
-          "severity": 7.83,
-          "description": "Bus 5 undervoltage: 0.8717 p.u. falls below lower limit 0.95 p.u. (-0.0783 p.u.)"
+          "margin": 0.0904,
+          "severity": 9.04,
+          "description": "Bus 5 undervoltage: 0.8596 p.u. falls below lower limit 0.95 p.u. (-0.0904 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1327,12 +1473,12 @@
           "element_name": "Bus 6",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8716,
+          "actual_value": 0.8561,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0784,
-          "severity": 7.84,
-          "description": "Bus 6 undervoltage: 0.8716 p.u. falls below lower limit 0.95 p.u. (-0.0784 p.u.)"
+          "margin": 0.0939,
+          "severity": 9.39,
+          "description": "Bus 6 undervoltage: 0.8561 p.u. falls below lower limit 0.95 p.u. (-0.0939 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1340,12 +1486,12 @@
           "element_name": "Bus 7",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8721,
+          "actual_value": 0.8691,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0779,
-          "severity": 7.79,
-          "description": "Bus 7 undervoltage: 0.8721 p.u. falls below lower limit 0.95 p.u. (-0.0779 p.u.)"
+          "margin": 0.0809,
+          "severity": 8.09,
+          "description": "Bus 7 undervoltage: 0.8691 p.u. falls below lower limit 0.95 p.u. (-0.0809 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1353,12 +1499,12 @@
           "element_name": "Bus 8",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8728,
+          "actual_value": 0.8662,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0772,
-          "severity": 7.72,
-          "description": "Bus 8 undervoltage: 0.8728 p.u. falls below lower limit 0.95 p.u. (-0.0772 p.u.)"
+          "margin": 0.0838,
+          "severity": 8.38,
+          "description": "Bus 8 undervoltage: 0.8662 p.u. falls below lower limit 0.95 p.u. (-0.0838 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1366,12 +1512,12 @@
           "element_name": "Bus 9",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8709,
+          "actual_value": 0.8642,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0791,
-          "severity": 7.91,
-          "description": "Bus 9 undervoltage: 0.8709 p.u. falls below lower limit 0.95 p.u. (-0.0791 p.u.)"
+          "margin": 0.0858,
+          "severity": 8.58,
+          "description": "Bus 9 undervoltage: 0.8642 p.u. falls below lower limit 0.95 p.u. (-0.0858 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1379,12 +1525,12 @@
           "element_name": "Bus 10",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8681,
+          "actual_value": 0.8613,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0819,
-          "severity": 8.19,
-          "description": "Bus 10 undervoltage: 0.8681 p.u. falls below lower limit 0.95 p.u. (-0.0819 p.u.)"
+          "margin": 0.0887,
+          "severity": 8.87,
+          "description": "Bus 10 undervoltage: 0.8613 p.u. falls below lower limit 0.95 p.u. (-0.0887 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1392,12 +1538,12 @@
           "element_name": "Bus 11",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8676,
+          "actual_value": 0.8609,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0824,
-          "severity": 8.24,
-          "description": "Bus 11 undervoltage: 0.8676 p.u. falls below lower limit 0.95 p.u. (-0.0824 p.u.)"
+          "margin": 0.0891,
+          "severity": 8.91,
+          "description": "Bus 11 undervoltage: 0.8609 p.u. falls below lower limit 0.95 p.u. (-0.0891 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1405,12 +1551,12 @@
           "element_name": "Bus 12",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9474,
+          "actual_value": 0.9404,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0026,
-          "severity": 0.26,
-          "description": "Bus 12 undervoltage: 0.9474 p.u. falls below lower limit 0.95 p.u. (-0.0026 p.u.)"
+          "margin": 0.0096,
+          "severity": 0.96,
+          "description": "Bus 12 undervoltage: 0.9404 p.u. falls below lower limit 0.95 p.u. (-0.0096 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1418,12 +1564,12 @@
           "element_name": "Bus 13",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.9079,
+          "actual_value": 0.901,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0421,
-          "severity": 4.21,
-          "description": "Bus 13 undervoltage: 0.9079 p.u. falls below lower limit 0.95 p.u. (-0.0421 p.u.)"
+          "margin": 0.049,
+          "severity": 4.9,
+          "description": "Bus 13 undervoltage: 0.9010 p.u. falls below lower limit 0.95 p.u. (-0.0490 p.u.)"
         },
         {
           "element_type": "bus",
@@ -1431,12 +1577,12 @@
           "element_name": "Bus 14",
           "vn_kv": 20.0,
           "violation_type": "UNDERVOLTAGE",
-          "actual_value": 0.8842,
+          "actual_value": 0.8775,
           "limit_value": 0.95,
           "unit": "p.u.",
-          "margin": 0.0658,
-          "severity": 6.58,
-          "description": "Bus 14 undervoltage: 0.8842 p.u. falls below lower limit 0.95 p.u. (-0.0658 p.u.)"
+          "margin": 0.0725,
+          "severity": 7.25,
+          "description": "Bus 14 undervoltage: 0.8775 p.u. falls below lower limit 0.95 p.u. (-0.0725 p.u.)"
         },
         {
           "element_type": "trafo",
@@ -1445,12 +1591,12 @@
           "hv_bus": 0,
           "lv_bus": 1,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 199.32,
+          "actual_value": 201.41,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 99.32,
-          "severity": 99.32,
-          "description": "Trafo 0-1 overload: 199.3% exceeds limit 100.0% (+99.3%)"
+          "margin": 101.41,
+          "severity": 101.41,
+          "description": "Trafo 0-1 overload: 201.4% exceeds limit 100.0% (+101.4%)"
         },
         {
           "element_type": "trafo",
@@ -1459,15 +1605,15 @@
           "hv_bus": 0,
           "lv_bus": 12,
           "violation_type": "TRAFO_OVERLOAD",
-          "actual_value": 203.81,
+          "actual_value": 205.0,
           "limit_value": 100.0,
           "unit": "%",
-          "margin": 103.81,
-          "severity": 103.81,
-          "description": "Trafo 0-12 overload: 203.8% exceeds limit 100.0% (+103.8%)"
+          "margin": 105.0,
+          "severity": 105.0,
+          "description": "Trafo 0-12 overload: 205.0% exceeds limit 100.0% (+105.0%)"
         }
       ],
-      "solve_ms": 64.45280002662912
+      "solve_ms": 1011.520300002303
     }
   ]
 }

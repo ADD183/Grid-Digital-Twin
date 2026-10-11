@@ -2249,8 +2249,8 @@
   ],
   "explanation": "Substation Voltage Setpoint (0.980 p.u.) is the optimal recommendation. It dynamically optimized the primary substation voltage setpoint to fully resolved all 9 grid violations with zero energy waste (100% renewable generation preserved) and minimal operational cost (cost proxy 0.5/3).",
   "artifacts": {
-    "json_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\solar_spike.json",
-    "csv_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\solar_spike.csv",
-    "plot_path": "D:\\Projects\\Grid-Digital-Twin\\outputs\\scenario_results\\solar_spike.png"
+    "json_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\solar_spike.json",
+    "csv_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\solar_spike.csv",
+    "plot_path": "C:\\Downloads\\Enr02\\outputs\\scenario_results\\solar_spike.png"
   }
 }
