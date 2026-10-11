@@ -26,9 +26,21 @@ An interactive digital twin of a local power distribution network (CIGRE MV benc
 - **Dual-audience assistant:** The floating widget supports operator and executive modes. OpenRouter tool calling uses bounded telemetry, solver, MPC, saved-scenario, and approved-document tools; deterministic evidence-backed responses are used when the provider is not configured or fails.
 - **Evidence export:** `POST /api/export-artifacts` writes surrogate-vs-solver benchmarks, an eight-step MPC trace, the trained surrogate bundle, and train/test CSVs under `artifacts/`.
 
+
 The new service modules live in `backend/app/` and are additive. Existing `api.py`, `src/`, React dashboard, CIGRE scenarios, and legacy API routes remain available. External telemetry is not connected until `GRID_API_URL` points to a feed implementing `{timestamp, solar_mw, load_mw, forecast_solar_mw}`.
 
 ---
+
+## 🎨 UI Redesign & Design System (Phase UI-0 – UI-4)
+The VoltPredict control room frontend was completely overhauled with an enterprise-grade VoltPredict Design System:
+- **Design Tokens**: Standardized color tokens (`--color-accent`, `--color-bg-primary`, `--c-solar`, `--c-load`, `--c-forecast`, `--c-baseline`, `--c-soc`, `--c-battery`, `--c-curtail`), typography (Inter/Outfit), spacing, glassmorphism card surfaces, and segmented controls.
+- **Theme Engine**: Seamless Light, Dark, and System preference theme switching via `ThemeProvider` with zero FOUC script.
+- **Responsive Layout**: Fluid 375px/768px/1280px/1920px breakpoint support across mobile, tablet, desktop, and ultra-wide grid displays.
+- **Accessibility & Motion**: WCAG AA color contrast compliance, keyboard focus rings (`:focus-visible`), standard `aria-label` attributes, and `prefers-reduced-motion` CSS animation fallbacks.
+- **Draggable Assistant**: Interactive floating AI assistant widget with executive/operator persona switcher, tool calling evidence grounding, and smooth dragging.
+
+---
+
 
 ## 📁 Repository Structure
 ```

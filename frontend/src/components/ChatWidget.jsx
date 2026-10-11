@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, Sparkles, ChevronDown, ChevronRight, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, ChevronDown, ChevronRight } from 'lucide-react';
 import './ChatWidget.css';
 import { API_BASE } from '../config';
 
@@ -12,7 +12,6 @@ const EVIDENCE_LABELS = {
   storage_count: 'Storage units',
   vm_pu_min: 'Minimum voltage',
   vm_pu_max: 'Maximum voltage',
-  max_vm_pu: 'Maximum voltage',
   max_line_loading_percent: 'Maximum line loading',
   converged: 'Power-flow calculation completed',
   has_violations: 'Active grid violations',
@@ -85,7 +84,7 @@ export default function ChatWidget() {
   const panelRef = useRef(null);
   const dragOffsetRef = useRef(null);
 
-  const clampPosition = (x, y, panelWidth) => ({
+  const clampPosition = (x, y, _panelWidth) => ({
     x: Math.max(0, Math.min(x, window.innerWidth - MIN_VISIBLE)),
     y: Math.max(0, Math.min(y, window.innerHeight - MIN_VISIBLE)),
   });
@@ -148,7 +147,7 @@ export default function ChatWidget() {
     if (!query.trim() || loading) return;
 
     const userMsg = {
-      id: Date.now(),
+      id: `user_${Date.now()}_${Math.random()}`,
       sender: 'user',
       text: query,
     };
@@ -170,7 +169,7 @@ export default function ChatWidget() {
 
       const data = await response.json();
       const assistantMsg = {
-        id: Date.now() + 1,
+        id: `asst_${Date.now()}_${Math.random()}`,
         sender: 'assistant',
         text: data.reply || 'No response generated.',
         evidence: data.evidence && Object.keys(data.evidence).length > 0 ? data.evidence : null,
@@ -183,7 +182,7 @@ export default function ChatWidget() {
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: `err_${Date.now()}`,
           sender: 'assistant',
           text: `⚠️ Error connecting to chatbot backend: ${err.message}`,
           evidence: null,
@@ -219,14 +218,14 @@ export default function ChatWidget() {
         title={isOpen ? 'Close Assistant' : 'Open Digital Grid Assistant'}
         aria-label="Toggle Digital Grid Assistant"
       >
-        {isOpen ? <X size={26} /> : <MessageCircle size={26} />}
+        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
 
       {/* Floating Chat Panel */}
       {isOpen && (
         <div
           ref={panelRef}
-          className="chat-widget-panel glass-panel"
+          className="chat-widget-panel vp-card"
           style={!isMobile && position ? {
             left: `${position.x}px`,
             top: `${position.y}px`,
@@ -247,8 +246,8 @@ export default function ChatWidget() {
                 style={{
                   width: '28px',
                   height: '28px',
-                  borderRadius: '6px',
-                  background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'linear-gradient(135deg, var(--color-accent), var(--color-info))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -257,25 +256,31 @@ export default function ChatWidget() {
                 <Bot size={16} color="#ffffff" />
               </div>
               <div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Digital Grid Assistant</div>
-                <div style={{ fontSize: '0.7rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 'var(--font-semibold)' }}>Digital Grid Assistant</div>
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-success)' }} />
                   Project evidence · {audienceMode}
                 </div>
               </div>
             </div>
-            <div role="group" aria-label="Assistant audience mode" style={{ display: 'flex', gap: '3px', padding: '3px', background: 'rgba(15,23,42,.75)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+            <div role="group" aria-label="Assistant audience mode" className="vp-segmented">
               {['operator', 'executive'].map((mode) => (
-                <button key={mode} onClick={() => setAudienceMode(mode)} aria-pressed={audienceMode === mode} style={{ background: audienceMode === mode ? 'rgba(6,182,212,.2)' : 'transparent', color: audienceMode === mode ? '#67e8f9' : 'var(--text-muted)', borderRadius: '4px', padding: '4px 6px', fontSize: '.65rem', textTransform: 'capitalize' }}>
+                <button
+                  key={mode}
+                  onClick={() => setAudienceMode(mode)}
+                  aria-pressed={audienceMode === mode}
+                  className={`vp-segmented-btn ${audienceMode === mode ? 'active' : ''}`}
+                  style={{ padding: 'var(--space-1) var(--space-2)', fontSize: 'var(--font-xs)', textTransform: 'capitalize' }}
+                >
                   {mode}
                 </button>
               ))}
             </div>
-            <button className="chat-close-btn" onClick={() => {
+            <button className="chat-close-btn vp-btn vp-btn-icon" onClick={() => {
               setIsOpen(false);
               setPosition(null);
             }} title="Close">
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
@@ -294,7 +299,7 @@ export default function ChatWidget() {
                       <span>{msg.showEvidence ? 'Hide Details' : 'View Grounded Details'}</span>
                     </button>
                     {msg.showEvidence && (
-                      <div className="chat-evidence-content">
+                      <div className="chat-evidence-content vp-card">
                         <table className="chat-evidence-table">
                           <tbody>
                             {getEvidenceRows(msg.evidence).map((row, index) => (
@@ -326,7 +331,7 @@ export default function ChatWidget() {
 
           {/* Hints & Suggestion Chips */}
           <div className="chat-suggestions">
-            <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 500, marginRight: '4px' }}>Ask:</span>
+            <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)', fontWeight: 500, marginRight: '4px' }}>Ask:</span>
             {suggestions.map((chip, idx) => (
               <button
                 key={idx}
@@ -349,14 +354,14 @@ export default function ChatWidget() {
           >
             <input
               type="text"
-              className="chat-input"
-              placeholder="Ask a question about the grid state..."
+              className="chat-input vp-form-input"
+              placeholder="Ask a question about grid state..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}
             />
-            <button type="submit" className="chat-send-btn" disabled={!input.trim() || loading} title="Send Message">
-              <Send size={16} />
+            <button type="submit" className="chat-send-btn vp-btn vp-btn-primary" disabled={!input.trim() || loading} title="Send Message">
+              <Send size={15} />
             </button>
           </form>
         </div>
@@ -364,3 +369,4 @@ export default function ChatWidget() {
     </>
   );
 }
+
