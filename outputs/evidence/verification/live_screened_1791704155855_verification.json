@@ -1,0 +1,257 @@
+{
+  "run_id": "live_screened_1791704155855",
+  "total_steps": 8,
+  "all_solver_verified": true,
+  "verification_steps": [
+    {
+      "step": 0,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.004260011711852751,
+      "violations": [],
+      "solve_ms": 143.5536999924807
+    },
+    {
+      "step": 1,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 50.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.007023198385542662,
+      "violations": [],
+      "solve_ms": 171.81880000862293
+    },
+    {
+      "step": 2,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 100.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.01895557246785251,
+      "violations": [],
+      "solve_ms": 180.66570001246873
+    },
+    {
+      "step": 3,
+      "action": {
+        "battery_mw": -0.5,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.0037476224972023964,
+      "violations": [],
+      "solve_ms": 188.796899994486
+    },
+    {
+      "step": 4,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.020000000000000018,
+      "violations": [],
+      "solve_ms": 173.66160001256503
+    },
+    {
+      "step": 5,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": null
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.020000000000000018,
+      "violations": [],
+      "solve_ms": 156.27009999298025
+    },
+    {
+      "step": 6,
+      "action": {
+        "battery_mw": 1.0,
+        "curtail_pct": 0.0,
+        "switch_toggle": 4
+      },
+      "converged": true,
+      "is_safe": true,
+      "min_margin": 0.005789922951803805,
+      "violations": [],
+      "solve_ms": 147.0468999905279
+    },
+    {
+      "step": 7,
+      "action": {
+        "battery_mw": 0.0,
+        "curtail_pct": 100.0,
+        "switch_toggle": 4
+      },
+      "converged": true,
+      "is_safe": false,
+      "min_margin": -0.03725647594387338,
+      "violations": [
+        {
+          "element_type": "bus",
+          "element_id": 3,
+          "element_name": "Bus 3",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9194,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0306,
+          "severity": 3.06,
+          "description": "Bus 3 undervoltage: 0.9194 p.u. falls below lower limit 0.95 p.u. (-0.0306 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 4,
+          "element_name": "Bus 4",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.917,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.033,
+          "severity": 3.3,
+          "description": "Bus 4 undervoltage: 0.9170 p.u. falls below lower limit 0.95 p.u. (-0.0330 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 5,
+          "element_name": "Bus 5",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9153,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0347,
+          "severity": 3.47,
+          "description": "Bus 5 undervoltage: 0.9153 p.u. falls below lower limit 0.95 p.u. (-0.0347 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 6,
+          "element_name": "Bus 6",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9133,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0367,
+          "severity": 3.67,
+          "description": "Bus 6 undervoltage: 0.9133 p.u. falls below lower limit 0.95 p.u. (-0.0367 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 7,
+          "element_name": "Bus 7",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9187,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0313,
+          "severity": 3.13,
+          "description": "Bus 7 undervoltage: 0.9187 p.u. falls below lower limit 0.95 p.u. (-0.0313 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 8,
+          "element_name": "Bus 8",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9157,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0343,
+          "severity": 3.43,
+          "description": "Bus 8 undervoltage: 0.9157 p.u. falls below lower limit 0.95 p.u. (-0.0343 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 9,
+          "element_name": "Bus 9",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9146,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0354,
+          "severity": 3.54,
+          "description": "Bus 9 undervoltage: 0.9146 p.u. falls below lower limit 0.95 p.u. (-0.0354 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 10,
+          "element_name": "Bus 10",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.913,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.037,
+          "severity": 3.7,
+          "description": "Bus 10 undervoltage: 0.9130 p.u. falls below lower limit 0.95 p.u. (-0.0370 p.u.)"
+        },
+        {
+          "element_type": "bus",
+          "element_id": 11,
+          "element_name": "Bus 11",
+          "vn_kv": 20.0,
+          "violation_type": "UNDERVOLTAGE",
+          "actual_value": 0.9127,
+          "limit_value": 0.95,
+          "unit": "p.u.",
+          "margin": 0.0373,
+          "severity": 3.73,
+          "description": "Bus 11 undervoltage: 0.9127 p.u. falls below lower limit 0.95 p.u. (-0.0373 p.u.)"
+        },
+        {
+          "element_type": "trafo",
+          "element_id": 0,
+          "element_name": "Trafo 0-1",
+          "hv_bus": 0,
+          "lv_bus": 1,
+          "violation_type": "TRAFO_OVERLOAD",
+          "actual_value": 124.85,
+          "limit_value": 100.0,
+          "unit": "%",
+          "margin": 24.85,
+          "severity": 24.85,
+          "description": "Trafo 0-1 overload: 124.9% exceeds limit 100.0% (+24.9%)"
+        },
+        {
+          "element_type": "trafo",
+          "element_id": 1,
+          "element_name": "Trafo 0-12",
+          "hv_bus": 0,
+          "lv_bus": 12,
+          "violation_type": "TRAFO_OVERLOAD",
+          "actual_value": 111.39,
+          "limit_value": 100.0,
+          "unit": "%",
+          "margin": 11.39,
+          "severity": 11.39,
+          "description": "Trafo 0-12 overload: 111.4% exceeds limit 100.0% (+11.4%)"
+        }
+      ],
+      "solve_ms": 162.55520000413526
+    }
+  ]
+}

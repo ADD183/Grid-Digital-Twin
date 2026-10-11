@@ -156,7 +156,7 @@ class SurrogateScreener(BaseScreener):
         Build 33-dim feature vector for candidate state/action pair.
         Returns (features, is_out_of_bounds).
         """
-        solar_scale = float(inputs.get("solar_scale", 1.0))
+        solar_scale = float(inputs.get("solar_pu", inputs.get("solar_scale", 1.0)))
         load_scale = float(inputs.get("load_scale", 1.0))
         curtail_pct = float(action.curtail_pct)
         battery_mw = float(action.battery_mw)

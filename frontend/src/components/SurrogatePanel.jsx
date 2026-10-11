@@ -93,23 +93,16 @@ export default function SurrogatePanel() {
     try {
       setRunningEpisode(true);
       setError(null);
-      let res;
-      if (screenerMode === 'surrogate') {
-        res = await controlApi.runScreenedEpisode({
-          initial_soc: initialSoc,
-          inject_error: injectError,
-          inject_error_step: 2,
-          run_id: `live_screened_${Date.now()}`,
-        });
-      } else {
-        res = await controlApi.runEpisode({
-          initial_soc: initialSoc,
-          inject_error: injectError,
-          inject_error_step: 2,
-          run_id: `live_null_${Date.now()}`,
-        });
-      }
-      setScreenedEpisode(res);
+      const comparison = await controlApi.runAbComparison({
+        initial_soc: initialSoc,
+        inject_error: injectError,
+        inject_error_step: 2,
+        run_id: `live_comparison_${Date.now()}`,
+      });
+      setAbData(comparison);
+      setScreenedEpisode(comparison.episodes?.[
+        screenerMode === 'surrogate' ? 'surrogate_screener' : 'null_screener_baseline'
+      ] || null);
     } catch (err) {
       setError(err.message || 'Episode execution failed');
     } finally {
@@ -121,8 +114,16 @@ export default function SurrogatePanel() {
     try {
       setRunningAb(true);
       setError(null);
-      const abRes = await controlApi.getAbBenchmark();
-      setAbData(abRes);
+      const comparison = await controlApi.runAbComparison({
+        initial_soc: initialSoc,
+        inject_error: injectError,
+        inject_error_step: 2,
+        run_id: `live_comparison_${Date.now()}`,
+      });
+      setAbData(comparison);
+      setScreenedEpisode(comparison.episodes?.[
+        screenerMode === 'surrogate' ? 'surrogate_screener' : 'null_screener_baseline'
+      ] || null);
     } catch (err) {
       setError(err.message || 'A/B benchmark execution failed');
     } finally {
@@ -150,29 +151,31 @@ export default function SurrogatePanel() {
   const nullBase = abData?.null_screener_baseline || {};
   const surrScreen = abData?.surrogate_screener || {};
   const steps = screenedEpisode?.steps || [];
+  const reductionPct = compMetrics.solver_calls_reduction_pct;
+  const reductionDisplay = reductionPct == null
+    ? '—'
+    : `${reductionPct > 0 ? '-' : reductionPct < 0 ? '+' : ''}${Math.abs(reductionPct).toFixed(1)}%`;
+  const speedupFactor = compMetrics.speedup_factor;
+  const speedComparison = speedupFactor == null
+    ? null
+    : speedupFactor >= 1
+      ? { value: speedupFactor, label: 'faster' }
+      : { value: 1 / Math.max(speedupFactor, 0.01), label: 'slower' };
 
-  // Per-step screening candidate breakdown for chart
-  const defaultSafe = [18, 20, 16, 22, 19, 15, 17, 21];
-  const defaultUnsafe = [10, 8, 12, 6, 9, 14, 11, 7];
-  const defaultUncertain = [4, 4, 4, 4, 3, 3, 4, 4];
-
-  const stepBreakdownData = steps.length > 0 ? steps.map((s, idx) => {
+  const stepBreakdownData = steps.map((s) => {
+    const counts = s.screening_counts || {};
     return {
       name: `Step ${s.step}`,
       step: s.step,
-      safe: s.screener_safe_count ?? defaultSafe[idx % 8],
-      unsafeDropped: s.screener_unsafe_dropped_count ?? defaultUnsafe[idx % 8],
-      uncertain: s.screener_uncertain_count ?? defaultUncertain[idx % 8],
-      unsupported: s.screener_unsupported_count ?? (s.step === 5 ? 2 : 0),
+      safe: counts.safe ?? 0,
+      unsafeDropped: counts.unsafe ?? 0,
+      uncertain: counts.uncertain ?? 0,
+      unsupported: counts.unsupported ?? 0,
     };
-  }) : Array.from({ length: 8 }).map((_, idx) => ({
-    name: `Step ${idx}`,
-    step: idx,
-    safe: defaultSafe[idx],
-    unsafeDropped: defaultUnsafe[idx],
-    uncertain: defaultUncertain[idx],
-    unsupported: idx === 5 ? 2 : 0,
-  }));
+  });
+  const hasScreeningActivity = stepBreakdownData.some((step) =>
+    step.safe + step.unsafeDropped + step.uncertain + step.unsupported > 0
+  );
 
   // Parity scatter samples
   const paritySamples = Array.from({ length: 40 }).map((_, idx) => {
@@ -287,7 +290,7 @@ export default function SurrogatePanel() {
                 </label>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>Mode:</span>
+                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>Plan shown:</span>
                   <select
                     value={screenerMode}
                     onChange={(e) => setScreenerMode(e.target.value)}
@@ -307,7 +310,7 @@ export default function SurrogatePanel() {
               <div>
                 <button
                   onClick={handleRunEpisode}
-                  disabled={runningEpisode}
+                  disabled={runningEpisode || runningAb}
                   className="vp-btn vp-btn-primary"
                 >
                   <Play size={15} />
@@ -322,6 +325,11 @@ export default function SurrogatePanel() {
             <Info size={17} style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <strong>How the comparison works:</strong> Quick estimates help narrow the options. Every selected action is still checked against the detailed grid model before it is used.
+              {abData?.surrogate_model_available === false && (
+                <div style={{ marginTop: '6px', color: 'var(--color-warning)' }}>
+                  No screening model is loaded; all candidates are checked by the detailed solver.
+                </div>
+              )}
             </div>
           </div>
 
@@ -330,27 +338,27 @@ export default function SurrogatePanel() {
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-warning)' }}>
               <div className="vp-kpi-label">Fewer detailed checks</div>
               <div className="vp-kpi-value">
-                -{compMetrics.solver_calls_reduction_pct != null ? compMetrics.solver_calls_reduction_pct.toFixed(1) : '48.1'}%
+                {reductionDisplay}
               </div>
               <div className="vp-kpi-subtext" style={{ color: 'var(--color-warning)' }}>
-                {nullBase.total_solver_calls ?? 308} baseline → {surrScreen.total_solver_calls ?? 160} screened calls
+                {nullBase.total_solver_calls ?? '—'} baseline → {surrScreen.total_solver_calls ?? '—'} screened calls
               </div>
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-success)' }}>
               <div className="vp-kpi-label">Faster comparison</div>
               <div className="vp-kpi-value">
-                {compMetrics.speedup_factor != null ? compMetrics.speedup_factor.toFixed(1) : '363.9'}x <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>faster</span>
+                {speedComparison ? <>{speedComparison.value.toFixed(1)}x <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>{speedComparison.label}</span></> : '—'}
               </div>
               <div className="vp-kpi-subtext" style={{ color: 'var(--color-success)' }}>
-                {((nullBase.wall_time_ms ?? 153758) / 1000).toFixed(1)}s baseline → {((surrScreen.wall_time_ms ?? 422) / 1000).toFixed(2)}s screened
+                {nullBase.wall_time_ms != null ? (nullBase.wall_time_ms / 1000).toFixed(1) : '—'}s baseline → {surrScreen.wall_time_ms != null ? (surrScreen.wall_time_ms / 1000).toFixed(2) : '—'}s screened
               </div>
             </div>
 
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-danger)' }}>
               <div className="vp-kpi-label">Options skipped early</div>
               <div className="vp-kpi-value">
-                {compMetrics.unsafe_dropped_count ?? (nullBase.total_solver_calls != null && surrScreen.total_solver_calls != null ? Math.max(0, nullBase.total_solver_calls - surrScreen.total_solver_calls) : 148)} candidates
+                {compMetrics.unsafe_dropped_count ?? '—'} candidates
               </div>
               <div className="vp-kpi-subtext" style={{ color: 'var(--color-danger)' }}>
                 Dropped before AC solver execution
@@ -360,7 +368,7 @@ export default function SurrogatePanel() {
             <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #ec4899' }}>
               <div className="vp-kpi-label">Model disagreements</div>
               <div className="vp-kpi-value">
-                {abData?.disagreement_events?.length ?? 0}
+                {abData?.disagreement_events?.length ?? '—'}
               </div>
               <div className="vp-kpi-subtext" style={{ color: '#ec4899' }}>
                 Surrogate-safe rejected by solver
@@ -379,7 +387,7 @@ export default function SurrogatePanel() {
                 </div>
                 <button
                   onClick={handleRunAbBenchmark}
-                  disabled={runningAb}
+                  disabled={runningAb || runningEpisode}
                   className="vp-btn vp-btn-secondary"
                   style={{ height: '30px', fontSize: 'var(--font-xs)', padding: '0 10px' }}
                 >
@@ -388,22 +396,28 @@ export default function SurrogatePanel() {
                 </button>
               </div>
 
-              <ChartDisclosure title="Show candidate decisions" summary="See how many options were accepted, rejected, or sent for review at each step.">
-              <div style={{ width: '100%', height: 320 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stepBreakdownData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
-                    <XAxis dataKey="name" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
-                    <YAxis stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} label={{ value: 'Candidates', angle: -90, position: 'insideLeft', fill: 'var(--color-fg-muted)', fontSize: 11 }} />
-                    <Tooltip />
-                    <Legend verticalAlign="top" height={60} wrapperStyle={{ paddingBottom: '12px', fontSize: '12px' }} />
-                    <Bar dataKey="safe" name="Surrogate Safe" fill="var(--color-success)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="unsafeDropped" name="Unsafe (Dropped Early)" fill="var(--color-danger)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="uncertain" name="Uncertain / Solver" fill="var(--color-warning)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="unsupported" name="Unsupported Fallback" fill="#a855f7" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <ChartDisclosure title="Show candidate decisions" summary="Counts are from actual candidate searches; zero means the existing plan sequence was reused.">
+              {hasScreeningActivity ? (
+                <div style={{ width: '100%', height: 320 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stepBreakdownData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                      <XAxis dataKey="name" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
+                      <YAxis stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} label={{ value: 'Candidates', angle: -90, position: 'insideLeft', fill: 'var(--color-fg-muted)', fontSize: 11 }} />
+                      <Tooltip />
+                      <Legend verticalAlign="top" height={60} wrapperStyle={{ paddingBottom: '12px', fontSize: '12px' }} />
+                      <Bar dataKey="safe" name="Surrogate Safe" fill="var(--color-success)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="unsafeDropped" name="Unsafe (Dropped Early)" fill="var(--color-danger)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="uncertain" name="Uncertain / Solver" fill="var(--color-warning)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="unsupported" name="Unsupported Fallback" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="vp-dashboard-empty" role="status" style={{ height: 320, display: 'grid', placeItems: 'center' }}>
+                  Run a plan comparison to see measured candidate screening counts.
+                </div>
+              )}
               </ChartDisclosure>
             </div>
 
@@ -415,7 +429,7 @@ export default function SurrogatePanel() {
                   <span>Compare planning approaches</span>
                 </div>
                 <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-success)', fontWeight: 'var(--font-semibold)' }}>
-                  {compMetrics.speedup_factor ?? 71.0}x Speedup
+                  {speedComparison ? `${speedComparison.value.toFixed(1)}x ${speedComparison.label}` : '—'}
                 </div>
               </div>
 
@@ -432,26 +446,26 @@ export default function SurrogatePanel() {
                   <tbody>
                     <tr>
                       <td style={{ fontWeight: 'var(--font-semibold)' }}>Physical Solver Calls</td>
-                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{nullBase.total_solver_calls ?? 308}</td>
-                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>{surrScreen.total_solver_calls ?? 160}</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{nullBase.total_solver_calls ?? '—'}</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>{surrScreen.total_solver_calls ?? '—'}</td>
                       <td className="vp-text-center" style={{ color: 'var(--color-success)', fontWeight: 'var(--font-bold)' }}>
-                        -{compMetrics.solver_calls_reduction_pct != null ? compMetrics.solver_calls_reduction_pct.toFixed(1) : '48.1'}%
+                        {reductionDisplay}
                       </td>
                     </tr>
                     <tr>
                       <td style={{ fontWeight: 'var(--font-semibold)' }}>Wall Execution Time</td>
-                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{((nullBase.wall_time_ms ?? 153758) / 1000).toFixed(1)} s</td>
-                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>{((surrScreen.wall_time_ms ?? 422) / 1000).toFixed(2)} s</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{nullBase.wall_time_ms != null ? `${(nullBase.wall_time_ms / 1000).toFixed(1)} s` : '—'}</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>{surrScreen.wall_time_ms != null ? `${(surrScreen.wall_time_ms / 1000).toFixed(2)} s` : '—'}</td>
                       <td className="vp-text-center" style={{ color: 'var(--color-success)', fontWeight: 'var(--font-bold)' }}>
-                        {compMetrics.speedup_factor != null ? compMetrics.speedup_factor.toFixed(1) : '363.9'}x Speedup
+                        {speedComparison ? `${speedComparison.value.toFixed(1)}x ${speedComparison.label}` : '—'}
                       </td>
                     </tr>
                     <tr>
                       <td style={{ fontWeight: 'var(--font-semibold)' }}>Chosen Action Plan</td>
-                      <td className="vp-text-right">Baseline</td>
-                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>100% Agreement</td>
+                      <td className="vp-text-right">Reference</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{compMetrics.action_agreement_pct != null ? `${compMetrics.action_agreement_pct.toFixed(1)}% agreement` : '—'}</td>
                       <td className="vp-text-center" style={{ color: 'var(--color-info)', fontWeight: 'var(--font-bold)' }}>
-                        Identical Actions
+                        {compMetrics.matching_action_steps != null ? `${compMetrics.matching_action_steps}/${compMetrics.total_steps} match` : '—'}
                       </td>
                     </tr>
                   </tbody>

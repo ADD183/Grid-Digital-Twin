@@ -268,20 +268,45 @@ def generate_solver_dataset(
     pv_mask = reference_net.sgen["type"].astype(str).str.upper().str.contains("PV|SOLAR")
     solar_reference_mw = float(reference_net.sgen.loc[pv_mask, "p_mw"].clip(lower=0).sum())
     load_reference_mw = float(reference_net.load.p_mw.clip(lower=0).sum())
+    baseline = {
+        "solar_mw": 0.0,
+        "load_mw": 0.8 * load_reference_mw,
+        "curtailment_fraction": 0.0,
+        "battery_charge_mw": 0.0,
+        "battery_discharge_mw": 0.0,
+        "load_shed_mw": 0.0,
+    }
+    boundary_scenarios = [
+        baseline,
+        {**baseline, "solar_mw": 2.0 * solar_reference_mw},
+        {**baseline, "load_mw": 0.35 * load_reference_mw},
+        {**baseline, "load_mw": 1.25 * load_reference_mw},
+        {**baseline, "solar_mw": solar_reference_mw, "curtailment_fraction": 1.0},
+        {**baseline, "battery_charge_mw": 2.0},
+        {**baseline, "battery_discharge_mw": 2.0},
+        {
+            **baseline,
+            "load_mw": 1.25 * load_reference_mw,
+            "load_shed_mw": 0.25 * 1.25 * load_reference_mw,
+        },
+    ]
     records: list[dict[str, float]] = []
     voltage_labels: list[list[float]] = []
     loading_labels: list[list[float]] = []
-    for _ in range(sample_count):
-        inputs = {
-            "solar_mw": float(rng.uniform(0.0, max(0.1, 2.0 * solar_reference_mw))),
-            "load_mw": float(rng.uniform(0.35 * load_reference_mw, 1.25 * load_reference_mw)),
-            "curtailment_fraction": float(rng.choice([0.0, 0.25, 0.5, 0.75])),
-            "battery_charge_mw": float(rng.choice([0.0, 0.5, 1.0, 1.5])),
-            "battery_discharge_mw": float(rng.choice([0.0, 0.5, 1.0, 1.5])),
-            "load_shed_mw": float(rng.choice([0.0, 0.025, 0.05]) * load_reference_mw),
-        }
-        if inputs["battery_charge_mw"] and inputs["battery_discharge_mw"]:
-            inputs["battery_discharge_mw"] = 0.0
+    for sample_index in range(sample_count):
+        if sample_index < len(boundary_scenarios):
+            inputs = boundary_scenarios[sample_index].copy()
+        else:
+            inputs = {
+                "solar_mw": float(rng.uniform(0.0, max(0.1, 2.0 * solar_reference_mw))),
+                "load_mw": float(rng.uniform(0.35 * load_reference_mw, 1.25 * load_reference_mw)),
+                "curtailment_fraction": float(rng.choice([0.0, 0.25, 0.5, 0.75, 1.0])),
+                "battery_charge_mw": float(rng.choice([0.0, 0.5, 1.0, 1.5, 2.0])),
+                "battery_discharge_mw": float(rng.choice([0.0, 0.5, 1.0, 1.5, 2.0])),
+                "load_shed_mw": float(rng.choice([0.0, 0.1, 0.25]) * load_reference_mw),
+            }
+            if inputs["battery_charge_mw"] and inputs["battery_discharge_mw"]:
+                inputs["battery_discharge_mw"] = 0.0
         result = solver.run_power_flow(**inputs)
         if not result.converged:
             continue

@@ -1,0 +1,9 @@
+Step,Hour,Action Description,Battery Power (MW),Solar Curtailment (%),Switch Toggle,Battery SOC (%),Min Bus Voltage (pu),Max Bus Voltage (pu),Max Line Loading (%),Solar Scale,Load Scale,Screener Status,Solver Verified,Triggered Event / Label
+T0,10:00,Optimal Dispatch,0.0,0.0,4,80.0,1.0166,1.0353,28.2,15.0,0.45,uncertain,Pass (Safe),Normal Operation
+T1,11:00,Optimal Dispatch,0.0,0.0,None,80.0,1.0177,1.0462,43.0,22.0,0.4,uncertain,Pass (Safe),Normal Operation
+T2,12:00,Optimal Dispatch,0.0,100.0,None,80.0,1.0218,1.03,28.6,50.0,0.3,uncertain,Pass (Safe),Injected midday solar surge
+T3,13:00,Optimal Dispatch,0.0,0.0,None,80.0,1.0148,1.0376,35.2,20.0,0.5,uncertain,Pass (Safe),Normal Operation
+T4,14:00,Optimal Dispatch,0.0,0.0,None,80.0,1.0086,1.03,28.3,14.0,0.7,uncertain,Pass (Safe),Normal Operation
+T5,15:00,Optimal Dispatch,0.0,0.0,None,80.0,0.9861,1.03,28.7,6.0,0.9,uncertain,Pass (Safe),Normal Operation
+T6,16:00,Optimal Dispatch,0.5,0.0,None,53.7,0.9515,1.03,41.6,0.0,1.25,uncertain,Pass (Safe),Normal Operation
+T7,17:00,Optimal Dispatch,0.0,100.0,4,53.7,0.9127,1.03,86.1,0.0,1.3,uncertain,Fallback / Alert,Normal Operation

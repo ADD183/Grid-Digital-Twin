@@ -7,6 +7,7 @@ run_episode(...) -> EpisodeLog:
 """
 
 import json
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -43,6 +44,7 @@ class StepRecord:
     fallback_used: Optional[str]
     screener_status: str
     action_changed_by_replan: bool = False
+    screening_counts: Dict[str, int] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         bus_vms = list(self.verification_result.bus_vm.values()) if self.verification_result.bus_vm else [1.0]
@@ -79,6 +81,7 @@ class StepRecord:
             "infeasible_flag": bool(self.infeasible_flag),
             "fallback_used": self.fallback_used,
             "screener_status": str(self.screener_status),
+            "screening_counts": self.screening_counts,
             "action_changed_by_replan": bool(self.action_changed_by_replan),
         }
 
@@ -91,6 +94,7 @@ class EpisodeLog:
     seed: int
     limits: LimitsConfig
     run_id: str = "episode_run"
+    planner_metrics: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def replan_steps(self) -> List[int]:
@@ -114,6 +118,7 @@ class EpisodeLog:
             "infeasible_count": len(self.infeasible_steps),
             "infeasible_steps": self.infeasible_steps,
             "soc_trace": [float(s) for s in self.soc_series],
+            "planner_metrics": self.planner_metrics,
             "steps": [s.to_dict() for s in self.steps],
         }
 
@@ -283,6 +288,10 @@ class EpisodeLog:
                 fallback_used=s_data.get("fallback_used"),
                 screener_status=str(s_data.get("screener_status", "uncertain")),
                 action_changed_by_replan=bool(s_data.get("action_changed_by_replan", False)),
+                screening_counts={
+                    str(key): int(value)
+                    for key, value in s_data.get("screening_counts", {}).items()
+                },
             )
             step_records.append(rec)
 
@@ -292,6 +301,7 @@ class EpisodeLog:
             seed=int(data.get("seed", 42)),
             limits=lims,
             run_id=data.get("run_id", "loaded_episode"),
+            planner_metrics=data.get("planner_metrics", {}),
         )
 
 
@@ -365,6 +375,25 @@ def run_episode(
     step_records: List[StepRecord] = []
     active_plan: Optional[PlanResult] = None
     active_plan_start = 0
+    candidates_evaluated = 0
+    unsafe_dropped_count = 0
+    disagreement_events: List[DisagreementEvent] = []
+
+    def record_plan_work(plan_result: PlanResult) -> None:
+        nonlocal candidates_evaluated, unsafe_dropped_count
+        candidates_evaluated += plan_result.candidates_evaluated
+        unsafe_dropped_count += plan_result.screener_unsafe_dropped_count
+        disagreement_events.extend(plan_result.disagreement_events)
+
+    def root_screening_counts(plan_result: PlanResult) -> Dict[str, int]:
+        counts = {"safe": 0, "unsafe": 0, "uncertain": 0, "unsupported": 0}
+        for candidate in plan_result.all_step0_candidates:
+            status = candidate.get("screener_status", "uncertain")
+            if status in counts:
+                counts[status] += 1
+        return counts
+
+    episode_started_at = time.perf_counter()
 
     for t in range(episode_steps):
         state_before = current_state
@@ -375,9 +404,16 @@ def run_episode(
         # Reuse the remaining sequence until observations require a new plan.
         if active_plan is None or t - active_plan_start >= len(active_plan.best_sequence):
             active_plan = p.plan(state_before, forecast_horizon_slice)
+            record_plan_work(active_plan)
             active_plan_start = t
         plan_offset = t - active_plan_start
         planned_action = active_plan.best_sequence[plan_offset]
+        screening_counts = root_screening_counts(active_plan) if plan_offset == 0 else {
+            "safe": 0,
+            "unsafe": 0,
+            "uncertain": 0,
+            "unsupported": 0,
+        }
 
         # 2. Reveal observed conditions
         current_forecast = copy.deepcopy(forecast_horizon_slice[0])
@@ -389,11 +425,16 @@ def run_episode(
             # Inject extreme load stress to trigger deliberate infeasible condition
             observed_inputs["load_scale"] = 2.40
             observed_inputs["solar_scale"] = 0.0
+            if "solar_pu" in observed_inputs:
+                observed_inputs["solar_pu"] = 0.0
             error_injected = True
             error_label = "Severe unmitigable contingency (infeasible stress test)"
         elif t in errors:
             err_spec = errors[t]
-            observed_inputs["solar_scale"] = round(observed_inputs["solar_scale"] * err_spec.get("solar_mult", 1.0), 2)
+            solar_multiplier = err_spec.get("solar_mult", 1.0)
+            observed_inputs["solar_scale"] = round(observed_inputs["solar_scale"] * solar_multiplier, 2)
+            if "solar_pu" in observed_inputs:
+                observed_inputs["solar_pu"] = round(observed_inputs["solar_pu"] * solar_multiplier, 3)
             observed_inputs["load_scale"] = round(observed_inputs["load_scale"] * err_spec.get("load_mult", 1.0), 2)
             error_injected = True
             error_label = err_spec.get("label", "Injected forecast error event")
@@ -412,8 +453,10 @@ def run_episode(
         if error_injected:
             replan_horizon_slice = [observed_inputs] + forecast_horizon_slice[1:]
             replan_result = p.plan(state_before, replan_horizon_slice)
+            record_plan_work(replan_result)
             active_plan = replan_result
             active_plan_start = t
+            screening_counts = root_screening_counts(replan_result)
             replan_flag = True
             chosen_action = replan_result.best_action
             final_verif = replan_result.verification
@@ -423,6 +466,8 @@ def run_episode(
                 action_changed = True
         elif not prelim_verif.is_safe:
             replan_result = p.plan(state_before, [observed_inputs])
+            record_plan_work(replan_result)
+            screening_counts = root_screening_counts(replan_result)
             replan_flag = True
             chosen_action = replan_result.best_action
             final_verif = replan_result.verification
@@ -467,8 +512,20 @@ def run_episode(
             replan_flag=replan_flag,
             infeasible_flag=infeasible_flag,
             fallback_used=fallback_used,
-            screener_status="uncertain",
+            screener_status=(
+                "not_screened"
+                if plan_offset > 0 and not replan_flag
+                else next(
+                    (
+                        candidate["screener_status"]
+                        for candidate in active_plan.all_step0_candidates
+                        if candidate.get("action") == chosen_action.to_dict()
+                    ),
+                    "uncertain",
+                )
+            ),
             action_changed_by_replan=action_changed,
+            screening_counts=screening_counts,
         )
         step_records.append(record)
         current_state = state_after
@@ -479,4 +536,10 @@ def run_episode(
         seed=lims.seed,
         limits=lims,
         run_id=run_id,
+        planner_metrics={
+            "candidates_evaluated": candidates_evaluated,
+            "unsafe_dropped_count": unsafe_dropped_count,
+            "disagreement_events": [event.to_dict() for event in disagreement_events],
+            "wall_time_ms": round((time.perf_counter() - episode_started_at) * 1000.0, 2),
+        },
     )

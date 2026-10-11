@@ -8,26 +8,26 @@
       "action": {
         "battery_mw": 0.0,
         "curtail_pct": 0.0,
-        "switch_toggle": null
+        "switch_toggle": 4
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.004260011711852751,
+      "min_margin": 0.014687863619820885,
       "violations": [],
-      "solve_ms": 143.5536999924807
+      "solve_ms": 144.15759999246802
     },
     {
       "step": 1,
       "action": {
         "battery_mw": 0.0,
-        "curtail_pct": 50.0,
+        "curtail_pct": 0.0,
         "switch_toggle": null
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.007023198385542662,
+      "min_margin": 0.0038245017503555356,
       "violations": [],
-      "solve_ms": 171.81880000862293
+      "solve_ms": 146.53260000341106
     },
     {
       "step": 2,
@@ -38,22 +38,22 @@
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.01895557246785251,
+      "min_margin": 0.020000000000000018,
       "violations": [],
-      "solve_ms": 180.66570001246873
+      "solve_ms": 257.92550000187475
     },
     {
       "step": 3,
       "action": {
-        "battery_mw": -0.5,
+        "battery_mw": 0.0,
         "curtail_pct": 0.0,
         "switch_toggle": null
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.0037476224972023964,
+      "min_margin": 0.012402198786141794,
       "violations": [],
-      "solve_ms": 188.796899994486
+      "solve_ms": 134.40290000289679
     },
     {
       "step": 4,
@@ -66,7 +66,7 @@
       "is_safe": true,
       "min_margin": 0.020000000000000018,
       "violations": [],
-      "solve_ms": 173.66160001256503
+      "solve_ms": 145.29270000639372
     },
     {
       "step": 5,
@@ -79,20 +79,20 @@
       "is_safe": true,
       "min_margin": 0.020000000000000018,
       "violations": [],
-      "solve_ms": 156.27009999298025
+      "solve_ms": 158.71400000469293
     },
     {
       "step": 6,
       "action": {
-        "battery_mw": 1.0,
+        "battery_mw": 0.5,
         "curtail_pct": 0.0,
-        "switch_toggle": 4
+        "switch_toggle": null
       },
       "converged": true,
       "is_safe": true,
-      "min_margin": 0.005789922951803805,
+      "min_margin": 0.0015478700158270131,
       "violations": [],
-      "solve_ms": 147.0468999905279
+      "solve_ms": 155.0881000002846
     },
     {
       "step": 7,
@@ -251,7 +251,7 @@
           "description": "Trafo 0-12 overload: 111.4% exceeds limit 100.0% (+11.4%)"
         }
       ],
-      "solve_ms": 162.55520000413526
+      "solve_ms": 278.91430001182016
     }
   ]
 }

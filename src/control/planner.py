@@ -270,6 +270,15 @@ class BeamSearchPlanner:
                     # Count screener statuses
                     if s_res.status == "unsafe":
                         screener_unsafe_dropped_count += 1
+                        if step_idx == 0:
+                            step0_records.append({
+                                "action": act.to_dict(),
+                                "is_safe": False,
+                                "min_margin": s_res.predicted_margin,
+                                "violations_count": 0,
+                                "score": None,
+                                "screener_status": s_res.status,
+                            })
                         # Drop unsafe candidate without calling physical solver
                         continue
                     elif s_res.status == "safe":

@@ -10,7 +10,7 @@ from backend.app.artifact_exporter import ArtifactExporter
 from backend.app.config import Settings
 from backend.app.mpc_engine import BatteryLimits, MpcEngine
 from backend.app.schemas import AssistantRequest, MpcPlan, MpcStepResult, SolverResult
-from backend.app.surrogate import FEATURE_COLUMNS, PowerFlowSurrogate
+from backend.app.surrogate import FEATURE_COLUMNS, PowerFlowSurrogate, generate_solver_dataset
 
 
 def test_surrogate_training_inference_ood_and_reload(tmp_path):
@@ -43,6 +43,29 @@ def test_surrogate_training_inference_ood_and_reload(tmp_path):
     assert metrics["voltage_mae_pu"] >= 0
     assert loaded.predict_fast(in_range)["status"] == "PREDICTION"
     assert loaded.predict_fast({**in_range, "solar_mw": 10_000})["status"] == "OOD_FALLBACK_REQUIRED"
+
+
+def test_training_data_covers_mpc_control_bounds():
+    class SafeVerifier:
+        @staticmethod
+        def run_power_flow(**_inputs):
+            return type(
+                "SafeResult",
+                (),
+                {
+                    "converged": True,
+                    "bus_voltages_pu": {0: 1.0},
+                    "line_loadings_percent": {0: 10.0},
+                },
+            )()
+
+    features, _, _ = generate_solver_dataset(sample_count=8, verifier=SafeVerifier())
+
+    assert features["solar_mw"].min() == 0.0
+    assert features["curtailment_fraction"].max() == 1.0
+    assert features["battery_charge_mw"].max() == 2.0
+    assert features["battery_discharge_mw"].max() == 2.0
+    assert features["load_shed_mw"].max() == pytest.approx(0.25 * features["load_mw"].max())
 
 
 def test_mpc_soc_uses_energy_balance_and_bounds():

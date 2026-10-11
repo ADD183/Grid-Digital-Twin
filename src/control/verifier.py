@@ -63,6 +63,7 @@ class Verifier:
         # Fast reusable worker network for in-place parameter mutations
         self._worker_net = copy.deepcopy(self._raw_base_net)
         self._cache: Dict[Tuple, VerificationResult] = {}
+        self.solver_calls = 0
         # Cache baseline load and PV generation vectors for deterministic scaling
         self._base_sgen_p = self._raw_base_net.sgen["p_mw"].copy()
         self._base_load_p = self._raw_base_net.load["p_mw"].copy()
@@ -167,6 +168,7 @@ class Verifier:
                     net.storage.loc[other_idx, "p_mw"] = 0.0
 
         # 4. Deterministic AC Power Flow (pinned settings from solver_config.json)
+        self.solver_calls += 1
         try:
             pp.runpp(
                 net,

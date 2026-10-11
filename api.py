@@ -670,6 +670,35 @@ def get_ab_screening_benchmark() -> Dict[str, Any]:
     return run_ab_screening_benchmark()
 
 
+@app.post("/api/control/ab-test")
+async def run_ab_screening_comparison(request: EpisodeRunRequest) -> Dict[str, Any]:
+    """Run a fresh baseline/screened comparison for the submitted controls."""
+    import asyncio
+    from src.control.ab_testing import run_ab_screening_benchmark
+
+    errors = {}
+    if request.inject_error:
+        errors[request.inject_error_step] = {
+            "solar_mult": 2.0,
+            "load_mult": 0.85,
+            "label": "Injected midday solar surge",
+        }
+    infeasible_steps = [request.force_infeasible_step] if request.force_infeasible else []
+
+    try:
+        return await asyncio.to_thread(
+            run_ab_screening_benchmark,
+            episode_steps=8,
+            initial_soc=request.initial_soc,
+            injected_errors=errors,
+            force_infeasible_steps=infeasible_steps,
+            run_id_prefix=request.run_id,
+            save_report=False,
+        )
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"A/B comparison failed: {err}")
+
+
 @app.post("/api/control/episode/run-screened")
 async def run_surrogate_screened_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
     """Execute rolling-horizon episode with SurrogateScreener filtering and solver verification."""

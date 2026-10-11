@@ -2,30 +2,35 @@
   "run_id": "live_interactive_run",
   "seed": 42,
   "total_steps": 8,
-  "replan_count": 3,
+  "replan_count": 2,
   "replan_steps": [
     2,
-    6,
     7
   ],
   "infeasible_count": 0,
   "infeasible_steps": [],
   "soc_trace": [
-    0.45,
-    0.45,
-    0.45,
-    0.6875,
-    0.6875,
-    0.6875,
-    0.16118421052631582,
-    0.16118421052631582
+    0.7,
+    0.7,
+    0.7,
+    0.7,
+    0.7,
+    0.7,
+    0.43684210526315786,
+    0.43684210526315786
   ],
+  "planner_metrics": {
+    "candidates_evaluated": 318,
+    "unsafe_dropped_count": 0,
+    "disagreement_events": [],
+    "wall_time_ms": 38577.13
+  },
   "steps": [
     {
       "step": 0,
       "state_before": {
         "t": 0,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
@@ -35,23 +40,23 @@
       },
       "state_after": {
         "t": 1,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
       "chosen_action": {
         "battery_mw": 0.0,
         "curtail_pct": 0.0,
-        "switch_toggle": null
+        "switch_toggle": 4
       },
-      "action_description": "Optimal Base Dispatch",
-      "min_voltage_pu": 1.0147,
-      "max_voltage_pu": 1.0457,
-      "max_loading_pct": 63.18,
+      "action_description": "Toggle Switch 4",
+      "min_voltage_pu": 1.0166,
+      "max_voltage_pu": 1.0353,
+      "max_loading_pct": 28.19,
       "forecast": {
         "step": 0,
         "hour": 10,
@@ -72,48 +77,48 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.45,
+      "soc": 0.7,
       "verification_result": {
         "converged": true,
         "is_safe": true,
-        "min_margin": 0.00426,
+        "min_margin": 0.01469,
         "violations_count": 0,
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 1.0171,
-          "2": 1.0257,
-          "3": 1.0392,
-          "4": 1.0394,
-          "5": 1.0395,
-          "6": 1.0398,
-          "7": 1.0457,
-          "8": 1.0428,
-          "9": 1.0431,
-          "10": 1.0433,
-          "11": 1.0433,
-          "12": 1.018,
-          "13": 1.0159,
-          "14": 1.0147
+          "1": 1.0191,
+          "2": 1.0238,
+          "3": 1.0308,
+          "4": 1.031,
+          "5": 1.0311,
+          "6": 1.0314,
+          "7": 1.0353,
+          "8": 1.0324,
+          "9": 1.0327,
+          "10": 1.0329,
+          "11": 1.0329,
+          "12": 1.0166,
+          "13": 1.0239,
+          "14": 1.0285
         },
         "line_loading": {
-          "0": 62.92,
-          "1": 63.18,
-          "2": 9.32,
-          "3": 7.18,
-          "4": 4.04,
-          "5": 27.9,
-          "6": 21.19,
-          "7": 7.3,
-          "8": 0.52,
-          "9": 52.44,
-          "10": 4.15,
-          "11": 3.91,
+          "0": 27.56,
+          "1": 27.67,
+          "2": 9.4,
+          "3": 7.24,
+          "4": 4.08,
+          "5": 28.19,
+          "6": 21.41,
+          "7": 7.37,
+          "8": 0.53,
+          "9": 17.27,
+          "10": 23.76,
+          "11": 23.94,
           "12": 0.09,
           "13": 0.19,
-          "14": 0.04
+          "14": 26.93
         },
-        "solve_ms": 143.554
+        "solve_ms": 144.158
       },
       "replan_flag": false,
       "infeasible_flag": false,
@@ -125,33 +130,33 @@
       "step": 1,
       "state_before": {
         "t": 1,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
       "state_after": {
         "t": 2,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
-        "curtail_level": 50.0
+        "curtail_level": 0.0
       },
       "chosen_action": {
         "battery_mw": 0.0,
-        "curtail_pct": 50.0,
+        "curtail_pct": 0.0,
         "switch_toggle": null
       },
-      "action_description": "Curtail 50.0%",
-      "min_voltage_pu": 1.0165,
-      "max_voltage_pu": 1.043,
-      "max_loading_pct": 51.32,
+      "action_description": "Optimal Base Dispatch",
+      "min_voltage_pu": 1.0177,
+      "max_voltage_pu": 1.0462,
+      "max_loading_pct": 43.04,
       "forecast": {
         "step": 1,
         "hour": 11,
@@ -172,48 +177,48 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.45,
+      "soc": 0.7,
       "verification_result": {
         "converged": true,
         "is_safe": true,
-        "min_margin": 0.00702,
+        "min_margin": 0.00382,
         "violations_count": 0,
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 1.0189,
-          "2": 1.0259,
-          "3": 1.0368,
-          "4": 1.0369,
-          "5": 1.0369,
-          "6": 1.037,
-          "7": 1.043,
-          "8": 1.04,
-          "9": 1.0403,
-          "10": 1.0404,
-          "11": 1.0403,
-          "12": 1.0195,
-          "13": 1.0176,
-          "14": 1.0165
+          "1": 1.0211,
+          "2": 1.0291,
+          "3": 1.0414,
+          "4": 1.0421,
+          "5": 1.0426,
+          "6": 1.0433,
+          "7": 1.0462,
+          "8": 1.0433,
+          "9": 1.0438,
+          "10": 1.0444,
+          "11": 1.0444,
+          "12": 1.0177,
+          "13": 1.0298,
+          "14": 1.0374
         },
         "line_loading": {
-          "0": 51.06,
-          "1": 51.32,
-          "2": 5.01,
-          "3": 3.92,
-          "4": 2.33,
-          "5": 28.05,
-          "6": 16.51,
-          "7": 4.39,
-          "8": 0.61,
-          "9": 46.14,
-          "10": 3.68,
-          "11": 3.47,
+          "0": 43.04,
+          "1": 42.99,
+          "2": 21.32,
+          "3": 16.18,
+          "4": 8.47,
+          "5": 27.96,
+          "6": 32.98,
+          "7": 14.66,
+          "8": 1.73,
+          "9": 17.67,
+          "10": 35.97,
+          "11": 36.15,
           "12": 0.09,
           "13": 0.19,
-          "14": 0.04
+          "14": 38.9
         },
-        "solve_ms": 171.819
+        "solve_ms": 146.533
       },
       "replan_flag": false,
       "infeasible_flag": false,
@@ -225,21 +230,21 @@
       "step": 2,
       "state_before": {
         "t": 2,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
-        "curtail_level": 50.0
+        "curtail_level": 0.0
       },
       "state_after": {
         "t": 3,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 100.0
       },
@@ -249,9 +254,9 @@
         "switch_toggle": null
       },
       "action_description": "Curtail 100.0%",
-      "min_voltage_pu": 1.0201,
-      "max_voltage_pu": 1.031,
-      "max_loading_pct": 28.52,
+      "min_voltage_pu": 1.0218,
+      "max_voltage_pu": 1.03,
+      "max_loading_pct": 28.61,
       "forecast": {
         "step": 2,
         "hour": 12,
@@ -265,55 +270,55 @@
         "step": 2,
         "hour": 12,
         "solar_scale": 50.0,
-        "solar_pu": 1.0,
+        "solar_pu": 2.0,
         "load_scale": 0.3,
         "load_pu": 0.35,
         "ext_grid_vm_pu": 1.03
       },
       "forecast_error_injected": true,
       "error_label": "Injected midday solar surge",
-      "soc": 0.45,
+      "soc": 0.7,
       "verification_result": {
         "converged": true,
         "is_safe": true,
-        "min_margin": 0.01896,
+        "min_margin": 0.02,
         "violations_count": 0,
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 1.0222,
-          "2": 1.0239,
-          "3": 1.0262,
-          "4": 1.0258,
-          "5": 1.0255,
-          "6": 1.0251,
-          "7": 1.031,
-          "8": 1.028,
-          "9": 1.028,
-          "10": 1.0277,
-          "11": 1.0277,
-          "12": 1.0223,
-          "13": 1.0209,
-          "14": 1.0201
+          "1": 1.0227,
+          "2": 1.0233,
+          "3": 1.0237,
+          "4": 1.0233,
+          "5": 1.023,
+          "6": 1.0226,
+          "7": 1.028,
+          "8": 1.025,
+          "9": 1.025,
+          "10": 1.0247,
+          "11": 1.0246,
+          "12": 1.0218,
+          "13": 1.0231,
+          "14": 1.0239
         },
         "line_loading": {
-          "0": 15.32,
-          "1": 15.84,
-          "2": 9.44,
-          "3": 6.89,
-          "4": 3.27,
-          "5": 28.52,
-          "6": 3.48,
-          "7": 4.93,
+          "0": 4.92,
+          "1": 5.66,
+          "2": 9.46,
+          "3": 6.91,
+          "4": 3.28,
+          "5": 28.61,
+          "6": 3.49,
+          "7": 4.94,
           "8": 1.94,
-          "9": 27.29,
-          "10": 2.74,
-          "11": 2.59,
+          "9": 17.0,
+          "10": 5.84,
+          "11": 5.95,
           "12": 0.09,
           "13": 0.19,
-          "14": 0.04
+          "14": 7.78
         },
-        "solve_ms": 180.666
+        "solve_ms": 257.926
       },
       "replan_flag": true,
       "infeasible_flag": false,
@@ -325,33 +330,33 @@
       "step": 3,
       "state_before": {
         "t": 3,
-        "soc": 0.45,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 100.0
       },
       "state_after": {
         "t": 4,
-        "soc": 0.6875,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
       "chosen_action": {
-        "battery_mw": -0.5,
+        "battery_mw": 0.0,
         "curtail_pct": 0.0,
         "switch_toggle": null
       },
-      "action_description": "Battery -0.50 MW (Charge)",
-      "min_voltage_pu": 1.0128,
-      "max_voltage_pu": 1.0463,
-      "max_loading_pct": 69.66,
+      "action_description": "Optimal Base Dispatch",
+      "min_voltage_pu": 1.0148,
+      "max_voltage_pu": 1.0376,
+      "max_loading_pct": 35.17,
       "forecast": {
         "step": 3,
         "hour": 13,
@@ -372,48 +377,48 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.6875,
+      "soc": 0.7,
       "verification_result": {
         "converged": true,
         "is_safe": true,
-        "min_margin": 0.00375,
+        "min_margin": 0.0124,
         "violations_count": 0,
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 1.0154,
-          "2": 1.0246,
-          "3": 1.0391,
-          "4": 1.0392,
-          "5": 1.0391,
-          "6": 1.0396,
-          "7": 1.0463,
-          "8": 1.0434,
-          "9": 1.0438,
-          "10": 1.0442,
-          "11": 1.0442,
-          "12": 1.0165,
-          "13": 1.0142,
-          "14": 1.0128
+          "1": 1.0178,
+          "2": 1.0239,
+          "3": 1.033,
+          "4": 1.0334,
+          "5": 1.0337,
+          "6": 1.0341,
+          "7": 1.0376,
+          "8": 1.0347,
+          "9": 1.0351,
+          "10": 1.0355,
+          "11": 1.0355,
+          "12": 1.0148,
+          "13": 1.024,
+          "14": 1.0299
         },
         "line_loading": {
-          "0": 69.38,
-          "1": 69.66,
-          "2": 6.22,
-          "3": 2.99,
-          "4": 6.36,
-          "5": 27.82,
-          "6": 27.42,
-          "7": 11.19,
+          "0": 35.09,
+          "1": 35.17,
+          "2": 15.35,
+          "3": 11.71,
+          "4": 6.39,
+          "5": 28.05,
+          "6": 27.65,
+          "7": 11.29,
           "8": 0.9,
-          "9": 60.92,
-          "10": 4.62,
-          "11": 4.36,
+          "9": 17.44,
+          "10": 29.72,
+          "11": 29.93,
           "12": 0.09,
           "13": 0.19,
-          "14": 0.04
+          "14": 33.26
         },
-        "solve_ms": 188.797
+        "solve_ms": 134.403
       },
       "replan_flag": false,
       "infeasible_flag": false,
@@ -425,21 +430,21 @@
       "step": 4,
       "state_before": {
         "t": 4,
-        "soc": 0.6875,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
       "state_after": {
         "t": 5,
-        "soc": 0.6875,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
@@ -449,9 +454,9 @@
         "switch_toggle": null
       },
       "action_description": "Optimal Base Dispatch",
-      "min_voltage_pu": 1.0051,
+      "min_voltage_pu": 1.0086,
       "max_voltage_pu": 1.03,
-      "max_loading_pct": 42.25,
+      "max_loading_pct": 28.32,
       "forecast": {
         "step": 4,
         "hour": 14,
@@ -472,7 +477,7 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.6875,
+      "soc": 0.7,
       "verification_result": {
         "converged": true,
         "is_safe": true,
@@ -481,39 +486,39 @@
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 1.0085,
-          "2": 1.0113,
-          "3": 1.0155,
-          "4": 1.0152,
-          "5": 1.015,
-          "6": 1.0149,
-          "7": 1.0206,
-          "8": 1.0177,
-          "9": 1.0178,
-          "10": 1.0177,
-          "11": 1.0176,
-          "12": 1.0103,
-          "13": 1.007,
-          "14": 1.0051
+          "1": 1.0106,
+          "2": 1.0117,
+          "3": 1.013,
+          "4": 1.0127,
+          "5": 1.0125,
+          "6": 1.0124,
+          "7": 1.0173,
+          "8": 1.0143,
+          "9": 1.0144,
+          "10": 1.0143,
+          "11": 1.0142,
+          "12": 1.0086,
+          "13": 1.0107,
+          "14": 1.0121
         },
         "line_loading": {
-          "0": 41.58,
-          "1": 42.25,
-          "2": 5.04,
-          "3": 3.73,
-          "4": 1.93,
-          "5": 28.22,
-          "6": 14.7,
-          "7": 3.63,
-          "8": 2.01,
-          "9": 42.08,
-          "10": 6.54,
-          "11": 6.15,
+          "0": 16.36,
+          "1": 17.1,
+          "2": 5.06,
+          "3": 3.74,
+          "4": 1.94,
+          "5": 28.32,
+          "6": 14.75,
+          "7": 3.65,
+          "8": 2.02,
+          "9": 17.33,
+          "10": 15.05,
+          "11": 15.23,
           "12": 0.09,
           "13": 0.19,
-          "14": 0.04
+          "14": 18.86
         },
-        "solve_ms": 173.662
+        "solve_ms": 145.293
       },
       "replan_flag": false,
       "infeasible_flag": false,
@@ -525,21 +530,21 @@
       "step": 5,
       "state_before": {
         "t": 5,
-        "soc": 0.6875,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
       "state_after": {
         "t": 6,
-        "soc": 0.6875,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
@@ -549,9 +554,9 @@
         "switch_toggle": null
       },
       "action_description": "Optimal Base Dispatch",
-      "min_voltage_pu": 0.9775,
+      "min_voltage_pu": 0.9861,
       "max_voltage_pu": 1.03,
-      "max_loading_pct": 29.0,
+      "max_loading_pct": 28.71,
       "forecast": {
         "step": 5,
         "hour": 15,
@@ -572,7 +577,7 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.6875,
+      "soc": 0.7,
       "verification_result": {
         "converged": true,
         "is_safe": true,
@@ -581,39 +586,39 @@
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 1.0,
-          "2": 0.9926,
-          "3": 0.9803,
-          "4": 0.9792,
-          "5": 0.9784,
-          "6": 0.9775,
-          "7": 0.9831,
-          "8": 0.9801,
-          "9": 0.9797,
-          "10": 0.979,
-          "11": 0.9788,
-          "12": 1.0037,
-          "13": 0.9994,
-          "14": 0.9969
+          "1": 1.0022,
+          "2": 0.9973,
+          "3": 0.989,
+          "4": 0.9878,
+          "5": 0.987,
+          "6": 0.9861,
+          "7": 0.9928,
+          "8": 0.9899,
+          "9": 0.9895,
+          "10": 0.9887,
+          "11": 0.9886,
+          "12": 1.0015,
+          "13": 0.9948,
+          "14": 0.9909
         },
         "line_loading": {
-          "0": 24.69,
-          "1": 26.16,
-          "2": 21.96,
-          "3": 16.22,
-          "4": 6.83,
-          "5": 29.0,
-          "6": 11.9,
-          "7": 10.46,
-          "8": 5.0,
-          "9": 20.89,
-          "10": 8.49,
-          "11": 7.98,
+          "0": 16.4,
+          "1": 17.75,
+          "2": 21.77,
+          "3": 16.08,
+          "4": 6.77,
+          "5": 28.71,
+          "6": 11.78,
+          "7": 10.35,
+          "8": 4.95,
+          "9": 18.08,
+          "10": 13.31,
+          "11": 12.84,
           "12": 0.09,
           "13": 0.18,
-          "14": 0.04
+          "14": 6.38
         },
-        "solve_ms": 156.27
+        "solve_ms": 158.714
       },
       "replan_flag": false,
       "infeasible_flag": false,
@@ -625,17 +630,17 @@
       "step": 6,
       "state_before": {
         "t": 6,
-        "soc": 0.6875,
+        "soc": 0.7,
         "switch_state": {
           "1": false,
           "2": false,
-          "4": false
+          "4": true
         },
         "curtail_level": 0.0
       },
       "state_after": {
         "t": 7,
-        "soc": 0.1612,
+        "soc": 0.4368,
         "switch_state": {
           "1": false,
           "2": false,
@@ -644,14 +649,14 @@
         "curtail_level": 0.0
       },
       "chosen_action": {
-        "battery_mw": 1.0,
+        "battery_mw": 0.5,
         "curtail_pct": 0.0,
-        "switch_toggle": 4
+        "switch_toggle": null
       },
-      "action_description": "Battery +1.00 MW (Discharge) + Toggle Switch 4",
-      "min_voltage_pu": 0.9558,
+      "action_description": "Battery +0.50 MW (Discharge)",
+      "min_voltage_pu": 0.9515,
       "max_voltage_pu": 1.03,
-      "max_loading_pct": 36.74,
+      "max_loading_pct": 41.56,
       "forecast": {
         "step": 6,
         "hour": 16,
@@ -672,60 +677,60 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.16118421052631582,
+      "soc": 0.43684210526315786,
       "verification_result": {
         "converged": true,
         "is_safe": true,
-        "min_margin": 0.00579,
+        "min_margin": 0.00155,
         "violations_count": 0,
         "violations": [],
         "bus_vm": {
           "0": 1.03,
-          "1": 0.9872,
-          "2": 0.9767,
-          "3": 0.9599,
-          "4": 0.9584,
-          "5": 0.9576,
-          "6": 0.9558,
-          "7": 0.9624,
-          "8": 0.9595,
-          "9": 0.9586,
-          "10": 0.9571,
-          "11": 0.9568,
-          "12": 0.9872,
-          "13": 0.9721,
-          "14": 0.9631
+          "1": 0.9868,
+          "2": 0.9751,
+          "3": 0.9564,
+          "4": 0.9546,
+          "5": 0.9534,
+          "6": 0.9515,
+          "7": 0.9593,
+          "8": 0.9564,
+          "9": 0.9554,
+          "10": 0.9539,
+          "11": 0.9537,
+          "12": 0.9871,
+          "13": 0.9705,
+          "14": 0.9606
         },
         "line_loading": {
-          "0": 35.73,
-          "1": 36.74,
-          "2": 25.11,
-          "3": 14.0,
-          "4": 14.69,
-          "5": 29.08,
-          "6": 30.43,
-          "7": 23.21,
-          "8": 8.8,
-          "9": 11.41,
-          "10": 29.39,
-          "11": 28.65,
+          "0": 40.64,
+          "1": 41.56,
+          "2": 35.01,
+          "3": 23.5,
+          "4": 14.76,
+          "5": 29.17,
+          "6": 30.53,
+          "7": 23.29,
+          "8": 8.83,
+          "9": 15.64,
+          "10": 32.68,
+          "11": 31.95,
           "12": 0.09,
           "13": 0.18,
-          "14": 17.18
+          "14": 20.45
         },
-        "solve_ms": 147.047
+        "solve_ms": 155.088
       },
-      "replan_flag": true,
+      "replan_flag": false,
       "infeasible_flag": false,
       "fallback_used": null,
       "screener_status": "uncertain",
-      "action_changed_by_replan": true
+      "action_changed_by_replan": false
     },
     {
       "step": 7,
       "state_before": {
         "t": 7,
-        "soc": 0.1612,
+        "soc": 0.4368,
         "switch_state": {
           "1": false,
           "2": false,
@@ -735,7 +740,7 @@
       },
       "state_after": {
         "t": 8,
-        "soc": 0.1612,
+        "soc": 0.4368,
         "switch_state": {
           "1": false,
           "2": false,
@@ -772,7 +777,7 @@
       },
       "forecast_error_injected": false,
       "error_label": null,
-      "soc": 0.16118421052631582,
+      "soc": 0.43684210526315786,
       "verification_result": {
         "converged": true,
         "is_safe": false,
@@ -959,7 +964,7 @@
           "13": 0.17,
           "14": 0.04
         },
-        "solve_ms": 162.555
+        "solve_ms": 278.914
       },
       "replan_flag": true,
       "infeasible_flag": false,
