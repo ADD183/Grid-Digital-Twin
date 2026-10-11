@@ -5,7 +5,6 @@ import {
   Area,
   LineChart,
   Line,
-  BarChart,
   Bar,
   ComposedChart,
   XAxis,
@@ -26,12 +25,30 @@ import {
   ShieldCheck,
   CheckCircle2,
   Clock,
-  Sliders,
   Cpu,
-  Layers,
-  Info,
 } from 'lucide-react';
 import { controlApi } from '../api/client';
+
+function CustomChartTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="vp-chart-tooltip">
+        <div className="vp-chart-tooltip-title">Step {label}</div>
+        {payload.map((entry, idx) => (
+          <div key={idx} className="vp-chart-tooltip-item">
+            <span
+              className="vp-chart-tooltip-dot"
+              style={{ backgroundColor: entry.color || 'var(--color-fg-muted)' }}
+            />
+            <span className="vp-chart-tooltip-label">{entry.name}:</span>
+            <strong className="vp-chart-tooltip-val">{entry.value}</strong>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
 
 export default function TimePlanPanel() {
   const [episode, setEpisode] = useState(null);
@@ -109,12 +126,12 @@ export default function TimePlanPanel() {
 
   if (!episode && loading) {
     return (
-      <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-        <RefreshCw size={36} className="spin" style={{ margin: '0 auto 16px', color: '#10b981' }} />
-        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#f1f5f9' }}>
+      <div className="vp-card vp-text-center" style={{ padding: 'var(--space-8)' }}>
+        <RefreshCw size={36} className="spin vp-text-accent" style={{ margin: '0 auto var(--space-3)' }} />
+        <div style={{ fontSize: 'var(--font-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>
           Loading Multi-Step Control Engine...
         </div>
-        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '6px' }}>
+        <div style={{ fontSize: 'var(--font-sm)', color: 'var(--color-fg-muted)', marginTop: 'var(--space-1)' }}>
           Connecting with pandapower AC Power Flow physical solver
         </div>
       </div>
@@ -148,123 +165,24 @@ export default function TimePlanPanel() {
     minMargin: s.verification_result?.min_margin ?? 0,
   }));
 
-  const CustomChartTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div
-          style={{
-            backgroundColor: '#090d16',
-            border: '1px solid rgba(255,255,255,0.15)',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '0.78rem',
-              color: '#94a3b8',
-              marginBottom: '6px',
-              fontFamily: 'var(--font-mono)',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-              paddingBottom: '4px',
-            }}
-          >
-            Step {label}
-          </div>
-          {payload.map((entry, idx) => (
-            <div
-              key={idx}
-              style={{
-                fontSize: '0.82rem',
-                color: entry.color || '#e2e8f0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginTop: '3px',
-              }}
-            >
-              <span
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: entry.color || '#e2e8f0',
-                }}
-              />
-              <span style={{ color: '#cbd5e1' }}>{entry.name}:</span>
-              <strong style={{ fontFamily: 'var(--font-mono)' }}>{entry.value}</strong>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginBottom: 'var(--space-6)' }}>
       {/* Header Banner */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
-          borderColor: 'rgba(16, 185, 129, 0.25)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
+      <div className="vp-card vp-card-gradient">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span
-                style={{
-                  backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                  color: '#10b981',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                }}
-              >
+            <div className="vp-flex vp-gap-2 vp-mb-2">
+              <span className="vp-badge vp-badge-accent">
                 Checkpoint 5 Multi-Step Control
               </span>
-              <span
-                style={{
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                  color: '#38bdf8',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                }}
-              >
+              <span className="vp-badge vp-badge-info">
                 AC Newton-Raphson Verified
               </span>
             </div>
-            <h2
-              style={{
-                fontSize: '1.45rem',
-                fontWeight: 700,
-                color: '#f8fafc',
-                margin: '10px 0 6px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
-              ⏱️ Rolling-Horizon Time Plan & Physical Solver Verification
+            <h2 className="vp-page-title vp-flex vp-items-center vp-gap-2">
+              <span>⏱️ Rolling-Horizon Time Plan & Physical Solver Verification</span>
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0, maxWidth: '820px' }}>
+            <p className="vp-page-description" style={{ maxWidth: '820px' }}>
               Autonomous 8-step rolling-horizon beam-search controller over CIGRE MV grid. Enforces battery SOC
               admissibility, handles forecast drifts with online replanning, and executes the 4-step Fallback Ladder
               with AC power flow verification at every step.
@@ -273,20 +191,19 @@ export default function TimePlanPanel() {
 
           {/* Action Buttons & Config Toggles */}
           <div
+            className="vp-card"
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '10px',
-              background: 'rgba(15, 23, 42, 0.7)',
-              padding: '14px 16px',
-              borderRadius: '10px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              minWidth: '280px',
+              gap: 'var(--space-3)',
+              padding: 'var(--space-3) var(--space-4)',
+              minWidth: '290px',
+              backgroundColor: 'var(--color-bg-tertiary)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              <span style={{ fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 600 }}>Initial SoC:</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', fontWeight: 'var(--font-semibold)' }}>Initial SoC:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                 <input
                   type="range"
                   min="0.1"
@@ -294,73 +211,41 @@ export default function TimePlanPanel() {
                   step="0.05"
                   value={initialSoc}
                   onChange={(e) => setInitialSoc(parseFloat(e.target.value))}
-                  style={{ cursor: 'pointer', accentColor: '#10b981', width: '100px' }}
+                  style={{ cursor: 'pointer', accentColor: 'var(--c-soc)', width: '100px' }}
                 />
-                <span style={{ fontSize: '0.82rem', fontFamily: 'var(--font-mono)', color: '#10b981', fontWeight: 700, minWidth: '36px' }}>
+                <span style={{ fontSize: 'var(--font-xs)', fontFamily: 'var(--font-mono)', color: 'var(--c-soc)', fontWeight: 'var(--font-bold)', minWidth: '36px' }}>
                   {(initialSoc * 100).toFixed(0)}%
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <label
-                style={{
-                  fontSize: '0.8rem',
-                  color: '#cbd5e1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                }}
-              >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <label style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={injectError}
                   onChange={(e) => setInjectError(e.target.checked)}
-                  style={{ cursor: 'pointer', accentColor: '#10b981' }}
+                  style={{ cursor: 'pointer', accentColor: 'var(--c-soc)' }}
                 />
                 <span>Inject Forecast Error at T2</span>
               </label>
-              <label
-                style={{
-                  fontSize: '0.8rem',
-                  color: '#cbd5e1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                }}
-              >
+              <label style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={forceInfeasible}
                   onChange={(e) => setForceInfeasible(e.target.checked)}
-                  style={{ cursor: 'pointer', accentColor: '#ef4444' }}
+                  style={{ cursor: 'pointer', accentColor: 'var(--color-danger)' }}
                 />
                 <span title="Inject severe contingency to test fallback ladder">Stress Test (Infeasible)</span>
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <button
                 onClick={handleRunLiveEpisode}
                 disabled={loading}
-                style={{
-                  flex: 1,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  padding: '9px 14px',
-                  borderRadius: '7px',
-                  backgroundColor: '#10b981',
-                  color: '#042f2e',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  border: 'none',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 2px 10px rgba(16, 185, 129, 0.35)',
-                }}
+                className="vp-btn vp-btn-primary"
+                style={{ flex: 1 }}
               >
                 {loading ? <RefreshCw size={15} className="spin" /> : <Play size={15} />}
                 <span>{loading ? 'Running...' : 'Run Live 8-Step Episode'}</span>
@@ -369,16 +254,7 @@ export default function TimePlanPanel() {
                 onClick={handleReloadShowcase}
                 disabled={loading}
                 title="Reset to showcase benchmark"
-                style={{
-                  padding: '9px 12px',
-                  borderRadius: '7px',
-                  backgroundColor: 'rgba(255,255,255,0.06)',
-                  color: '#cbd5e1',
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  cursor: 'pointer',
-                }}
+                className="vp-btn vp-btn-secondary"
               >
                 <RefreshCw size={14} />
               </button>
@@ -387,20 +263,7 @@ export default function TimePlanPanel() {
         </div>
 
         {error && (
-          <div
-            style={{
-              marginTop: '14px',
-              backgroundColor: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              color: '#f87171',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              fontSize: '0.84rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
+          <div className="vp-alert vp-alert-danger vp-mt-3">
             <AlertTriangle size={16} />
             <span>{error}</span>
           </div>
@@ -408,110 +271,64 @@ export default function TimePlanPanel() {
       </div>
 
       {/* Metric Cards Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '14px',
-        }}
-      >
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px',
-            borderLeft: '4px solid #38bdf8',
-          }}
-        >
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Horizon Steps
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
+        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-info)' }}>
+          <div className="vp-kpi-label">Horizon Steps</div>
+          <div className="vp-kpi-value">
+            {episode?.total_steps || 8} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>steps (1h dt)</span>
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            {episode?.total_steps || 8} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>steps (1h dt)</span>
-          </div>
-          <div style={{ fontSize: '0.78rem', color: '#38bdf8', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="vp-kpi-subtext vp-flex vp-items-center vp-gap-1" style={{ color: 'var(--color-info)' }}>
             <Clock size={12} />
             <span>Deterministic lookahead</span>
           </div>
         </div>
 
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px',
-            borderLeft: '4px solid #10b981',
-          }}
-        >
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Battery Capacity
+        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--c-soc)' }}>
+          <div className="vp-kpi-label">Battery Capacity</div>
+          <div className="vp-kpi-value">
+            {batteryCap.toFixed(1)} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>MWh (1.0 MW)</span>
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-            {batteryCap.toFixed(1)} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>MWh (1.0 MW)</span>
-          </div>
-          <div style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="vp-kpi-subtext vp-flex vp-items-center vp-gap-1" style={{ color: 'var(--c-soc)' }}>
             <BatteryCharging size={12} />
             <span>Bus 5 • η = 95%</span>
           </div>
         </div>
 
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px',
-            borderLeft: `4px solid ${replanSteps.length > 0 ? '#ec4899' : '#64748b'}`,
-          }}
-        >
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Replans Triggered
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+        <div className="vp-kpi-tile" style={{ borderLeft: `4px solid ${replanSteps.length > 0 ? '#ec4899' : 'var(--color-border)'}` }}>
+          <div className="vp-kpi-label">Replans Triggered</div>
+          <div className="vp-kpi-value">
             {replanSteps.length}{' '}
-            <span style={{ fontSize: '0.85rem', color: replanSteps.length > 0 ? '#ec4899' : '#64748b' }}>
+            <span style={{ fontSize: 'var(--font-xs)', color: replanSteps.length > 0 ? '#ec4899' : 'var(--color-fg-muted)' }}>
               {replanSteps.length > 0 ? `at ${replanSteps.map((s) => `T${s}`).join(', ')}` : 'zero drift'}
             </span>
           </div>
-          <div style={{ fontSize: '0.78rem', color: replanSteps.length > 0 ? '#ec4899' : '#94a3b8', marginTop: '4px' }}>
+          <div className="vp-kpi-subtext" style={{ color: replanSteps.length > 0 ? '#ec4899' : 'var(--color-fg-muted)' }}>
             {replanSteps.length > 0 ? '⚡ Dynamic plan adjustment' : 'Nominal plan executed'}
           </div>
         </div>
 
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px',
-            borderLeft: `4px solid ${infeasibleSteps.length > 0 ? '#ef4444' : '#10b981'}`,
-          }}
-        >
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Infeasible Periods
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+        <div className="vp-kpi-tile" style={{ borderLeft: `4px solid ${infeasibleSteps.length > 0 ? 'var(--color-danger)' : 'var(--color-success)'}` }}>
+          <div className="vp-kpi-label">Infeasible Periods</div>
+          <div className="vp-kpi-value">
             {infeasibleSteps.length}{' '}
-            <span style={{ fontSize: '0.85rem', color: infeasibleSteps.length > 0 ? '#ef4444' : '#10b981' }}>
+            <span style={{ fontSize: 'var(--font-xs)', color: infeasibleSteps.length > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
               {infeasibleSteps.length > 0 ? `at ${infeasibleSteps.map((s) => `T${s}`).join(', ')}` : 'fully feasible'}
             </span>
           </div>
-          <div style={{ fontSize: '0.78rem', color: infeasibleSteps.length > 0 ? '#ef4444' : '#10b981', marginTop: '4px' }}>
+          <div className="vp-kpi-subtext" style={{ color: infeasibleSteps.length > 0 ? 'var(--color-danger)' : 'var(--color-success)' }}>
             {infeasibleSteps.length > 0 ? 'Fallback ladder active' : 'All constraints satisfied'}
           </div>
         </div>
 
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px',
-            borderLeft: '4px solid #a855f7',
-          }}
-        >
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Final Battery SOC
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+        <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #a855f7' }}>
+          <div className="vp-kpi-label">Final Battery SOC</div>
+          <div className="vp-kpi-value">
             {(finalSoc * 100).toFixed(1)}%{' '}
-            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+            <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
               {(finalSoc * batteryCap).toFixed(2)} MWh
             </span>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#a855f7', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="vp-kpi-subtext vp-flex vp-items-center vp-gap-1" style={{ color: '#a855f7' }}>
             <Battery size={12} />
             <span>Safe within [{socMinPct}% - {socMaxPct}%]</span>
           </div>
@@ -520,57 +337,40 @@ export default function TimePlanPanel() {
 
       {/* Infeasible Callout Banner (if any) */}
       {infeasibleSteps.length > 0 && (
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px 20px',
-            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-            borderRadius: '10px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#ef4444', fontWeight: 700, fontSize: '0.98rem' }}>
-            <AlertTriangle size={20} />
+        <div className="vp-alert vp-alert-danger" style={{ display: 'block' }}>
+          <div className="vp-flex vp-items-center vp-gap-2" style={{ fontWeight: 'var(--font-bold)' }}>
+            <AlertTriangle size={18} />
             <span>Deliberate Infeasible Stress Test Period Detected: Steps {infeasibleSteps.map((s) => `T${s}`).join(', ')}</span>
           </div>
-          <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="vp-mt-2 vp-flex vp-flex-col vp-gap-2">
             {infeasibleSteps.map((stepIdx) => {
               const rec = steps[stepIdx];
               return (
                 <div
                   key={stepIdx}
+                  className="vp-card"
                   style={{
-                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    fontSize: '0.84rem',
-                    color: '#e2e8f0',
+                    padding: 'var(--space-2) var(--space-3)',
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    fontSize: 'var(--font-xs)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexWrap: 'wrap',
-                    gap: '10px',
-                    borderLeft: '4px solid #ef4444',
+                    gap: 'var(--space-2)',
+                    borderLeft: '4px solid var(--color-danger)',
                   }}
                 >
                   <div>
                     <strong>Step T{stepIdx}:</strong> Fallback Ladder Invoked:{' '}
-                    <code
-                      style={{
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        color: '#fca5a5',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontFamily: 'var(--font-mono)',
-                      }}
-                    >
+                    <code className="vp-badge vp-badge-danger" style={{ fontFamily: 'var(--font-mono)' }}>
                       {rec?.fallback_used || 'infeasible_residual'}
                     </code>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                    Residual Violations: <strong style={{ color: '#ef4444' }}>{rec?.verification_result?.violations?.length ?? 0}</strong>{' '}
+                  <div style={{ color: 'var(--color-fg-muted)' }}>
+                    Residual Violations: <strong style={{ color: 'var(--color-danger)' }}>{rec?.verification_result?.violations?.length ?? 0}</strong>{' '}
                     | Margin:{' '}
-                    <strong style={{ color: '#ef4444', fontFamily: 'var(--font-mono)' }}>
+                    <strong style={{ color: 'var(--color-danger)', fontFamily: 'var(--font-mono)' }}>
                       {(rec?.verification_result?.min_margin ?? 0).toFixed(4)}
                     </strong>
                   </div>
@@ -582,30 +382,21 @@ export default function TimePlanPanel() {
       )}
 
       {/* Main Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-4)' }}>
         {/* 1. Battery State of Charge (SOC) Trajectory */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-              gap: '12px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontWeight: 600, fontSize: '1.02rem' }}>
-              <BatteryCharging size={20} />
+        <div className="vp-card">
+          <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
+            <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-soc)' }}>
+              <BatteryCharging size={18} />
               <span>1. Battery State of Charge (SOC) Trajectory & Operating Envelope</span>
             </div>
-            <div style={{ display: 'flex', gap: '14px', fontSize: '0.78rem', color: '#94a3b8' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '2px', backgroundColor: '#ef4444', borderTop: '2px dashed #ef4444' }} />
+            <div className="vp-flex vp-gap-3" style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
+              <span className="vp-flex vp-items-center vp-gap-1">
+                <span style={{ width: '10px', height: '2px', backgroundColor: 'var(--color-danger)', borderTop: '2px dashed var(--color-danger)' }} />
                 <span>SOC Max ({socMaxPct}%)</span>
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '2px', backgroundColor: '#f59e0b', borderTop: '2px dashed #f59e0b' }} />
+              <span className="vp-flex vp-items-center vp-gap-1">
+                <span style={{ width: '10px', height: '2px', backgroundColor: 'var(--color-warning)', borderTop: '2px dashed var(--color-warning)' }} />
                 <span>SOC Min ({socMinPct}%)</span>
               </span>
             </div>
@@ -616,35 +407,35 @@ export default function TimePlanPanel() {
               <AreaChart data={chartData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="socGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--c-soc)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--c-soc)" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                <YAxis domain={[0, 100]} stroke="#64748b" fontSize={11} tickLine={false} unit="%" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                <XAxis dataKey="name" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
+                <YAxis domain={[0, 100]} stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} unit="%" />
                 <Tooltip content={<CustomChartTooltip />} />
                 <ReferenceLine
                   y={socMaxPct}
-                  stroke="#ef4444"
+                  stroke="var(--color-danger)"
                   strokeDasharray="4 4"
-                  label={{ value: `Max ${socMaxPct}%`, fill: '#ef4444', fontSize: 10, position: 'insideTopRight' }}
+                  label={{ value: `Max ${socMaxPct}%`, fill: 'var(--color-danger)', fontSize: 10, position: 'insideTopRight' }}
                 />
                 <ReferenceLine
                   y={socMinPct}
-                  stroke="#f59e0b"
+                  stroke="var(--color-warning)"
                   strokeDasharray="4 4"
-                  label={{ value: `Min ${socMinPct}%`, fill: '#f59e0b', fontSize: 10, position: 'insideBottomRight' }}
+                  label={{ value: `Min ${socMinPct}%`, fill: 'var(--color-warning)', fontSize: 10, position: 'insideBottomRight' }}
                 />
                 <Area
                   type="monotone"
                   dataKey="soc"
                   name="Battery SOC (%)"
-                  stroke="#10b981"
+                  stroke="var(--c-soc)"
                   strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#socGradient)"
-                  dot={{ r: 5, fill: '#047857', stroke: '#10b981', strokeWidth: 2 }}
+                  dot={{ r: 5, fill: '#047857', stroke: 'var(--c-soc)', strokeWidth: 2 }}
                   activeDot={{ r: 7, fill: '#34d399' }}
                 />
               </AreaChart>
@@ -653,37 +444,28 @@ export default function TimePlanPanel() {
         </div>
 
         {/* 2. Action Dispatch Timeline */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-              gap: '12px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 600, fontSize: '1.02rem' }}>
-              <Zap size={20} />
+        <div className="vp-card">
+          <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
+            <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-battery)' }}>
+              <Zap size={18} />
               <span>2. Action Dispatch Timeline: Battery Active Power & Solar Curtailment</span>
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-              <span style={{ color: '#38bdf8' }}>Positive: Discharge (+MW)</span> •{' '}
+            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
+              <span style={{ color: 'var(--c-battery)' }}>Positive: Discharge (+MW)</span> •{' '}
               <span style={{ color: '#818cf8' }}>Negative: Charge (-MW)</span> •{' '}
-              <span style={{ color: '#f43f5e' }}>Line: Curtailment (%)</span>
+              <span style={{ color: 'var(--c-curtail)' }}>Line: Curtailment (%)</span>
             </div>
           </div>
 
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                <XAxis dataKey="name" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
                 <YAxis
                   yAxisId="power"
                   domain={[-1.2, 1.2]}
-                  stroke="#38bdf8"
+                  stroke="var(--c-battery)"
                   fontSize={11}
                   tickLine={false}
                   unit=" MW"
@@ -692,19 +474,19 @@ export default function TimePlanPanel() {
                   yAxisId="curtail"
                   orientation="right"
                   domain={[0, 100]}
-                  stroke="#f43f5e"
+                  stroke="var(--c-curtail)"
                   fontSize={11}
                   tickLine={false}
                   unit="%"
                 />
                 <Tooltip content={<CustomChartTooltip />} />
                 <Legend verticalAlign="top" height={32} />
-                <ReferenceLine yAxisId="power" y={0} stroke="rgba(255,255,255,0.2)" />
+                <ReferenceLine yAxisId="power" y={0} stroke="var(--color-border)" />
                 <Bar
                   yAxisId="power"
                   dataKey="batteryMw"
                   name="Battery Dispatch (MW)"
-                  fill="#38bdf8"
+                  fill="var(--c-battery)"
                   radius={[4, 4, 0, 0]}
                 />
                 <Line
@@ -712,9 +494,9 @@ export default function TimePlanPanel() {
                   type="monotone"
                   dataKey="curtailPct"
                   name="Solar Curtailment (%)"
-                  stroke="#f43f5e"
+                  stroke="var(--c-curtail)"
                   strokeWidth={2.5}
-                  dot={{ r: 4, fill: '#f43f5e' }}
+                  dot={{ r: 4, fill: 'var(--c-curtail)' }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -722,22 +504,13 @@ export default function TimePlanPanel() {
         </div>
 
         {/* 3. Forecast vs Observed Conditions & Replan Markers */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-              gap: '12px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#facc15', fontWeight: 600, fontSize: '1.02rem' }}>
-              <TrendingUp size={20} />
+        <div className="vp-card">
+          <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-2">
+            <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-solar)' }}>
+              <TrendingUp size={18} />
               <span>3. Forecast vs Observed Operating Scales & Replan Markers</span>
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
               Dashed lines: Forecast • Solid lines: Actual Observed • Pink vertical lines: Replan triggers
             </div>
           </div>
@@ -745,9 +518,9 @@ export default function TimePlanPanel() {
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                <XAxis dataKey="name" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
+                <YAxis stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
                 <Tooltip content={<CustomChartTooltip />} />
                 <Legend verticalAlign="top" height={32} />
 
@@ -774,7 +547,7 @@ export default function TimePlanPanel() {
                   type="monotone"
                   dataKey="solarFc"
                   name="Solar Forecast"
-                  stroke="#facc15"
+                  stroke="var(--c-solar)"
                   strokeDasharray="4 4"
                   strokeWidth={2}
                   dot={false}
@@ -791,7 +564,7 @@ export default function TimePlanPanel() {
                   type="monotone"
                   dataKey="loadFc"
                   name="Demand Forecast"
-                  stroke="#c084fc"
+                  stroke="var(--c-load)"
                   strokeDasharray="4 4"
                   strokeWidth={2}
                   dot={false}
@@ -811,24 +584,15 @@ export default function TimePlanPanel() {
       </div>
 
       {/* 4. Step-by-Step Solver Verification Inspector */}
-      <div className="glass-panel" style={{ padding: '24px' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '18px',
-            flexWrap: 'wrap',
-            gap: '14px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 600, fontSize: '1.05rem' }}>
-            <Cpu size={20} />
+      <div className="vp-card">
+        <div className="vp-card-header vp-flex vp-justify-between vp-items-center vp-flex-wrap vp-gap-3">
+          <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--c-battery)' }}>
+            <Cpu size={18} />
             <span>4. Step-by-Step AC Power Flow Solver Verification Inspector</span>
           </div>
 
-          {/* Step Selector Pills */}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {/* Step Selector Segmented Controls */}
+          <div className="vp-segmented" style={{ flexWrap: 'wrap' }}>
             {steps.map((s, idx) => {
               const isSelected = selectedStepIdx === idx;
               const isReplan = s.replan_flag;
@@ -837,21 +601,8 @@ export default function TimePlanPanel() {
                 <button
                   key={idx}
                   onClick={() => setSelectedStepIdx(idx)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '7px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    backgroundColor: isSelected
-                      ? 'rgba(56, 189, 248, 0.25)'
-                      : 'rgba(255, 255, 255, 0.04)',
-                    color: isSelected ? '#38bdf8' : '#94a3b8',
-                    border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
+                  className={`vp-segmented-btn ${isSelected ? 'active' : ''}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   <span>Step T{s.step}</span>
                   {isReplan && (
@@ -871,7 +622,7 @@ export default function TimePlanPanel() {
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        backgroundColor: '#ef4444',
+                        backgroundColor: 'var(--color-danger)',
                       }}
                       title="Infeasible period"
                     />
@@ -888,129 +639,84 @@ export default function TimePlanPanel() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-                gap: '12px',
-                marginBottom: '20px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 'var(--space-3)',
+                marginBottom: 'var(--space-4)',
               }}
             >
-              <div
-                style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}
-              >
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase' }}>
-                  AC Newton-Raphson Solver
-                </div>
+              <div className="vp-kpi-tile">
+                <div className="vp-kpi-label">AC Newton-Raphson Solver</div>
                 <div
+                  className="vp-kpi-value"
                   style={{
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                    marginTop: '4px',
-                    color: activeStep.verification_result?.converged ? '#10b981' : '#ef4444',
+                    color: activeStep.verification_result?.converged ? 'var(--color-success)' : 'var(--color-danger)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: 'var(--space-2)',
                   }}
                 >
                   {activeStep.verification_result?.converged ? (
                     <>
-                      <CheckCircle2 size={16} />
+                      <CheckCircle2 size={18} />
                       <span>Converged</span>
                     </>
                   ) : (
                     <>
-                      <AlertTriangle size={16} />
+                      <AlertTriangle size={18} />
                       <span>Diverged</span>
                     </>
                   )}
                 </div>
               </div>
 
-              <div
-                style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}
-              >
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase' }}>
-                  Physical Safety Verdict
-                </div>
+              <div className="vp-kpi-tile">
+                <div className="vp-kpi-label">Physical Safety Verdict</div>
                 <div
+                  className="vp-kpi-value"
                   style={{
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                    marginTop: '4px',
-                    color: activeStep.verification_result?.is_safe ? '#10b981' : '#f59e0b',
+                    color: activeStep.verification_result?.is_safe ? 'var(--color-success)' : 'var(--color-warning)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: 'var(--space-2)',
                   }}
                 >
                   {activeStep.verification_result?.is_safe ? (
                     <>
-                      <ShieldCheck size={16} />
+                      <ShieldCheck size={18} />
                       <span>PHYSICALLY SAFE</span>
                     </>
                   ) : (
                     <>
-                      <AlertTriangle size={16} />
+                      <AlertTriangle size={18} />
                       <span>CONSTRAINTS REMAIN</span>
                     </>
                   )}
                 </div>
               </div>
 
-              <div
-                style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}
-              >
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase' }}>
-                  Min Distance to Limit
-                </div>
+              <div className="vp-kpi-tile">
+                <div className="vp-kpi-label">Min Distance to Limit</div>
                 <div
+                  className="vp-kpi-value"
                   style={{
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                    marginTop: '4px',
                     fontFamily: 'var(--font-mono)',
-                    color:
-                      (activeStep.verification_result?.min_margin ?? 0) >= 0 ? '#10b981' : '#ef4444',
+                    color: (activeStep.verification_result?.min_margin ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
                   }}
                 >
                   {((activeStep.verification_result?.min_margin ?? 0) * 100).toFixed(2)}%{' '}
-                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
                     ({(activeStep.verification_result?.min_margin ?? 0) >= 0 ? '+' : ''}
                     {(activeStep.verification_result?.min_margin ?? 0).toFixed(4)} p.u.)
                   </span>
                 </div>
               </div>
 
-              <div
-                style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}
-              >
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase' }}>
-                  Physical Solve Latency
-                </div>
+              <div className="vp-kpi-tile">
+                <div className="vp-kpi-label">Physical Solve Latency</div>
                 <div
+                  className="vp-kpi-value"
                   style={{
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                    marginTop: '4px',
-                    color: '#38bdf8',
+                    color: 'var(--color-info)',
                     fontFamily: 'var(--font-mono)',
                   }}
                 >
@@ -1021,80 +727,72 @@ export default function TimePlanPanel() {
 
             {/* Action & State Detail Pills */}
             <div
+              className="vp-card"
               style={{
                 display: 'flex',
-                gap: '12px',
+                gap: 'var(--space-4)',
                 flexWrap: 'wrap',
-                backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.06)',
-                marginBottom: '20px',
-                fontSize: '0.82rem',
-                color: '#cbd5e1',
+                backgroundColor: 'var(--color-bg-secondary)',
+                padding: 'var(--space-3) var(--space-4)',
+                marginBottom: 'var(--space-4)',
+                fontSize: 'var(--font-xs)',
+                color: 'var(--color-fg-secondary)',
               }}
             >
               <div>
-                <span style={{ color: '#94a3b8' }}>Dispatched Action:</span>{' '}
-                <strong style={{ color: '#38bdf8' }}>
+                <span style={{ color: 'var(--color-fg-muted)' }}>Dispatched Action:</span>{' '}
+                <strong style={{ color: 'var(--c-battery)' }}>
                   {activeStep.chosen_action?.battery_mw > 0 ? '+' : ''}
                   {activeStep.chosen_action?.battery_mw ?? 0} MW Battery
                 </strong>
-                , Curtail: <strong style={{ color: '#f43f5e' }}>{activeStep.chosen_action?.curtail_pct ?? 0}%</strong>
+                , Curtail: <strong style={{ color: 'var(--c-curtail)' }}>{activeStep.chosen_action?.curtail_pct ?? 0}%</strong>
                 {activeStep.chosen_action?.switch_toggle !== null && (
                   <span>
                     , Toggle Switch: <strong style={{ color: '#a855f7' }}>S{activeStep.chosen_action.switch_toggle}</strong>
                   </span>
                 )}
               </div>
-              <div style={{ borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '12px' }}>
-                <span style={{ color: '#94a3b8' }}>Resulting SOC:</span>{' '}
-                <strong style={{ color: '#10b981', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ borderLeft: '1px solid var(--color-border-subtle)', paddingLeft: 'var(--space-3)' }}>
+                <span style={{ color: 'var(--color-fg-muted)' }}>Resulting SOC:</span>{' '}
+                <strong style={{ color: 'var(--c-soc)', fontFamily: 'var(--font-mono)' }}>
                   {((activeStep.soc ?? 0) * 100).toFixed(2)}%
                 </strong>{' '}
                 ({((activeStep.soc ?? 0) * batteryCap).toFixed(3)} MWh)
               </div>
               {activeStep.fallback_used && (
-                <div style={{ borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '12px' }}>
-                  <span style={{ color: '#94a3b8' }}>Fallback Invoked:</span>{' '}
-                  <span style={{ color: '#ef4444', fontWeight: 700 }}>{activeStep.fallback_used}</span>
+                <div style={{ borderLeft: '1px solid var(--color-border-subtle)', paddingLeft: 'var(--space-3)' }}>
+                  <span style={{ color: 'var(--color-fg-muted)' }}>Fallback Invoked:</span>{' '}
+                  <span className="vp-badge vp-badge-danger">{activeStep.fallback_used}</span>
                 </div>
               )}
             </div>
 
             {/* Bus Voltages & Line Loading Tables */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-4)' }}>
               {/* Bus Voltages Table */}
-              <div
-                style={{
-                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  padding: '14px',
-                }}
-              >
+              <div className="vp-card" style={{ padding: 'var(--space-3)' }}>
                 <div
                   style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    color: '#f8fafc',
-                    marginBottom: '10px',
+                    fontSize: 'var(--font-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    color: 'var(--color-fg-primary)',
+                    marginBottom: 'var(--space-2)',
                     display: 'flex',
                     justifyContent: 'space-between',
                   }}
                 >
                   <span>Bus Voltages (p.u.)</span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
                     Tolerance: [{limits?.grid?.v_min ?? 0.95} - {limits?.grid?.v_max ?? 1.05}]
                   </span>
                 </div>
-                <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                <div className="vp-table-container" style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                  <table className="vp-table">
                     <thead>
-                      <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                        <th style={{ textAlign: 'left', padding: '6px 8px' }}>Bus ID</th>
-                        <th style={{ textAlign: 'right', padding: '6px 8px' }}>Voltage (p.u.)</th>
-                        <th style={{ textAlign: 'center', padding: '6px 8px' }}>Status</th>
+                      <tr>
+                        <th>Bus ID</th>
+                        <th className="vp-text-right">Voltage (p.u.)</th>
+                        <th className="vp-text-center">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1105,30 +803,13 @@ export default function TimePlanPanel() {
                           const vMax = limits?.grid?.v_max ?? 1.05;
                           const isNormal = vm >= vMin && vm <= vMax;
                           return (
-                            <tr
-                              key={bus}
-                              style={{
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-                                color: isNormal ? '#e2e8f0' : '#ef4444',
-                              }}
-                            >
-                              <td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)' }}>Bus {bus}</td>
-                              <td style={{ textAlign: 'right', padding: '6px 8px', fontFamily: 'var(--font-mono)' }}>
+                            <tr key={bus}>
+                              <td style={{ fontFamily: 'var(--font-mono)' }}>Bus {bus}</td>
+                              <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>
                                 {Number(vm).toFixed(4)}
                               </td>
-                              <td style={{ textAlign: 'center', padding: '6px 8px' }}>
-                                <span
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    padding: '2px 8px',
-                                    borderRadius: '4px',
-                                    fontWeight: 600,
-                                    backgroundColor: isNormal
-                                      ? 'rgba(16, 185, 129, 0.15)'
-                                      : 'rgba(239, 68, 68, 0.2)',
-                                    color: isNormal ? '#10b981' : '#f87171',
-                                  }}
-                                >
+                              <td className="vp-text-center">
+                                <span className={`vp-badge ${isNormal ? 'vp-badge-success' : 'vp-badge-danger'}`}>
                                   {isNormal ? 'Normal' : 'VIOLATION'}
                                 </span>
                               </td>
@@ -1141,36 +822,29 @@ export default function TimePlanPanel() {
               </div>
 
               {/* Line Loading Table */}
-              <div
-                style={{
-                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  padding: '14px',
-                }}
-              >
+              <div className="vp-card" style={{ padding: 'var(--space-3)' }}>
                 <div
                   style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    color: '#f8fafc',
-                    marginBottom: '10px',
+                    fontSize: 'var(--font-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    color: 'var(--color-fg-primary)',
+                    marginBottom: 'var(--space-2)',
                     display: 'flex',
                     justifyContent: 'space-between',
                   }}
                 >
                   <span>Line Loading (%)</span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
                     Limit: ≤ {limits?.grid?.max_loading_pct ?? 100}%
                   </span>
                 </div>
-                <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                <div className="vp-table-container" style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                  <table className="vp-table">
                     <thead>
-                      <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                        <th style={{ textAlign: 'left', padding: '6px 8px' }}>Line ID</th>
-                        <th style={{ textAlign: 'right', padding: '6px 8px' }}>Loading (%)</th>
-                        <th style={{ textAlign: 'center', padding: '6px 8px' }}>Status</th>
+                      <tr>
+                        <th>Line ID</th>
+                        <th className="vp-text-right">Loading (%)</th>
+                        <th className="vp-text-center">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1180,30 +854,13 @@ export default function TimePlanPanel() {
                           const maxLoad = limits?.grid?.max_loading_pct ?? 100;
                           const isNormal = loadingPct <= maxLoad;
                           return (
-                            <tr
-                              key={line}
-                              style={{
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-                                color: isNormal ? '#e2e8f0' : '#ef4444',
-                              }}
-                            >
-                              <td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)' }}>Line {line}</td>
-                              <td style={{ textAlign: 'right', padding: '6px 8px', fontFamily: 'var(--font-mono)' }}>
+                            <tr key={line}>
+                              <td style={{ fontFamily: 'var(--font-mono)' }}>Line {line}</td>
+                              <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>
                                 {Number(loadingPct).toFixed(2)}%
                               </td>
-                              <td style={{ textAlign: 'center', padding: '6px 8px' }}>
-                                <span
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    padding: '2px 8px',
-                                    borderRadius: '4px',
-                                    fontWeight: 600,
-                                    backgroundColor: isNormal
-                                      ? 'rgba(16, 185, 129, 0.15)'
-                                      : 'rgba(239, 68, 68, 0.2)',
-                                    color: isNormal ? '#10b981' : '#f87171',
-                                  }}
-                                >
+                              <td className="vp-text-center">
+                                <span className={`vp-badge ${isNormal ? 'vp-badge-success' : 'vp-badge-danger'}`}>
                                   {isNormal ? 'Normal' : 'OVERLOAD'}
                                 </span>
                               </td>
@@ -1221,3 +878,4 @@ export default function TimePlanPanel() {
     </div>
   );
 }
+

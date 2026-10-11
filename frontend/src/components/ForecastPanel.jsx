@@ -10,6 +10,7 @@ import {
   Legend,
   Brush
 } from 'recharts';
+import { RefreshCw, Brain } from 'lucide-react';
 import { API_BASE } from '../config';
 
 export default function ForecastPanel() {
@@ -74,31 +75,26 @@ export default function ForecastPanel() {
 
   const currentMetrics = metrics ? metrics[activeSeries] : null;
 
+  const actualColor = activeSeries === 'solar' ? 'var(--c-solar)' : 'var(--c-load)';
+  const forecastColor = 'var(--c-forecast)';
+  const baselineColor = 'var(--c-baseline)';
+
   return (
-    <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px', position: 'relative' }}>
+    <div className="vp-card" style={{ marginBottom: '24px' }}>
       
       {/* Header Section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+      <div className="vp-page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 600, color: '#f8fafc' }}>
-              🧠 AI Generation & Load Forecasting (Checkpoint 2)
+            <h2 className="vp-page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Brain size={22} color="var(--accent)" />
+              <span>AI Generation & Load Forecasting</span>
             </h2>
-            <span 
-              style={{ 
-                backgroundColor: 'rgba(16, 185, 129, 0.15)', 
-                color: '#34d399', 
-                border: '1px solid rgba(52, 211, 153, 0.3)',
-                padding: '3px 10px', 
-                borderRadius: '12px', 
-                fontSize: '0.75rem', 
-                fontWeight: 600 
-              }}
-            >
+            <span className="vp-badge" data-tone="ok">
               {metrics?.engine_used || 'LightGBM GBDT'}
             </span>
           </div>
-          <p style={{ margin: '6px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
+          <p className="vp-page-desc">
             Lagged features (t-1, t-2, t-3, t-24) + cyclical calendar features evaluated on chronological holdout test set vs. naive persistence benchmark.
           </p>
         </div>
@@ -107,54 +103,36 @@ export default function ForecastPanel() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           
           {/* Target Toggle */}
-          <div style={{ display: 'flex', backgroundColor: 'rgba(15, 23, 42, 0.8)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <div className="vp-segmented">
             <button
               onClick={() => setActiveSeries('solar')}
-              style={{
-                backgroundColor: activeSeries === 'solar' ? '#38bdf8' : 'transparent',
-                color: activeSeries === 'solar' ? '#0f172a' : '#94a3b8',
-                fontWeight: activeSeries === 'solar' ? 600 : 400,
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.82rem',
-                transition: 'all 0.2s ease'
-              }}
+              className={`vp-segmented-btn ${activeSeries === 'solar' ? 'active' : ''}`}
+              aria-selected={activeSeries === 'solar'}
             >
-              ☀️ Solar PV (p.u.)
+              Solar PV (p.u.)
             </button>
             <button
               onClick={() => setActiveSeries('load')}
-              style={{
-                backgroundColor: activeSeries === 'load' ? '#a855f7' : 'transparent',
-                color: activeSeries === 'load' ? '#ffffff' : '#94a3b8',
-                fontWeight: activeSeries === 'load' ? 600 : 400,
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.82rem',
-                transition: 'all 0.2s ease'
-              }}
+              className={`vp-segmented-btn ${activeSeries === 'load' ? 'active' : ''}`}
+              aria-selected={activeSeries === 'load'}
             >
-              ⚡ Grid Load (p.u.)
+              Grid Load (p.u.)
             </button>
           </div>
 
-          {/* Window Length */}
+          {/* Window Length Select */}
           <select
             value={windowHours}
             onChange={(e) => setWindowHours(Number(e.target.value))}
             style={{
-              backgroundColor: 'rgba(30, 41, 59, 0.8)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#f8fafc',
+              backgroundColor: 'var(--surface-raised)',
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
               padding: '6px 12px',
-              borderRadius: '6px',
+              borderRadius: 'var(--r-sm)',
               fontSize: '0.82rem',
-              cursor: 'pointer',
-              outline: 'none'
+              outline: 'none',
+              cursor: 'pointer'
             }}
           >
             <option value={48}>Last 48 Hours</option>
@@ -163,12 +141,12 @@ export default function ForecastPanel() {
           </select>
 
           {/* 90% Confidence Interval Toggle */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#cbd5e1', cursor: 'pointer' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-muted)', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={showIntervals}
               onChange={(e) => setShowIntervals(e.target.checked)}
-              style={{ accentColor: '#10b981', cursor: 'pointer' }}
+              style={{ accentColor: 'var(--accent)', cursor: 'pointer' }}
             />
             <span>90% Confidence Interval</span>
           </label>
@@ -177,53 +155,23 @@ export default function ForecastPanel() {
           <button
             onClick={handleRetrain}
             disabled={retraining}
-            style={{
-              backgroundColor: retraining ? 'rgba(56, 189, 248, 0.2)' : 'rgba(56, 189, 248, 0.15)',
-              color: '#38bdf8',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              padding: '6px 16px',
-              borderRadius: '6px',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              cursor: retraining ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
+            className="vp-btn vp-btn-primary"
           >
-            {retraining ? '⏳ Retraining...' : '🔄 Retrain Models'}
+            <RefreshCw size={15} className={retraining ? 'animated-spin' : ''} />
+            <span>{retraining ? 'Retraining...' : 'Retrain Models'}</span>
           </button>
         </div>
       </div>
 
       {statusMsg && (
-        <div 
-          style={{
-            backgroundColor: 'rgba(56, 189, 248, 0.12)',
-            border: '1px solid rgba(56, 189, 248, 0.25)',
-            color: '#38bdf8',
-            padding: '8px 14px',
-            borderRadius: '6px',
-            marginBottom: '16px',
-            fontSize: '0.82rem'
-          }}
-        >
-          ℹ️ {statusMsg}
+        <div className="vp-alert" data-tone="info" style={{ marginBottom: '16px' }}>
+          <span>{statusMsg}</span>
         </div>
       )}
 
       {error && (
-        <div style={{
-          backgroundColor: 'rgba(239, 68, 68, 0.15)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          color: '#f87171',
-          padding: '8px 14px',
-          borderRadius: '6px',
-          marginBottom: '16px',
-          fontSize: '0.82rem'
-        }}>
-          ⚠️ {error}
+        <div className="vp-alert" data-tone="danger" style={{ marginBottom: '16px' }}>
+          <span>{error}</span>
         </div>
       )}
 
@@ -232,122 +180,68 @@ export default function ForecastPanel() {
         <div 
           style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
             gap: '14px', 
             marginBottom: '20px' 
           }}
         >
           {/* MAE Comparison */}
-          <div 
-            style={{ 
-              backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '10px', 
-              padding: '14px 18px' 
-            }}
-          >
+          <div className="vp-kpi-tile" data-tone="ok">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Mean Absolute Error (MAE)
-              </span>
-              <span 
-                style={{ 
-                  backgroundColor: 'rgba(16, 185, 129, 0.2)', 
-                  color: '#34d399', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 600, 
-                  padding: '2px 8px', 
-                  borderRadius: '10px' 
-                }}
-              >
+              <span className="vp-kpi-label">Mean Absolute Error (MAE)</span>
+              <span className="vp-badge" data-tone="ok">
                 -{currentMetrics.mae_improvement_pct}% vs Naive
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
-              <span style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc' }}>
-                {currentMetrics.model_metrics.mae} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>p.u.</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '6px' }}>
+              <span className="vp-kpi-value">
+                {currentMetrics.model_metrics.mae} <span style={{ fontSize: '0.85rem', color: 'var(--text-faint)' }}>p.u.</span>
               </span>
-              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Naive: <strong style={{ color: '#f59e0b' }}>{currentMetrics.naive_metrics.mae}</strong>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Naive: <strong className="tabular-nums" style={{ color: 'var(--warn)' }}>{currentMetrics.naive_metrics.mae}</strong>
               </span>
             </div>
           </div>
 
           {/* RMSE Comparison */}
-          <div 
-            style={{ 
-              backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '10px', 
-              padding: '14px 18px' 
-            }}
-          >
+          <div className="vp-kpi-tile" data-tone="ok">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Root Mean Squared Error (RMSE)
-              </span>
-              <span 
-                style={{ 
-                  backgroundColor: 'rgba(16, 185, 129, 0.2)', 
-                  color: '#34d399', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 600, 
-                  padding: '2px 8px', 
-                  borderRadius: '10px' 
-                }}
-              >
+              <span className="vp-kpi-label">Root Mean Squared Error (RMSE)</span>
+              <span className="vp-badge" data-tone="ok">
                 -{currentMetrics.rmse_improvement_pct}% vs Naive
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
-              <span style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc' }}>
-                {currentMetrics.model_metrics.rmse} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>p.u.</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '6px' }}>
+              <span className="vp-kpi-value">
+                {currentMetrics.model_metrics.rmse} <span style={{ fontSize: '0.85rem', color: 'var(--text-faint)' }}>p.u.</span>
               </span>
-              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Naive: <strong style={{ color: '#f59e0b' }}>{currentMetrics.naive_metrics.rmse}</strong>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Naive: <strong className="tabular-nums" style={{ color: 'var(--warn)' }}>{currentMetrics.naive_metrics.rmse}</strong>
               </span>
             </div>
           </div>
 
           {/* R-Squared Metric */}
-          <div 
-            style={{ 
-              backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '10px', 
-              padding: '14px 18px' 
-            }}
-          >
-            <span style={{ fontSize: '0.78rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Fit Quality (R² Score)
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
-              <span style={{ fontSize: '1.45rem', fontWeight: 700, color: '#38bdf8' }}>
+          <div className="vp-kpi-tile" data-tone="info">
+            <span className="vp-kpi-label">Fit Quality (R² Score)</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '6px' }}>
+              <span className="vp-kpi-value" style={{ color: 'var(--accent)' }}>
                 {(currentMetrics.model_metrics.r2 * 100).toFixed(1)}%
               </span>
-              <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-faint)' }}>
                 (Naive: {(currentMetrics.naive_metrics.r2 * 100).toFixed(1)}%)
               </span>
             </div>
           </div>
 
           {/* Dataset Info */}
-          <div 
-            style={{ 
-              backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-              border: '1px solid rgba(255, 255, 255, 0.08)', 
-              borderRadius: '10px', 
-              padding: '14px 18px' 
-            }}
-          >
-            <span style={{ fontSize: '0.78rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Chronological Holdout Split
-            </span>
-            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#f8fafc' }}>
-              Train: <strong>{currentMetrics.train_samples}h</strong> | Test: <strong>{currentMetrics.test_samples}h</strong>
+          <div className="vp-kpi-tile" data-tone="info">
+            <span className="vp-kpi-label">Chronological Holdout Split</span>
+            <div style={{ marginTop: '6px', fontSize: '0.9rem', color: 'var(--text)' }}>
+              Train: <strong className="tabular-nums">{currentMetrics.train_samples}h</strong> | Test: <strong className="tabular-nums">{currentMetrics.test_samples}h</strong>
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
-              Holdout window: {currentMetrics.test_start?.substring(0, 10)} to {currentMetrics.test_end?.substring(0, 10)}
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '4px' }}>
+              Holdout: {currentMetrics.test_start?.substring(0, 10)} to {currentMetrics.test_end?.substring(0, 10)}
             </div>
           </div>
         </div>
@@ -356,36 +250,36 @@ export default function ForecastPanel() {
       {/* Chart Visualization */}
       <div style={{ height: '360px', width: '100%', marginTop: '10px' }}>
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
             Loading forecasting comparison data...
           </div>
         ) : chartData.length === 0 ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
             No forecast evaluation data is available.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.07)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis 
                 dataKey="timestamp" 
-                stroke="#64748b" 
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                stroke="var(--text-faint)" 
+                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
                 tickFormatter={(val) => val.substring(5, 16)}
               />
               <YAxis 
-                stroke="#64748b" 
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                stroke="var(--text-faint)" 
+                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
                 domain={[0, 'auto']}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                  borderColor: 'rgba(255, 255, 255, 0.15)',
-                  borderRadius: '8px',
-                  color: '#f8fafc',
+                  backgroundColor: 'var(--surface-raised)',
+                  borderColor: 'var(--border-strong)',
+                  borderRadius: 'var(--r-sm)',
+                  color: 'var(--text)',
                   fontSize: '0.85rem',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+                  boxShadow: 'var(--shadow-card)'
                 }}
               />
               <Legend 
@@ -400,7 +294,7 @@ export default function ForecastPanel() {
                     type="monotone"
                     dataKey="solar_actual"
                     name="Actual Solar (p.u.)"
-                    stroke="#38bdf8"
+                    stroke={actualColor}
                     strokeWidth={2.5}
                     dot={false}
                     activeDot={{ r: 6 }}
@@ -409,7 +303,7 @@ export default function ForecastPanel() {
                     type="monotone"
                     dataKey="solar_pred"
                     name="LightGBM ML Forecast"
-                    stroke="#34d399"
+                    stroke={forecastColor}
                     strokeWidth={2}
                     dot={false}
                     strokeDasharray="4 2"
@@ -420,7 +314,7 @@ export default function ForecastPanel() {
                         type="monotone"
                         dataKey="solar_upper"
                         name="90% Upper Bound (p.u.)"
-                        stroke="#10b981"
+                        stroke={forecastColor}
                         strokeWidth={1.2}
                         strokeDasharray="3 3"
                         dot={false}
@@ -429,7 +323,7 @@ export default function ForecastPanel() {
                         type="monotone"
                         dataKey="solar_lower"
                         name="90% Lower Bound (p.u.)"
-                        stroke="#10b981"
+                        stroke={forecastColor}
                         strokeWidth={1.2}
                         strokeDasharray="3 3"
                         dot={false}
@@ -440,7 +334,7 @@ export default function ForecastPanel() {
                     type="monotone"
                     dataKey="solar_naive"
                     name="Naive Seasonal Baseline (t-24)"
-                    stroke="#f59e0b"
+                    stroke={baselineColor}
                     strokeWidth={1.5}
                     dot={false}
                     strokeDasharray="3 3"
@@ -452,7 +346,7 @@ export default function ForecastPanel() {
                     type="monotone"
                     dataKey="load_actual"
                     name="Actual Load Demand (p.u.)"
-                    stroke="#c084fc"
+                    stroke={actualColor}
                     strokeWidth={2.5}
                     dot={false}
                     activeDot={{ r: 6 }}
@@ -461,7 +355,7 @@ export default function ForecastPanel() {
                     type="monotone"
                     dataKey="load_pred"
                     name="LightGBM ML Forecast"
-                    stroke="#34d399"
+                    stroke={forecastColor}
                     strokeWidth={2}
                     dot={false}
                     strokeDasharray="4 2"
@@ -472,7 +366,7 @@ export default function ForecastPanel() {
                         type="monotone"
                         dataKey="load_upper"
                         name="90% Upper Bound (p.u.)"
-                        stroke="#c084fc"
+                        stroke={forecastColor}
                         strokeWidth={1.2}
                         strokeDasharray="3 3"
                         dot={false}
@@ -481,7 +375,7 @@ export default function ForecastPanel() {
                         type="monotone"
                         dataKey="load_lower"
                         name="90% Lower Bound (p.u.)"
-                        stroke="#c084fc"
+                        stroke={forecastColor}
                         strokeWidth={1.2}
                         strokeDasharray="3 3"
                         dot={false}
@@ -492,7 +386,7 @@ export default function ForecastPanel() {
                     type="monotone"
                     dataKey="load_naive"
                     name="Naive Seasonal Baseline (t-24)"
-                    stroke="#f59e0b"
+                    stroke={baselineColor}
                     strokeWidth={1.5}
                     dot={false}
                     strokeDasharray="3 3"
@@ -503,8 +397,8 @@ export default function ForecastPanel() {
               <Brush 
                 dataKey="timestamp" 
                 height={28} 
-                stroke="#38bdf8" 
-                fill="rgba(15, 23, 42, 0.8)"
+                stroke="var(--accent)" 
+                fill="var(--surface-raised)"
                 tickFormatter={(val) => val.substring(5, 10)}
               />
             </LineChart>
@@ -515,3 +409,4 @@ export default function ForecastPanel() {
     </div>
   );
 }
+

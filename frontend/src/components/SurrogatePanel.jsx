@@ -16,7 +16,6 @@ import {
 import {
   Cpu,
   ShieldCheck,
-  Zap,
   Activity,
   AlertTriangle,
   RefreshCw,
@@ -132,9 +131,9 @@ export default function SurrogatePanel() {
 
   if (loading && !report && !abData) {
     return (
-      <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-        <RefreshCw size={36} className="spin" style={{ margin: '0 auto 16px', color: '#c084fc' }} />
-        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#f1f5f9' }}>
+      <div className="vp-card vp-text-center" style={{ padding: 'var(--space-8)' }}>
+        <RefreshCw size={36} className="spin vp-text-accent" style={{ margin: '0 auto var(--space-3)' }} />
+        <div style={{ fontSize: 'var(--font-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>
           Loading Power-Flow Surrogate Engine & Benchmarks...
         </div>
       </div>
@@ -187,48 +186,20 @@ export default function SurrogatePanel() {
   const falseSafeData = activeEval?.false_safe || {};
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginBottom: 'var(--space-6)' }}>
       {/* Top Banner Header */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '22px 24px',
-          background: 'linear-gradient(135deg, rgba(192, 132, 252, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
-          borderColor: 'rgba(192, 132, 252, 0.25)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="vp-card vp-card-gradient">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
-                style={{
-                  backgroundColor: 'rgba(192, 132, 252, 0.2)',
-                  color: '#c084fc',
-                  padding: '3px 10px',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                }}
-              >
+            <div className="vp-flex vp-gap-2 vp-mb-2">
+              <span className="vp-badge vp-badge-accent">
                 Power-Flow Surrogate Engine
               </span>
             </div>
-            <h2
-              style={{
-                fontSize: '1.4rem',
-                fontWeight: 700,
-                color: '#f8fafc',
-                margin: '8px 0 4px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
-              ⚡ Power-Flow Neural Surrogate & Candidate Screening
+            <h2 className="vp-page-title vp-flex vp-items-center vp-gap-2">
+              <span>⚡ Power-Flow Neural Surrogate & Candidate Screening</span>
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '0.86rem', margin: 0, maxWidth: '840px' }}>
+            <p className="vp-page-description" style={{ maxWidth: '840px' }}>
               Sub-millisecond PyTorch neural power flow prediction integrated into multi-step control to early-filter unsafe branches while maintaining physical AC solver verifications on chosen actions.
             </p>
           </div>
@@ -237,19 +208,7 @@ export default function SurrogatePanel() {
             <button
               onClick={handleRetrain}
               disabled={training}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 14px',
-                borderRadius: '7px',
-                backgroundColor: 'rgba(192, 132, 252, 0.2)',
-                color: '#c084fc',
-                fontWeight: 600,
-                fontSize: '0.82rem',
-                border: '1px solid rgba(192, 132, 252, 0.4)',
-                cursor: training ? 'not-allowed' : 'pointer',
-              }}
+              className="vp-btn vp-btn-secondary"
             >
               <RefreshCw size={14} className={training ? 'spin' : ''} />
               <span>{training ? 'Training...' : 'Retrain Ensemble'}</span>
@@ -258,20 +217,7 @@ export default function SurrogatePanel() {
         </div>
 
         {error && (
-          <div
-            style={{
-              marginTop: '12px',
-              backgroundColor: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              color: '#f87171',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              fontSize: '0.84rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
+          <div className="vp-alert vp-alert-danger vp-mt-3">
             <AlertTriangle size={16} />
             <span>{error}</span>
           </div>
@@ -279,32 +225,11 @@ export default function SurrogatePanel() {
       </div>
 
       {/* Sub-Tab Navigation Switcher */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '5px',
-          display: 'flex',
-          gap: '6px',
-          backgroundColor: 'rgba(15, 23, 42, 0.75)',
-          borderRadius: '10px',
-          width: 'fit-content',
-        }}
-      >
+      <div className="vp-segmented" style={{ width: 'fit-content' }}>
         <button
           onClick={() => setActiveSubTab('screening')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '7px',
-            fontSize: '0.84rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            backgroundColor: activeSubTab === 'screening' ? '#f59e0b' : 'transparent',
-            color: activeSubTab === 'screening' ? '#451a03' : '#94a3b8',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
+          className={`vp-segmented-btn ${activeSubTab === 'screening' ? 'active' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
         >
           <ShieldCheck size={16} />
           <span>🛡️ Live Candidate Screening & A/B Benchmark</span>
@@ -312,19 +237,8 @@ export default function SurrogatePanel() {
 
         <button
           onClick={() => setActiveSubTab('evaluation')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '7px',
-            fontSize: '0.84rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            backgroundColor: activeSubTab === 'evaluation' ? '#c084fc' : 'transparent',
-            color: activeSubTab === 'evaluation' ? '#2e1065' : '#94a3b8',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
+          className={`vp-segmented-btn ${activeSubTab === 'evaluation' ? 'active' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
         >
           <Cpu size={16} />
           <span>🧠 Ensemble Training & Model Evaluation</span>
@@ -335,12 +249,12 @@ export default function SurrogatePanel() {
       {activeSubTab === 'screening' && (
         <>
           {/* Interactive Episode Control Toolbar */}
-          <div className="glass-panel" style={{ padding: '14px 18px', borderLeft: '4px solid #f59e0b' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sliders size={16} style={{ color: '#f59e0b' }} />
-                  <span style={{ fontSize: '0.83rem', fontWeight: 600, color: '#f8fafc' }}>Initial SoC:</span>
+          <div className="vp-card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <Sliders size={16} style={{ color: 'var(--color-warning)' }} />
+                  <span style={{ fontSize: 'var(--font-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--color-fg-primary)' }}>Initial SoC:</span>
                   <input
                     type="range"
                     min="0.2"
@@ -348,36 +262,33 @@ export default function SurrogatePanel() {
                     step="0.05"
                     value={initialSoc}
                     onChange={(e) => setInitialSoc(parseFloat(e.target.value))}
-                    style={{ cursor: 'pointer', accentColor: '#f59e0b' }}
+                    style={{ cursor: 'pointer', accentColor: 'var(--color-warning)' }}
                   />
-                  <span style={{ fontSize: '0.82rem', fontFamily: 'var(--font-mono)', color: '#f59e0b', fontWeight: 700 }}>
+                  <span style={{ fontSize: 'var(--font-xs)', fontFamily: 'var(--font-mono)', color: 'var(--color-warning)', fontWeight: 'var(--font-bold)' }}>
                     {(initialSoc * 100).toFixed(0)}%
                   </span>
                 </div>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-xs)', color: 'var(--color-fg-secondary)', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={injectError}
                     onChange={(e) => setInjectError(e.target.checked)}
-                    style={{ accentColor: '#ef4444', cursor: 'pointer' }}
+                    style={{ accentColor: 'var(--color-danger)', cursor: 'pointer' }}
                   />
                   <span>Inject Midday Solar Surge (Step 2)</span>
                 </label>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Mode:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>Mode:</span>
                   <select
                     value={screenerMode}
                     onChange={(e) => setScreenerMode(e.target.value)}
+                    className="vp-form-input"
                     style={{
-                      backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                      color: screenerMode === 'surrogate' ? '#f59e0b' : '#38bdf8',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
+                      padding: 'var(--space-1) var(--space-2)',
+                      fontSize: 'var(--font-xs)',
+                      width: 'auto',
                     }}
                   >
                     <option value="surrogate">SurrogateScreener (CP7 - Fast Filtering)</option>
@@ -390,20 +301,7 @@ export default function SurrogatePanel() {
                 <button
                   onClick={handleRunEpisode}
                   disabled={runningEpisode}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 16px',
-                    borderRadius: '7px',
-                    backgroundColor: screenerMode === 'surrogate' ? '#f59e0b' : '#38bdf8',
-                    color: screenerMode === 'surrogate' ? '#451a03' : '#09233b',
-                    fontWeight: 700,
-                    fontSize: '0.84rem',
-                    border: 'none',
-                    cursor: runningEpisode ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 2px 10px rgba(245, 158, 11, 0.3)',
-                  }}
+                  className="vp-btn vp-btn-primary"
                 >
                   <Play size={15} />
                   <span>{runningEpisode ? 'Executing Episode...' : `Run ${screenerMode === 'surrogate' ? 'Screened' : 'Unscreened'} Episode`}</span>
@@ -413,115 +311,87 @@ export default function SurrogatePanel() {
           </div>
 
           {/* Architectural Explanation Note */}
-          <div
-            style={{
-              backgroundColor: 'rgba(56, 189, 248, 0.08)',
-              border: '1px solid rgba(56, 189, 248, 0.22)',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              fontSize: '0.82rem',
-              color: '#93c5fd',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-            }}
-          >
-            <Info size={17} style={{ color: '#38bdf8', flexShrink: 0, marginTop: '2px' }} />
+          <div className="vp-alert vp-alert-info">
+            <Info size={17} style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <strong>Physical Verification Architecture:</strong> In VoltPredict, 100% of selected control actions undergo pandapower AC power flow solver verification before execution. The Surrogate Screener acts strictly as an early-pruning filter to discard known unsafe trajectory candidate branches, reducing expensive solver iterations without compromising physical grid safety.
             </div>
           </div>
 
           {/* Dynamic Metrics Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #f59e0b' }}>
-              <div style={{ fontSize: '0.74rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Solver Calls Reduction
-              </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 'var(--space-3)' }}>
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-warning)' }}>
+              <div className="vp-kpi-label">Solver Calls Reduction</div>
+              <div className="vp-kpi-value">
                 -{compMetrics.solver_calls_reduction_pct != null ? compMetrics.solver_calls_reduction_pct.toFixed(1) : '48.1'}%
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#f59e0b', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: 'var(--color-warning)' }}>
                 {nullBase.total_solver_calls ?? 308} baseline → {surrScreen.total_solver_calls ?? 160} screened calls
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #10b981' }}>
-              <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Wall-Time Speedup
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-success)' }}>
+              <div className="vp-kpi-label">Wall-Time Speedup</div>
+              <div className="vp-kpi-value">
+                {compMetrics.speedup_factor != null ? compMetrics.speedup_factor.toFixed(1) : '363.9'}x <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>faster</span>
               </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-                {compMetrics.speedup_factor != null ? compMetrics.speedup_factor.toFixed(1) : '363.9'}x <span style={{ fontSize: '0.82rem', color: '#64748b' }}>faster</span>
-              </div>
-              <div style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: 'var(--color-success)' }}>
                 {((nullBase.wall_time_ms ?? 153758) / 1000).toFixed(1)}s baseline → {((surrScreen.wall_time_ms ?? 422) / 1000).toFixed(2)}s screened
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #ef4444' }}>
-              <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Unsafe Actions Filtered
-              </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-danger)' }}>
+              <div className="vp-kpi-label">Unsafe Actions Filtered</div>
+              <div className="vp-kpi-value">
                 {compMetrics.unsafe_dropped_count ?? (nullBase.total_solver_calls != null && surrScreen.total_solver_calls != null ? Math.max(0, nullBase.total_solver_calls - surrScreen.total_solver_calls) : 148)} candidates
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: 'var(--color-danger)' }}>
                 Dropped before AC solver execution
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #ec4899' }}>
-              <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Disagreements Logged
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #ec4899' }}>
+              <div className="vp-kpi-label">Disagreements Logged</div>
+              <div className="vp-kpi-value">
                 {abData?.disagreement_events?.length ?? 0}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#ec4899', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: '#ec4899' }}>
                 Surrogate-safe rejected by solver
               </div>
             </div>
           </div>
 
           {/* Screening Charts & Benchmark Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--space-4)' }}>
             {/* Candidate Breakdown Chart */}
-            <div className="glass-panel" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '1.02rem' }}>
+            <div className="vp-card">
+              <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
+                <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-warning)' }}>
                   <Layers size={18} />
                   <span>Screener Candidate Status per Time Step</span>
                 </div>
                 <button
                   onClick={handleRunAbBenchmark}
                   disabled={runningAb}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '5px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                    color: '#e2e8f0',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    cursor: runningAb ? 'not-allowed' : 'pointer',
-                  }}
+                  className="vp-btn vp-btn-secondary"
+                  style={{ padding: 'var(--space-1) var(--space-2)', fontSize: 'var(--font-xs)' }}
                 >
-                  <RefreshCw size={12} className={runningAb ? 'spin' : ''} style={{ marginRight: '4px' }} />
-                  {runningAb ? 'Benchmarking...' : 'Refresh Benchmark'}
+                  <RefreshCw size={12} className={runningAb ? 'spin' : ''} />
+                  <span>{runningAb ? 'Benchmarking...' : 'Refresh Benchmark'}</span>
                 </button>
               </div>
 
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stepBreakdownData} margin={{ top: 15, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                    <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                    <XAxis dataKey="name" stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
+                    <YAxis stroke="var(--color-fg-muted)" fontSize={11} tickLine={false} />
                     <Tooltip />
                     <Legend verticalAlign="top" height={32} />
-                    <Bar dataKey="safe" name="Surrogate Safe" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="unsafeDropped" name="Unsafe (Dropped Early)" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="uncertain" name="Uncertain / Solver" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="safe" name="Surrogate Safe" fill="var(--color-success)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="unsafeDropped" name="Unsafe (Dropped Early)" fill="var(--color-danger)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="uncertain" name="Uncertain / Solver" fill="var(--color-warning)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="unsupported" name="Unsupported Fallback" fill="#a855f7" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -529,49 +399,49 @@ export default function SurrogatePanel() {
             </div>
 
             {/* A/B Screener Benchmark Comparison Table */}
-            <div className="glass-panel" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 600, fontSize: '1.02rem' }}>
+            <div className="vp-card">
+              <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
+                <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-info)' }}>
                   <Award size={18} />
                   <span>A/B Screener Benchmark Comparison</span>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-success)', fontWeight: 'var(--font-semibold)' }}>
                   {compMetrics.speedup_factor ?? 71.0}x Speedup
                 </div>
               </div>
 
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <div className="vp-table-container">
+                <table className="vp-table">
                   <thead>
-                    <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      <th style={{ textAlign: 'left', padding: '8px' }}>Metric</th>
-                      <th style={{ textAlign: 'right', padding: '8px' }}>NullScreener (CP5)</th>
-                      <th style={{ textAlign: 'right', padding: '8px' }}>SurrogateScreener (CP7)</th>
-                      <th style={{ textAlign: 'center', padding: '8px' }}>Benefit</th>
+                    <tr>
+                      <th>Metric</th>
+                      <th className="vp-text-right">NullScreener (CP5)</th>
+                      <th className="vp-text-right">SurrogateScreener (CP7)</th>
+                      <th className="vp-text-center">Benefit</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#e2e8f0' }}>
-                      <td style={{ padding: '8px', fontWeight: 600 }}>Physical Solver Calls</td>
-                      <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)' }}>{nullBase.total_solver_calls ?? 308}</td>
-                      <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)', color: '#10b981' }}>{surrScreen.total_solver_calls ?? 160}</td>
-                      <td style={{ textAlign: 'center', padding: '8px', color: '#10b981', fontWeight: 700 }}>
+                    <tr>
+                      <td style={{ fontWeight: 'var(--font-semibold)' }}>Physical Solver Calls</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{nullBase.total_solver_calls ?? 308}</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>{surrScreen.total_solver_calls ?? 160}</td>
+                      <td className="vp-text-center" style={{ color: 'var(--color-success)', fontWeight: 'var(--font-bold)' }}>
                         -{compMetrics.solver_calls_reduction_pct != null ? compMetrics.solver_calls_reduction_pct.toFixed(1) : '48.1'}%
                       </td>
                     </tr>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#e2e8f0' }}>
-                      <td style={{ padding: '8px', fontWeight: 600 }}>Wall Execution Time</td>
-                      <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)' }}>{((nullBase.wall_time_ms ?? 153758) / 1000).toFixed(1)} s</td>
-                      <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)', color: '#10b981' }}>{((surrScreen.wall_time_ms ?? 422) / 1000).toFixed(2)} s</td>
-                      <td style={{ textAlign: 'center', padding: '8px', color: '#10b981', fontWeight: 700 }}>
+                    <tr>
+                      <td style={{ fontWeight: 'var(--font-semibold)' }}>Wall Execution Time</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{((nullBase.wall_time_ms ?? 153758) / 1000).toFixed(1)} s</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)' }}>{((surrScreen.wall_time_ms ?? 422) / 1000).toFixed(2)} s</td>
+                      <td className="vp-text-center" style={{ color: 'var(--color-success)', fontWeight: 'var(--font-bold)' }}>
                         {compMetrics.speedup_factor != null ? compMetrics.speedup_factor.toFixed(1) : '363.9'}x Speedup
                       </td>
                     </tr>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#e2e8f0' }}>
-                      <td style={{ padding: '8px', fontWeight: 600 }}>Chosen Action Plan</td>
-                      <td style={{ textAlign: 'right', padding: '8px' }}>Baseline</td>
-                      <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)' }}>100% Agreement</td>
-                      <td style={{ textAlign: 'center', padding: '8px', color: '#38bdf8', fontWeight: 700 }}>
+                    <tr>
+                      <td style={{ fontWeight: 'var(--font-semibold)' }}>Chosen Action Plan</td>
+                      <td className="vp-text-right">Baseline</td>
+                      <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>100% Agreement</td>
+                      <td className="vp-text-center" style={{ color: 'var(--color-info)', fontWeight: 'var(--font-bold)' }}>
                         Identical Actions
                       </td>
                     </tr>
@@ -582,28 +452,28 @@ export default function SurrogatePanel() {
           </div>
 
           {/* Episode Step Log Table */}
-          <div className="glass-panel" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc', fontWeight: 600, fontSize: '1.02rem' }}>
-                <Clock size={18} style={{ color: '#f59e0b' }} />
+          <div className="vp-card">
+            <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
+              <div className="vp-card-title vp-flex vp-items-center vp-gap-2">
+                <Clock size={18} style={{ color: 'var(--color-warning)' }} />
                 <span>Executed Episode Step Details & Verification Status</span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                Run ID: <span style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>{screenedEpisode?.run_id || 'live_run'}</span>
+              <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
+                Run ID: <span style={{ color: 'var(--color-info)', fontFamily: 'var(--font-mono)' }}>{screenedEpisode?.run_id || 'live_run'}</span>
               </div>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+            <div className="vp-table-container">
+              <table className="vp-table">
                 <thead>
-                  <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>Step</th>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>Chosen Action</th>
-                    <th style={{ textAlign: 'center', padding: '8px' }}>Screener Verdict</th>
-                    <th style={{ textAlign: 'right', padding: '8px' }}>V_min (pu)</th>
-                    <th style={{ textAlign: 'right', padding: '8px' }}>V_max (pu)</th>
-                    <th style={{ textAlign: 'right', padding: '8px' }}>Max Load %</th>
-                    <th style={{ textAlign: 'center', padding: '8px' }}>Solver Status</th>
+                  <tr>
+                    <th>Step</th>
+                    <th>Chosen Action</th>
+                    <th className="vp-text-center">Screener Verdict</th>
+                    <th className="vp-text-right">V_min (pu)</th>
+                    <th className="vp-text-right">V_max (pu)</th>
+                    <th className="vp-text-right">Max Load %</th>
+                    <th className="vp-text-center">Solver Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -618,29 +488,20 @@ export default function SurrogatePanel() {
                     const screenerStatus = (st.screener_status || 'safe').toUpperCase();
 
                     return (
-                      <tr key={st.step} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#e2e8f0' }}>
-                        <td style={{ padding: '8px', fontWeight: 700 }}>T{st.step}</td>
-                        <td style={{ padding: '8px', color: '#cbd5e1' }}>{actionDesc}</td>
-                        <td style={{ textAlign: 'center', padding: '8px' }}>
-                          <span
-                            style={{
-                              backgroundColor: screenerStatus === 'UNSAFE' ? 'rgba(239, 68, 68, 0.18)' : 'rgba(16, 185, 129, 0.18)',
-                              color: screenerStatus === 'UNSAFE' ? '#ef4444' : '#10b981',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                            }}
-                          >
+                      <tr key={st.step}>
+                        <td style={{ fontWeight: 'var(--font-bold)' }}>T{st.step}</td>
+                        <td style={{ color: 'var(--color-fg-secondary)' }}>{actionDesc}</td>
+                        <td className="vp-text-center">
+                          <span className={`vp-badge ${screenerStatus === 'UNSAFE' ? 'vp-badge-danger' : 'vp-badge-success'}`}>
                             SURROGATE {screenerStatus}
                           </span>
                         </td>
-                        <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)' }}>{vMin.toFixed(3)}</td>
-                        <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)' }}>{vMax.toFixed(3)}</td>
-                        <td style={{ textAlign: 'right', padding: '8px', fontFamily: 'var(--font-mono)' }}>{maxLoad.toFixed(1)}%</td>
-                        <td style={{ textAlign: 'center', padding: '8px' }}>
-                          <span style={{ color: '#10b981', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <CheckCircle2 size={14} /> Verified
+                        <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{vMin.toFixed(3)}</td>
+                        <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{vMax.toFixed(3)}</td>
+                        <td className="vp-text-right" style={{ fontFamily: 'var(--font-mono)' }}>{maxLoad.toFixed(1)}%</td>
+                        <td className="vp-text-center">
+                          <span className="vp-badge vp-badge-success vp-flex vp-items-center vp-gap-1" style={{ display: 'inline-flex' }}>
+                            <CheckCircle2 size={12} /> Verified
                           </span>
                         </td>
                       </tr>
@@ -657,67 +518,57 @@ export default function SurrogatePanel() {
       {activeSubTab === 'evaluation' && (
         <>
           {/* Model Evaluation Summary Metric Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #c084fc' }}>
-              <div style={{ fontSize: '0.74rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Ensemble Architecture
-              </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-                3 PyTorch MLPs
-              </div>
-              <div style={{ fontSize: '0.78rem', color: '#c084fc', marginTop: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 'var(--space-3)' }}>
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid #c084fc' }}>
+              <div className="vp-kpi-label">Ensemble Architecture</div>
+              <div className="vp-kpi-value">3 PyTorch MLPs</div>
+              <div className="vp-kpi-subtext" style={{ color: '#c084fc' }}>
                 Seeds 42, 101, 2024 • 33 In / 31 Out
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #10b981' }}>
-              <div style={{ fontSize: '0.74rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Calibrated Guard Band
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-success)' }}>
+              <div className="vp-kpi-label">Calibrated Guard Band</div>
+              <div className="vp-kpi-value">
+                +{(modelMeta.calibrated_guard_band ?? 0.008).toFixed(4)} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>p.u.</span>
               </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-                +{(modelMeta.calibrated_guard_band ?? 0.008).toFixed(4)} <span style={{ fontSize: '0.82rem', color: '#64748b' }}>p.u.</span>
-              </div>
-              <div style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: 'var(--color-success)' }}>
                 99th %-ile validation margin error
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #38bdf8' }}>
-              <div style={{ fontSize: '0.74rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                False-Safe Rate
-              </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-info)' }}>
+              <div className="vp-kpi-label">False-Safe Rate</div>
+              <div className="vp-kpi-value">
                 {falseSafeData.raw?.false_safe_rate_pct ?? 14.5}% →{' '}
-                <span style={{ color: '#10b981' }}>
+                <span style={{ color: 'var(--color-success)' }}>
                   {falseSafeData.with_guard_band?.false_safe_rate_pct ?? 0.0}%
                 </span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#38bdf8', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: 'var(--color-info)' }}>
                 Zero false-safes with guard band
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', borderLeft: '4px solid #f59e0b' }}>
-              <div style={{ fontSize: '0.74rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Inference Latency
+            <div className="vp-kpi-tile" style={{ borderLeft: '4px solid var(--color-warning)' }}>
+              <div className="vp-kpi-label">Inference Latency</div>
+              <div className="vp-kpi-value">
+                {latency.surrogate_batches?.batch_1000?.per_sample_ms ?? 0.01} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>ms/sample</span>
               </div>
-              <div style={{ fontSize: '1.45rem', fontWeight: 700, color: '#f8fafc', marginTop: '4px' }}>
-                {latency.surrogate_batches?.batch_1000?.per_sample_ms ?? 0.01} <span style={{ fontSize: '0.82rem', color: '#64748b' }}>ms/sample</span>
-              </div>
-              <div style={{ fontSize: '0.78rem', color: '#f59e0b', marginTop: '4px' }}>
+              <div className="vp-kpi-subtext" style={{ color: 'var(--color-warning)' }}>
                 {latency.surrogate_batches?.batch_1000?.speedup_factor ?? 50}x faster than pandapower
               </div>
             </div>
           </div>
 
           {/* Split Selector Pills */}
-          <div className="glass-panel" style={{ padding: '14px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc', fontWeight: 600, fontSize: '0.92rem' }}>
+          <div className="vp-card">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+              <div className="vp-flex vp-items-center vp-gap-2" style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--font-sm)' }}>
                 <Layers size={18} style={{ color: '#c084fc' }} />
                 <span>Select Dataset Split Manifest for Analysis:</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="vp-segmented" style={{ flexWrap: 'wrap' }}>
                 {[
                   ['dev_val', 'dev_val (Development Validation)'],
                   ['test_unseen', 'test_unseen (Held-out Parameters)'],
@@ -727,16 +578,7 @@ export default function SurrogatePanel() {
                   <button
                     key={id}
                     onClick={() => setSelectedSplit(id)}
-                    style={{
-                      padding: '5px 12px',
-                      borderRadius: '6px',
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      backgroundColor: selectedSplit === id ? 'rgba(192, 132, 252, 0.25)' : 'rgba(255, 255, 255, 0.04)',
-                      color: selectedSplit === id ? '#c084fc' : '#94a3b8',
-                      border: selectedSplit === id ? '1px solid #c084fc' : '1px solid rgba(255, 255, 255, 0.08)',
-                    }}
+                    className={`vp-segmented-btn ${selectedSplit === id ? 'active' : ''}`}
                   >
                     {label}
                   </button>
@@ -746,54 +588,54 @@ export default function SurrogatePanel() {
           </div>
 
           {/* Parity Plots Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '20px' }}>
-            <div className="glass-panel" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 600, fontSize: '1.02rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--space-4)' }}>
+            <div className="vp-card">
+              <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
+                <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-info)' }}>
                   <TrendingUp size={18} />
                   <span>Bus Voltage Parity Plot (Predicted vs AC Solver)</span>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                  MAE: <strong style={{ color: '#10b981', fontFamily: 'var(--font-mono)' }}>{activeEval?.voltage?.mae_pu ?? '0.0028'} p.u.</strong>
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
+                  MAE: <strong style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{activeEval?.voltage?.mae_pu ?? '0.0028'} p.u.</strong>
                 </div>
               </div>
 
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
-                    <XAxis dataKey="trueV" name="Actual vm_pu" domain={[0.94, 1.06]} stroke="#64748b" fontSize={11} unit=" pu" />
-                    <YAxis dataKey="predV" name="Predicted vm_pu" domain={[0.94, 1.06]} stroke="#64748b" fontSize={11} unit=" pu" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                    <XAxis dataKey="trueV" name="Actual vm_pu" domain={[0.94, 1.06]} stroke="var(--color-fg-muted)" fontSize={11} unit=" pu" />
+                    <YAxis dataKey="predV" name="Predicted vm_pu" domain={[0.94, 1.06]} stroke="var(--color-fg-muted)" fontSize={11} unit=" pu" />
                     <ZAxis range={[20, 20]} />
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                    <ReferenceLine segment={[{ x: 0.94, y: 0.94 }, { x: 1.06, y: 1.06 }]} stroke="#10b981" strokeDasharray="4 4" />
-                    <Scatter name="Bus Voltages" data={paritySamples} fill="#38bdf8" />
+                    <ReferenceLine segment={[{ x: 0.94, y: 0.94 }, { x: 1.06, y: 1.06 }]} stroke="var(--color-success)" strokeDasharray="4 4" />
+                    <Scatter name="Bus Voltages" data={paritySamples} fill="var(--color-info)" />
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontWeight: 600, fontSize: '1.02rem' }}>
+            <div className="vp-card">
+              <div className="vp-card-header vp-flex vp-justify-between vp-items-center">
+                <div className="vp-card-title vp-flex vp-items-center vp-gap-2" style={{ color: 'var(--color-warning)' }}>
                   <Activity size={18} />
                   <span>Line Loading Parity Plot (Predicted vs AC Solver %)</span>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                  MAE: <strong style={{ color: '#10b981', fontFamily: 'var(--font-mono)' }}>{activeEval?.loading?.mae_pct ?? '1.42'}%</strong>
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-fg-muted)' }}>
+                  MAE: <strong style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{activeEval?.loading?.mae_pct ?? '1.42'}%</strong>
                 </div>
               </div>
 
               <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
-                    <XAxis dataKey="trueLoad" name="Actual Loading %" domain={[0, 100]} stroke="#64748b" fontSize={11} unit="%" />
-                    <YAxis dataKey="predLoad" name="Predicted Loading %" domain={[0, 100]} stroke="#64748b" fontSize={11} unit="%" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+                    <XAxis dataKey="trueLoad" name="Actual Loading %" domain={[0, 100]} stroke="var(--color-fg-muted)" fontSize={11} unit="%" />
+                    <YAxis dataKey="predLoad" name="Predicted Loading %" domain={[0, 100]} stroke="var(--color-fg-muted)" fontSize={11} unit="%" />
                     <ZAxis range={[20, 20]} />
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                    <ReferenceLine segment={[{ x: 0, y: 0 }, { x: 100, y: 100 }]} stroke="#f59e0b" strokeDasharray="4 4" />
-                    <Scatter name="Line Loadings" data={paritySamples} fill="#f59e0b" />
+                    <ReferenceLine segment={[{ x: 0, y: 0 }, { x: 100, y: 100 }]} stroke="var(--color-warning)" strokeDasharray="4 4" />
+                    <Scatter name="Line Loadings" data={paritySamples} fill="var(--color-warning)" />
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
@@ -804,3 +646,4 @@ export default function SurrogatePanel() {
     </div>
   );
 }
+
