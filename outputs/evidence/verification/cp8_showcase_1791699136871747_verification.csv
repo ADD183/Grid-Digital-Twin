@@ -1,0 +1,13 @@
+Step,Hour,Action Description,Battery Power (MW),Solar Curtailment (%),Switch Toggle,Battery SOC (%),Min Bus Voltage (pu),Max Bus Voltage (pu),Max Line Loading (%),Solar Scale,Load Scale,Screener Status,Solver Verified,Triggered Event / Label
+T0,10:00,Optimal Dispatch,0.0,0.0,None,40.6,1.0152,1.0467,63.7,14.864,0.436,safe,Pass (Safe),Normal Operation
+T1,11:00,Optimal Dispatch,0.0,0.0,None,40.6,1.0168,1.03,28.8,2.34,0.392,safe,Pass (Safe),Normal Operation
+T2,12:00,Optimal Dispatch,0.0,0.0,None,40.6,1.0208,1.0435,39.2,5.47,0.28,safe,Pass (Safe),Injected forecast error: Sudden midday solar surge (+120%)
+T3,13:00,Optimal Dispatch,0.0,0.0,None,40.6,1.0163,1.03,28.5,2.385,0.405,safe,Pass (Safe),Normal Operation
+T4,14:00,Optimal Dispatch,0.0,0.0,None,90.0,1.0167,1.03,28.7,2.306,0.394,safe,Pass (Safe),Battery Saturation: Battery reached max SOC limit (0.90)
+T5,15:00,Optimal Dispatch,1.0,100.0,4,37.4,0.9057,1.03,66.1,0.487,1.762,safe,Fallback / Alert,Normal Operation
+T6,16:00,Optimal Dispatch,0.0,0.0,None,37.4,0.7834,1.03,140.1,0.0,2.6,safe,Fallback / Alert,Infeasible stress: Extreme load demand exceeding grid feeder capacity
+T7,17:00,Optimal Dispatch,0.0,100.0,4,37.4,0.9061,1.03,91.4,0.0,1.347,safe,Fallback / Alert,Near-limit state detected: V_min = 0.906 p.u. (within 2% of 0.95 p.u. limit)
+T8,18:00,Optimal Dispatch,0.0,100.0,4,37.4,0.8619,1.03,96.7,0.0,2.054,safe,Fallback / Alert,Surrogate Disagreement: Surrogate predicted safe (+0.012 pu) but solver rejected candidate (-0.008 pu)
+T9,19:00,Optimal Dispatch,0.0,0.0,None,37.4,0.8502,1.03,103.3,0.0,2.146,safe,Fallback / Alert,Normal Operation
+T10,20:00,Optimal Dispatch,0.0,0.0,None,37.4,0.8631,1.03,96.0,0.0,2.044,safe,Fallback / Alert,Normal Operation
+T11,21:00,Optimal Dispatch,0.0,0.0,None,10.0,0.8507,1.03,103.0,0.0,2.142,safe,Fallback / Alert,Battery Depletion: Battery reached min reserve SOC limit (0.10)

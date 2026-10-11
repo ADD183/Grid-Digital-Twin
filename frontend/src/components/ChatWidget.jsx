@@ -34,6 +34,7 @@ const EVIDENCE_LABELS = {
   scenario_id: 'Scenario',
   explanation: 'Result details',
   error: 'Data availability',
+  timestamp: 'Timestamp (IST)',
 };
 
 const evidenceLabel = (key) => EVIDENCE_LABELS[key] || key
@@ -56,6 +57,16 @@ function getEvidenceRows(evidence, parentLabel = '') {
   let value = evidence;
   if (value === null || value === undefined || value === 'N/A') value = 'Not available';
   else if (typeof value === 'boolean') value = value ? 'Yes' : 'No';
+  else if (/timestamp/i.test(parentLabel) && typeof value === 'string') {
+    const timestamp = new Date(value);
+    if (!Number.isNaN(timestamp.getTime())) {
+      value = new Intl.DateTimeFormat('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'medium',
+        timeZone: 'Asia/Kolkata',
+      }).format(timestamp);
+    }
+  }
   else if (/(minimum|maximum) voltage$/i.test(parentLabel) && typeof value === 'number') value = `${value} p.u.`;
   else if (/maximum line loading$/i.test(parentLabel) && typeof value === 'number') value = `${value}%`;
 

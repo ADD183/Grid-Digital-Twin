@@ -73,24 +73,42 @@ class BeamSearchPlanner:
         battery_levels = self.limits.control.battery_levels
         curtail_levels = self.limits.control.curtail_levels
 
+        if is_lookahead:
+            curtail_levels = sorted({min(curtail_levels), max(curtail_levels)})
+
         # At immediate step 0, explore tie-switches if budget allows; in lookahead keep switch fixed
         available_toggles: List[Optional[int]] = [None]
         if remaining_switches > 0 and not is_lookahead:
             available_toggles.extend([4, 1, 2])
 
+        candidate_levels = [
+            (b_mw, c_pct, None)
+            for b_mw in battery_levels
+            for c_pct in curtail_levels
+        ]
+        if len(available_toggles) > 1:
+            switch_battery_levels = [
+                level for level in battery_levels
+                if level in {min(battery_levels), 0.0, max(battery_levels)}
+            ]
+            switch_curtail_levels = sorted({min(curtail_levels), max(curtail_levels)})
+            candidate_levels.extend(
+                (b_mw, c_pct, s_toggle)
+                for b_mw in switch_battery_levels
+                for c_pct in switch_curtail_levels
+                for s_toggle in available_toggles[1:]
+            )
+
         candidates = []
-        for b_mw in battery_levels:
-            for c_pct in curtail_levels:
-                for s_toggle in available_toggles:
-                    action = Action(
-                        battery_mw=float(b_mw),
-                        curtail_pct=float(c_pct),
-                        switch_toggle=s_toggle,
-                    )
-                    # Filter against hard battery & power constraints
-                    admissible, _ = is_action_admissible(current_state.soc, action, self.limits)
-                    if admissible:
-                        candidates.append(action)
+        for b_mw, c_pct, s_toggle in candidate_levels:
+            action = Action(
+                battery_mw=float(b_mw),
+                curtail_pct=float(c_pct),
+                switch_toggle=s_toggle,
+            )
+            admissible, _ = is_action_admissible(current_state.soc, action, self.limits)
+            if admissible:
+                candidates.append(action)
 
         return candidates
 

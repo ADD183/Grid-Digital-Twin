@@ -39,6 +39,7 @@ export const controlApi = {
   runEpisode: (payload = {}) => request('/api/control/episode/run', {
     method: 'POST',
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(120_000),
   }),
   getAbBenchmark: () => request('/api/control/ab-test'),
   runScreenedEpisode: (payload = {}) => request('/api/control/episode/run-screened', {

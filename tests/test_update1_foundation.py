@@ -99,6 +99,19 @@ def test_solver_dataset_uses_cigre_operating_ranges():
     assert max(item["load_mw"] for item in verifier.inputs) > 44
 
 
+def test_update1_health_timestamp_is_ist():
+    from fastapi.testclient import TestClient
+    import api
+
+    with TestClient(api.app) as client:
+        health = client.get("/health")
+
+    assert health.status_code == 200
+    assert health.json()["status"] == "healthy"
+    assert "timestamp" in health.json()
+    assert "IST" in health.json()["timestamp"] or "+05:30" in health.json()["timestamp"]
+
+
 def test_update1_health_telemetry_and_forecast_routes():
     from fastapi.testclient import TestClient
     from api import app

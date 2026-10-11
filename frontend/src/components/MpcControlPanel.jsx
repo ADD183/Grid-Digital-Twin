@@ -13,6 +13,14 @@ function Metric({ label, value, unit = '', tone = 'info' }) {
   );
 }
 
+const formatIstTime = (timestamp) => new Intl.DateTimeFormat('en-IN', {
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true,
+  timeZone: 'Asia/Kolkata',
+}).format(new Date(timestamp));
+
 export default function MpcControlPanel() {
   const [telemetry, setTelemetry] = useState(null);
   const [surrogate, setSurrogate] = useState(null);
@@ -23,6 +31,7 @@ export default function MpcControlPanel() {
   const [error, setError] = useState('');
   const [exported, setExported] = useState(null);
   const [forecastProvenance, setForecastProvenance] = useState(null);
+  const [statusUpdatedAt, setStatusUpdatedAt] = useState(null);
 
   const refreshStatus = async () => {
     const [telemetryStatus, surrogateStatus] = await Promise.all([
@@ -31,11 +40,11 @@ export default function MpcControlPanel() {
     ]);
     setTelemetry(telemetryStatus);
     setSurrogate(surrogateStatus);
+    setStatusUpdatedAt(new Date().toISOString());
   };
 
   useEffect(() => {
     refreshStatus().catch((err) => setError(err.message));
-    runPlan().catch((err) => setError(err.message));
   }, []);
 
   const runPlan = async () => {
@@ -151,7 +160,12 @@ export default function MpcControlPanel() {
 
       {/* SECTION 2: TELEMETRY & MODEL READINESS */}
       <div className="vp-card" style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: 'var(--text)', marginBottom: '12px' }}>Current readings</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+          <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: 'var(--text)' }}>Current readings</h3>
+          {statusUpdatedAt && (
+            <span className="vp-kpi-subtext">Updated {formatIstTime(statusUpdatedAt)} IST</span>
+          )}
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
           <Metric label="Telemetry Source" value={telemetry?.reading?.source || 'Loading'} tone="info" />
           <Metric label="Solar Actual / Forecast" value={telemetry ? `${telemetry.reading.solar_mw.toFixed(2)} / ${telemetry.forecast_solar_mw.toFixed(2)}` : '—'} unit=" MW" tone="info" />
@@ -176,6 +190,12 @@ export default function MpcControlPanel() {
           </p>
         )}
       </div>
+
+      {!plan && !working && (
+        <div className="vp-dashboard-empty" role="status" style={{ marginBottom: '20px' }}>
+          Choose a starting battery level, then select <strong>Run plan</strong> to see the eight-period results.
+        </div>
+      )}
 
       {/* SECTION 3: PLAN HORIZON & STEP INSPECTOR */}
       {plan && (

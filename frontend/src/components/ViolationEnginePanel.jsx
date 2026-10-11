@@ -439,8 +439,10 @@ export default function ViolationEnginePanel() {
                         padding: '10px 14px',
                         backgroundColor: 'var(--surface)',
                         borderRadius: 'var(--r-sm)',
+                        borderTop: '1px solid var(--border)',
+                        borderRight: '1px solid var(--border)',
+                        borderBottom: '1px solid var(--border)',
                         borderLeft: `3px solid var(--${tone})`,
-                        border: '1px solid var(--border)',
                         fontSize: '0.82rem',
                         gap: '12px'
                       }}
@@ -567,7 +569,7 @@ export default function ViolationEnginePanel() {
 
       {/* SECTION 3: WINNER RECOMMENDATION & EXPLAINABILITY */}
       {winner && (
-        <div className="vp-card" style={{ marginBottom: '20px', borderColor: 'var(--accent)' }}>
+        <div className="vp-card" style={{ marginBottom: '20px', border: '1px solid var(--accent)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontSize: '0.81rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
             <Award size={18} />
             <span>Recommended action</span>

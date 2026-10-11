@@ -1,0 +1,13 @@
+step,hour,soc,soc_percent,battery_mw,curtail_pct,replan_flag,infeasible_flag,fallback_used,min_margin
+0,10:00,0.406,40.6,0.0,0.0,False,False,none,0.00326
+1,11:00,0.406,40.6,0.0,0.0,False,False,none,0.02
+2,12:00,0.406,40.6,0.0,0.0,True,False,none,0.00651
+3,13:00,0.406,40.6,0.0,0.0,False,False,none,0.02
+4,14:00,0.9,90.0,0.0,0.0,False,False,none,0.02
+5,15:00,0.37368,37.37,1.0,100.0,True,True,infeasible_residual_load_shedding,-0.04426
+6,16:00,0.37368,37.37,0.0,0.0,True,True,infeasible_residual_max_battery_support,-0.40124
+7,17:00,0.37368,37.37,0.0,100.0,True,False,load_shedding,-0.04388
+8,18:00,0.37368,37.37,0.0,100.0,True,True,infeasible_residual_load_shedding,-0.08811
+9,19:00,0.37368,37.37,0.0,0.0,True,True,infeasible_residual_max_battery_support,-0.09981
+10,20:00,0.37368,37.37,0.0,0.0,True,True,infeasible_residual_max_battery_support,-0.08687
+11,21:00,0.1,10.0,0.0,0.0,True,True,infeasible_residual_max_battery_support,-0.09929

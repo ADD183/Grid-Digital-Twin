@@ -9,7 +9,7 @@ import json
 import threading
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, Query, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,9 +44,14 @@ from backend.app.surrogate import PowerFlowSurrogate, generate_solver_dataset
 from backend.app.telemetry_manager import TelemetryManager
 
 settings = get_settings()
+IST = timezone(timedelta(hours=5, minutes=30), "IST")
 _SHOWCASE_EXECUTOR = ProcessPoolExecutor(max_workers=1)
 _GRID_SNAPSHOT_LOCK = threading.Lock()
 _GRID_SNAPSHOT = None
+
+
+def _ist_now() -> datetime:
+    return datetime.now(IST)
 
 
 def _get_grid_snapshot() -> Dict[str, Any]:
@@ -179,8 +184,8 @@ def health_check() -> Dict[str, str]:
 
 @app.get("/health")
 def standard_health_check() -> Dict[str, str]:
-    """Deployment health endpoint with an explicit UTC timestamp."""
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+    """Deployment health endpoint with an explicit IST timestamp."""
+    return {"status": "healthy", "timestamp": _ist_now().isoformat()}
 
 
 @app.get("/api/update1/telemetry")
@@ -299,49 +304,6 @@ async def update1_assistant_chat(
         raise HTTPException(status_code=422, detail="X-Audience-Mode must be operator or executive")
     request = request.model_copy(update={"audience_mode": mode})
     return await asyncio.to_thread(AssistantOrchestrator(settings).answer, request)
-
-
-class EpisodeRunRequest(BaseModel):
-    episode_steps: int = Field(default=8, ge=1, le=24)
-    initial_soc: float = Field(default=0.5, ge=0.1, le=0.9)
-    inject_error: bool = True
-
-
-@app.get("/api/control/limits")
-def get_control_limits() -> Dict[str, Any]:
-    """Return limits.yaml configuration for multi-step control."""
-    from src.control.state import load_limits_config
-    import yaml
-    with open("config/limits.yaml", "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-@app.get("/api/control/episode/showcase")
-def get_showcase_episode() -> Dict[str, Any]:
-    """Return persisted showcase EpisodeLog JSON."""
-    from pathlib import Path
-    import json
-    from src.control.episode import run_episode
-    p = Path("outputs/evidence/action_logs/cp5_showcase.json")
-    if not p.is_file():
-        log = run_episode(episode_steps=8, initial_soc=0.5, run_id="cp5_showcase")
-        log.export_evidence()
-    with open(p, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-@app.post("/api/control/episode/run")
-def run_control_episode(request: EpisodeRunRequest) -> Dict[str, Any]:
-    """Run rolling-horizon episode live and return serialized EpisodeLog."""
-    from src.control.episode import run_episode
-    errors = {2: {"solar_mult": 2.0, "load_mult": 0.85, "label": "Midday solar surge"}} if request.inject_error else {}
-    log = run_episode(
-        episode_steps=request.episode_steps,
-        initial_soc=request.initial_soc,
-        injected_errors=errors,
-        run_id="api_run",
-    )
-    return log.to_dict()
 
 
 @app.get("/api/grid/summary")
@@ -803,7 +765,7 @@ def _execute_showcase_run(scenario_seed: int, progress_path: str) -> Dict[str, A
         f"outputs/evidence/action_logs/{run_id}_full_table.csv",
         f"outputs/evidence/verification/{run_id}_verification.csv",
     ]
-    episode["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S.%f UTC")
+    episode["executed_at"] = _ist_now().strftime("%H:%M:%S.%f IST")
     return episode
 
 
@@ -916,7 +878,7 @@ async def get_showcase12_episode(force: bool = Query(False, description="Force l
             with open(action_log_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if "executed_at" not in data:
-                    data["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+                    data["executed_at"] = _ist_now().strftime("%H:%M:%S IST")
                 return data
         except Exception:
             pass
@@ -928,7 +890,7 @@ async def get_showcase12_episode(force: bool = Query(False, description="Force l
         log = run_showcase_episode(limits=limits, run_id="cp8_showcase_12step")
         log.export_evidence()
         data = log.to_dict()
-        data["executed_at"] = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+        data["executed_at"] = _ist_now().strftime("%H:%M:%S IST")
         return data
 
     return await asyncio.to_thread(_execute)

@@ -28,6 +28,26 @@ import {
 import { API_BASE } from '../config';
 import ChartDisclosure from './ui/ChartDisclosure';
 
+const formatIstTime = (value) => {
+  if (!value) return '';
+
+  const timeOnlyMatch = value.match(/^(\d{2}:\d{2}:\d{2}(?:\.\d+)?)\s*(UTC|IST)$/i);
+  const time = timeOnlyMatch?.[1]?.replace(/(\.\d{3})\d+$/, '$1');
+  const timestamp = new Date(timeOnlyMatch
+    ? `${new Date().toISOString().slice(0, 10)}T${time}${timeOnlyMatch[2].toUpperCase() === 'UTC' ? 'Z' : '+05:30'}`
+    : value);
+
+  if (Number.isNaN(timestamp.getTime())) return value;
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZoneName: 'short',
+  }).format(timestamp);
+};
+
 export default function ShowcasePanel() {
   const [episodeData, setEpisodeData] = useState(null);
   const [evidenceIndex, setEvidenceIndex] = useState(null);
@@ -71,7 +91,7 @@ export default function ShowcasePanel() {
       if (epRes?.executed_at) {
         setExecutedAt(epRes.executed_at);
       } else {
-        setExecutedAt(new Date().toLocaleTimeString());
+        setExecutedAt(new Date().toISOString());
       }
     } catch (err) {
       setError(err.message || 'Failed to load Checkpoint 8 showcase episode data');
@@ -147,7 +167,7 @@ export default function ShowcasePanel() {
               </span>
               {executedAt && (
                 <span className="vp-badge vp-badge-ok">
-                  Last run: {executedAt}
+                  Last run: {formatIstTime(executedAt)}
                 </span>
               )}
             </div>
@@ -182,7 +202,7 @@ export default function ShowcasePanel() {
           <div className="vp-alert vp-alert-ok vp-mt-3" style={{ borderLeft: '4px solid var(--ok)', color: 'var(--text)' }}>
             <CheckCircle2 size={16} style={{ color: 'var(--ok)', flexShrink: 0 }} />
             <span>
-              <strong>Episode loaded and solver verified.</strong> The 12-timepoint AC power-flow run was last calculated at <strong>{executedAt}</strong>.
+              <strong>Episode loaded and solver verified.</strong> The 12-timepoint AC power-flow run was last calculated at <strong>{formatIstTime(executedAt)}</strong>.
             </span>
           </div>
         )}

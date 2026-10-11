@@ -363,6 +363,8 @@ def run_episode(
     infeasible_targets = set(force_infeasible_steps or [])
 
     step_records: List[StepRecord] = []
+    active_plan: Optional[PlanResult] = None
+    active_plan_start = 0
 
     for t in range(episode_steps):
         state_before = current_state
@@ -370,9 +372,12 @@ def run_episode(
         # Horizon slice for lookahead planning
         forecast_horizon_slice = profile[t : t + horizon_len]
 
-        # 1. Plan on forecasts
-        plan_forecast = p.plan(state_before, forecast_horizon_slice)
-        planned_action = plan_forecast.best_action
+        # Reuse the remaining sequence until observations require a new plan.
+        if active_plan is None or t - active_plan_start >= len(active_plan.best_sequence):
+            active_plan = p.plan(state_before, forecast_horizon_slice)
+            active_plan_start = t
+        plan_offset = t - active_plan_start
+        planned_action = active_plan.best_sequence[plan_offset]
 
         # 2. Reveal observed conditions
         current_forecast = copy.deepcopy(forecast_horizon_slice[0])
@@ -400,13 +405,24 @@ def run_episode(
         action_changed = False
         chosen_action = planned_action
         final_verif = prelim_verif
-        infeasible_flag = plan_forecast.infeasible
-        fallback_used = plan_forecast.fallback_used
+        infeasible_flag = active_plan.infeasible if plan_offset == 0 else False
+        fallback_used = active_plan.fallback_used if plan_offset == 0 else None
 
         # 4. If error was injected or observation differed, trigger immediate REPLAN
-        if error_injected or not prelim_verif.is_safe:
+        if error_injected:
             replan_horizon_slice = [observed_inputs] + forecast_horizon_slice[1:]
             replan_result = p.plan(state_before, replan_horizon_slice)
+            active_plan = replan_result
+            active_plan_start = t
+            replan_flag = True
+            chosen_action = replan_result.best_action
+            final_verif = replan_result.verification
+            infeasible_flag = replan_result.infeasible
+            fallback_used = replan_result.fallback_used
+            if chosen_action != planned_action:
+                action_changed = True
+        elif not prelim_verif.is_safe:
+            replan_result = p.plan(state_before, [observed_inputs])
             replan_flag = True
             chosen_action = replan_result.best_action
             final_verif = replan_result.verification
