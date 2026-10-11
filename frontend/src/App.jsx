@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Header from './components/Header';
 import DateRangePicker from './components/DateRangePicker';
 import MetricCards from './components/MetricCards';
 import NetworkTopologyCanvas from './components/NetworkTopologyCanvas';
@@ -12,6 +11,9 @@ import TimePlanPanel from './components/TimePlanPanel';
 import SurrogatePanel from './components/SurrogatePanel';
 import ShowcasePanel from './components/ShowcasePanel';
 import ChatWidget from './components/ChatWidget';
+import AppShell from './components/layout/AppShell';
+import { ThemeProvider } from './theme/ThemeProvider';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { API_BASE } from './config';
 
 export default function App() {
@@ -76,48 +78,38 @@ export default function App() {
   }, []);
 
   const showGrid = activeTab === 'all' || activeTab === 'grid';
-  const tabs = [
-    ['showcase', '🏆 Showcase & Evidence (Checkpoint 8)', '#34d399'],
-    ['surrogate', '⚡ Power-Flow Surrogate & Screening (CP6 & CP7)', '#c084fc'],
-    ['time_plan', '⏱️ Time Plan (Checkpoint 5)', '#10b981'],
-    ['mpc', '⚙️ Predictive MPC (Update1)', '#34d399'],
-    ['engine', '🛡️ Action Engine (Checkpoint 3)', '#f87171'],
-    ['forecast', '🧠 AI Forecaster (Checkpoint 2)', '#c084fc'],
-    ['grid', '⚡ Grid Topology & Power Flow (Checkpoint 1)', '#38bdf8'],
-    ['all', '🌐 Full Digital Twin View', '#34d399'],
-  ];
 
   return (
-    <>
-      <div style={{ maxWidth: '1380px', margin: '0 auto', padding: '24px 20px' }}>
-        <Header apiOnline={apiOnline} />
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: '6px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', width: 'fit-content', maxWidth: '100%', flexWrap: 'wrap' }}>
-          {tabs.map(([id, label, color]) => (
-            <button key={id} onClick={() => setActiveTab(id)} style={{ backgroundColor: activeTab === id ? `${color}22` : 'transparent', color: activeTab === id ? color : '#94a3b8', border: activeTab === id ? `1px solid ${color}66` : '1px solid transparent', padding: '8px 14px', borderRadius: '8px', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>
-              {label}
-            </button>
-          ))}
-        </div>
+    <ThemeProvider>
+      <AppShell
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        apiOnline={apiOnline}
+      >
+        {showGrid && (
+          <DateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onApply={fetchTimeSeries}
+            loading={loading}
+          />
+        )}
 
-        {showGrid && <DateRangePicker startDate={startDate} endDate={endDate} onApply={fetchTimeSeries} loading={loading} />}
         {error && (
-          <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-            <span>⚠️ {error}</span>
+          <div className="vp-alert" data-tone="danger" style={{ marginBottom: '20px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={18} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+              <span>{error}</span>
+            </div>
             <button
+              type="button"
+              className="vp-btn vp-btn-secondary"
               onClick={() => fetchTimeSeries(startDate, endDate)}
               disabled={loading}
-              style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.25)',
-                color: '#ffffff',
-                border: '1px solid rgba(239, 68, 68, 0.5)',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                cursor: 'pointer'
-              }}
+              style={{ height: '32px', fontSize: '0.8rem' }}
             >
-              🔄 {loading ? 'Retrying...' : 'Retry Load Data'}
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              <span>{loading ? 'Retrying...' : 'Retry Load Data'}</span>
             </button>
           </div>
         )}
@@ -132,15 +124,10 @@ export default function App() {
         {showGrid && <TimeSeriesChart data={solarLoadData} startDate={startDate} endDate={endDate} />}
         {(activeTab === 'all' || activeTab === 'forecast') && <ForecastPanel />}
         {showGrid && <TelemetryTables topology={topology} />}
-
-        <footer className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
-          <div>⚡ <strong>VoltPredict</strong> — React.js SPA & FastAPI Backend</div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Checkpoints 1–8 Complete: Physics Grid • Forecaster • Corrective Engine • Scenarios • Multi-Step Control • Power-Flow Surrogate • Screened Control • Showcase & Evidence Pack.</div>
-        </footer>
-      </div>
+      </AppShell>
 
       {/* Floating Chatbot Assistant Widget */}
       <ChatWidget />
-    </>
+    </ThemeProvider>
   );
 }
