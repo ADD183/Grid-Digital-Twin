@@ -1,98 +1,150 @@
-import React, { useState } from 'react';
-import { Network, Zap, Info, ShieldAlert, CheckCircle, Flame } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Network, Zap } from 'lucide-react';
 
 export default function NetworkTopologyCanvas({ topology }) {
   const [selectedBus, setSelectedBus] = useState(null);
   const [hoveredBus, setHoveredBus] = useState(null);
 
+  const buses = topology?.buses || [];
+  const lines = topology?.lines || [];
+
+  // Tidy schematic layout computation with fallback (PRD Section 4 item 5)
+  const busCoordinates = useMemo(() => {
+    try {
+      if (!buses.length || !lines.length) return null;
+      const adj = new Map();
+      buses.forEach((b) => adj.set(b.id, []));
+      lines.forEach((l) => {
+        if (adj.has(l.from_bus)) adj.get(l.from_bus).push(l.to_bus);
+        if (adj.has(l.to_bus)) adj.get(l.to_bus).push(l.from_bus);
+      });
+
+      const rootId = buses.find((b) => b.id === 1)?.id || buses[0].id;
+      const depth = new Map();
+      const queue = [rootId];
+      depth.set(rootId, 0);
+
+      while (queue.length > 0) {
+        const u = queue.shift();
+        const neighbors = adj.get(u) || [];
+        for (const v of neighbors) {
+          if (!depth.has(v)) {
+            depth.set(v, depth.get(u) + 1);
+            queue.push(v);
+          }
+        }
+      }
+
+      if (depth.size !== buses.length) return null; // Disconnected graph fallback
+
+      const maxDepth = Math.max(...Array.from(depth.values()));
+      const levels = Array.from({ length: maxDepth + 1 }, () => []);
+      buses.forEach((b) => {
+        const d = depth.get(b.id);
+        levels[d].push(b);
+      });
+
+      const coords = new Map();
+      const xStep = 700 / Math.max(maxDepth, 1);
+
+      levels.forEach((levelBuses, d) => {
+        const x = 80 + d * xStep;
+        const yStep = 300 / (levelBuses.length + 1);
+        levelBuses.forEach((b, idx) => {
+          const y = 60 + (idx + 1) * yStep;
+          coords.set(b.id, { x, y });
+        });
+      });
+
+      return coords;
+    } catch {
+      return null;
+    }
+  }, [buses, lines]);
+
   if (!topology || !topology.buses || topology.buses.length === 0) {
     return (
-      <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+      <div className="vp-card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
         Loading Network Topology...
       </div>
     );
   }
 
-  const { buses, lines } = topology;
 
-  // Scale bus (x, y) coordinates to SVG viewBox space (width: 860, height: 420)
+  // Fallback map helper scaling raw (x, y) coordinates
   const minX = Math.min(...buses.map((b) => b.x));
   const maxX = Math.max(...buses.map((b) => b.x));
   const minY = Math.min(...buses.map((b) => b.y));
   const maxY = Math.max(...buses.map((b) => b.y));
 
-  const mapX = (x) => {
-    if (maxX === minX) return 430;
-    return 80 + ((x - minX) / (maxX - minX)) * 700;
-  };
-
-  const mapY = (y) => {
-    if (maxY === minY) return 210;
-    // Note: invert Y since SVG origin is top-left
-    return 60 + ((y - minY) / (maxY - minY)) * 300;
+  const getBusPos = (bus) => {
+    if (busCoordinates && busCoordinates.has(bus.id)) {
+      return busCoordinates.get(bus.id);
+    }
+    const x = maxX === minX ? 430 : 80 + ((bus.x - minX) / (maxX - minX)) * 700;
+    const y = maxY === minY ? 210 : 60 + ((bus.y - minY) / (maxY - minY)) * 300;
+    return { x, y };
   };
 
   // Node color helper
   const getNodeColor = (vm_pu) => {
-    if (vm_pu >= 0.95 && vm_pu <= 1.05) return '#10b981'; // Green (Safe)
-    if ((vm_pu >= 0.90 && vm_pu < 0.95) || (vm_pu > 1.05 && vm_pu <= 1.10)) return '#f59e0b'; // Amber (Warning)
-    return '#ef4444'; // Red (Violation)
+    if (vm_pu >= 0.95 && vm_pu <= 1.05) return 'var(--ok)';
+    if ((vm_pu >= 0.90 && vm_pu < 0.95) || (vm_pu > 1.05 && vm_pu <= 1.10)) return 'var(--warn)';
+    return 'var(--danger)';
   };
 
   // Line color helper
   const getLineColor = (loading) => {
-    if (loading <= 70) return '#06b6d4'; // Cyan
-    if (loading <= 100) return '#f59e0b'; // Amber
-    return '#ef4444'; // Red Overload
+    if (loading <= 70) return 'var(--accent)';
+    if (loading <= 100) return 'var(--warn)';
+    return 'var(--danger)';
   };
 
   const activeBus = selectedBus || hoveredBus || buses[0];
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
+    <div className="vp-card" style={{ marginBottom: '24px' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#06b6d4', fontWeight: 600, fontSize: '1.02rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '1.02rem' }}>
           <Network size={20} />
           <span>CIGRE MV Distribution Grid Topology Map</span>
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.78rem', color: '#94a3b8' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }} />
-            <span>Safe (0.95-1.05 p.u.)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--ok)', display: 'inline-block' }} />
+            <span>Safe (0.95–1.05 p.u.)</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'inline-block' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--warn)', display: 'inline-block' }} />
             <span>Warning</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--danger)', display: 'inline-block' }} />
             <span>Violation</span>
           </div>
         </div>
       </div>
 
       {/* Main Canvas + Telemetry Sidebar Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(240px, 280px)', gap: '16px' }}>
         
         {/* SVG Canvas Container */}
-        <div style={{ backgroundColor: '#090d16', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', position: 'relative', overflow: 'hidden' }}>
-          
-          <svg viewBox="0 0 860 420" style={{ width: '100%', height: '100%', display: 'block' }}>
-            <defs>
-              <linearGradient id="gridBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0b1329" />
-                <stop offset="100%" stopColor="#070b14" />
-              </linearGradient>
-            </defs>
-
-            <rect width="860" height="420" fill="url(#gridBg)" />
-
-            {/* Subtle Background Grid Lines */}
-            <g stroke="rgba(255, 255, 255, 0.03)" strokeWidth="1">
+        <div 
+          style={{ 
+            backgroundColor: 'var(--surface-raised)', 
+            borderRadius: 'var(--r-md)', 
+            border: '1px solid var(--border)', 
+            position: 'relative', 
+            overflowX: 'auto' 
+          }}
+        >
+          <svg viewBox="0 0 860 420" style={{ width: '100%', height: '100%', minWidth: '500px', display: 'block' }}>
+            {/* Background Grid Lines */}
+            <g stroke="var(--border)" strokeWidth="1" strokeDasharray="2 4">
               {[...Array(10)].map((_, i) => (
                 <line key={`v-${i}`} x1={i * 86} y1="0" x2={i * 86} y2="420" />
               ))}
@@ -103,37 +155,23 @@ export default function NetworkTopologyCanvas({ topology }) {
 
             {/* Network Lines */}
             {lines.map((line) => {
-              const fromBus = buses.find((b) => b.id === line.from_bus) || { x: line.from_x, y: line.from_y };
-              const toBus = buses.find((b) => b.id === line.to_bus) || { x: line.to_x, y: line.to_y };
-
-              const x1 = mapX(fromBus.x);
-              const y1 = mapY(fromBus.y);
-              const x2 = mapX(toBus.x);
-              const y2 = mapY(toBus.y);
+              const fromBusObj = buses.find((b) => b.id === line.from_bus);
+              const toBusObj = buses.find((b) => b.id === line.to_bus);
+              const p1 = fromBusObj ? getBusPos(fromBusObj) : { x: 0, y: 0 };
+              const p2 = toBusObj ? getBusPos(toBusObj) : { x: 0, y: 0 };
 
               const strokeColor = getLineColor(line.loading_percent);
 
               return (
                 <g key={`line-${line.id}`}>
-                  {/* Outer line shadow */}
                   <line
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke={strokeColor}
-                    strokeWidth="4"
-                    strokeOpacity="0.3"
-                  />
-                  {/* Inner line */}
-                  <line
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
+                    x1={p1.x}
+                    y1={p1.y}
+                    x2={p2.x}
+                    y2={p2.y}
                     stroke={strokeColor}
                     strokeWidth="2"
-                    className="flow-line"
+                    strokeOpacity="0.85"
                   />
                 </g>
               );
@@ -141,8 +179,7 @@ export default function NetworkTopologyCanvas({ topology }) {
 
             {/* Network Bus Nodes */}
             {buses.map((bus) => {
-              const cx = mapX(bus.x);
-              const cy = mapY(bus.y);
+              const pos = getBusPos(bus);
               const color = getNodeColor(bus.vm_pu);
               const isSelected = selectedBus && selectedBus.id === bus.id;
               const isHovered = hoveredBus && hoveredBus.id === bus.id;
@@ -155,36 +192,37 @@ export default function NetworkTopologyCanvas({ topology }) {
                   onMouseLeave={() => setHoveredBus(null)}
                   style={{ cursor: 'pointer' }}
                 >
-                  {/* Outer pulse ring */}
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r={isSelected || isHovered ? 20 : 15}
-                    fill="transparent"
-                    stroke={color}
-                    strokeWidth="2"
-                    strokeOpacity={isSelected || isHovered ? "0.9" : "0.4"}
-                    className={isSelected || isHovered ? "animated-pulse" : ""}
-                  />
+                  {/* Outer selection ring */}
+                  {(isSelected || isHovered) && (
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r={18}
+                      fill="transparent"
+                      stroke={color}
+                      strokeWidth="2"
+                      strokeOpacity="0.6"
+                    />
+                  )}
 
                   {/* Core filled node */}
                   <circle
-                    cx={cx}
-                    cy={cy}
-                    r={isSelected || isHovered ? 12 : 10}
+                    cx={pos.x}
+                    cy={pos.y}
+                    r={isSelected || isHovered ? 11 : 9}
                     fill={color}
-                    stroke="#090d16"
+                    stroke="var(--surface-raised)"
                     strokeWidth="2"
                   />
 
                   {/* Bus ID Text */}
                   <text
-                    x={cx}
-                    y={cy + 4}
+                    x={pos.x}
+                    y={pos.y + 4}
                     textAnchor="middle"
                     fill="#ffffff"
                     fontSize="10"
-                    fontWeight="bold"
+                    fontWeight="600"
                     fontFamily="var(--font-mono)"
                     pointerEvents="none"
                   >
@@ -193,10 +231,10 @@ export default function NetworkTopologyCanvas({ topology }) {
 
                   {/* Label below */}
                   <text
-                    x={cx}
-                    y={cy + 24}
+                    x={pos.x}
+                    y={pos.y + 22}
                     textAnchor="middle"
-                    fill="#94a3b8"
+                    fill="var(--text-muted)"
                     fontSize="9"
                     fontFamily="var(--font-sans)"
                     pointerEvents="none"
@@ -210,11 +248,19 @@ export default function NetworkTopologyCanvas({ topology }) {
         </div>
 
         {/* Telemetry Inspector Panel */}
-        <div style={{ backgroundColor: '#0f172a', borderRadius: '10px', padding: '16px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '10px' }}>
-            <Zap size={16} color="#06b6d4" />
-            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+        <div 
+          className="vp-card-raised"
+          style={{ 
+            borderRadius: 'var(--r-md)', 
+            padding: '16px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '12px' 
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+            <Zap size={16} color="var(--accent)" />
+            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>
               Bus Telemetry Inspector
             </span>
           </div>
@@ -222,42 +268,42 @@ export default function NetworkTopologyCanvas({ topology }) {
           {activeBus ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Target Node</span>
-                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Target Node</span>
+                <div style={{ fontSize: '1.02rem', fontWeight: 600, color: 'var(--text)' }}>
                   {activeBus.name} (Bus {activeBus.id})
                 </div>
               </div>
 
-              <div style={{ padding: '10px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Voltage Level</span>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: getNodeColor(activeBus.vm_pu), fontFamily: 'var(--font-mono)' }}>
+              <div style={{ padding: '10px', borderRadius: 'var(--r-sm)', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Voltage Level</span>
+                <div style={{ fontSize: '1.25rem', fontWeight: 600, color: getNodeColor(activeBus.vm_pu), fontFamily: 'var(--font-mono)' }}>
                   {activeBus.vm_pu.toFixed(4)} p.u.
                 </div>
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Nominal: {activeBus.vn_kv} kV</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>Nominal: {activeBus.vn_kv} kV</span>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div style={{ padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(255, 255, 255, 0.03)' }}>
-                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Active Power (P)</span>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#e2e8f0', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ padding: '8px', borderRadius: 'var(--r-sm)', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Active Power (P)</span>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>
                     {activeBus.p_mw.toFixed(3)} MW
                   </div>
                 </div>
 
-                <div style={{ padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(255, 255, 255, 0.03)' }}>
-                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Reactive Power (Q)</span>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#e2e8f0', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ padding: '8px', borderRadius: 'var(--r-sm)', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Reactive Power (Q)</span>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>
                     {activeBus.q_mvar.toFixed(3)} MVar
                   </div>
                 </div>
               </div>
 
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '4px' }}>
                 💡 Click any node on the diagram to pin telemetry data.
               </div>
             </div>
           ) : (
-            <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>Hover or click a node to view real-time AC power flow results.</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Hover or click a node to view real-time AC power flow results.</div>
           )}
 
         </div>
@@ -266,3 +312,4 @@ export default function NetworkTopologyCanvas({ topology }) {
     </div>
   );
 }
+

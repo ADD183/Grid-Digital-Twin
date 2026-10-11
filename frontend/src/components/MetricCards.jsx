@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, Sun, Activity, Gauge, CheckCircle2 } from 'lucide-react';
+import { Cpu, Sun, Activity, Gauge, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export default function MetricCards({ summary }) {
   if (!summary) return null;
@@ -22,28 +22,28 @@ export default function MetricCards({ summary }) {
       value: `${bus_count} Buses`,
       sub: '15 kV Distribution Network',
       icon: Cpu,
-      color: '#06b6d4'
+      tone: 'info'
     },
     {
       title: 'Connected DERs',
       value: `${der_count} DER Units`,
       sub: 'Rooftop Solar & Distributed Gen',
       icon: Sun,
-      color: '#f59e0b'
+      tone: 'info'
     },
     {
       title: 'Bus Voltage Range',
       value: vm_pu_min != null && vm_pu_max != null ? `${vm_pu_min.toFixed(4)} - ${vm_pu_max.toFixed(4)} p.u.` : '1.0000 - 1.0500 p.u.',
       sub: isVoltageSafe ? 'Safe Band (0.95 ± 0.05 p.u.)' : 'Voltage Warning',
       icon: Activity,
-      color: isVoltageSafe ? '#10b981' : '#ef4444'
+      tone: isVoltageSafe ? 'ok' : 'danger'
     },
     {
       title: 'Max Thermal Line Load',
       value: max_line_loading_percent != null ? `${max_line_loading_percent.toFixed(1)}%` : '0.0%',
       sub: isLineSafe ? 'Normal Thermal Loading (<100%)' : 'Line Overload',
       icon: Gauge,
-      color: isLineSafe ? '#10b981' : '#ef4444'
+      tone: isLineSafe ? 'ok' : 'danger'
     }
   ];
 
@@ -51,38 +51,30 @@ export default function MetricCards({ summary }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
       {cards.map((card, idx) => {
         const IconComponent = card.icon;
+        const SubIcon = card.tone === 'danger' ? AlertTriangle : CheckCircle2;
         return (
-          <div 
-            key={idx} 
-            className="glass-panel" 
-            style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 500 }}>{card.title}</span>
-              <div 
-                style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  borderRadius: '8px', 
-                  backgroundColor: `${card.color}15`, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  border: `1px solid ${card.color}30`
-                }}
-              >
-                <IconComponent size={17} color={card.color} />
-              </div>
+          <div key={idx} className="vp-kpi-tile" data-tone={card.tone}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span className="vp-kpi-label">{card.title}</span>
+              <IconComponent size={18} style={{ color: 'var(--text-muted)' }} />
             </div>
 
-            <div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', fontFamily: 'var(--font-mono)' }}>
-                {card.value}
-              </div>
-              <div style={{ fontSize: '0.76rem', color: card.color, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <CheckCircle2 size={12} color={card.color} />
-                <span>{card.sub}</span>
-              </div>
+            <div className="vp-kpi-value">
+              {card.value}
+            </div>
+
+            <div 
+              className="vp-kpi-subtext"
+              style={{ 
+                marginTop: '6px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '4px',
+                color: card.tone === 'ok' ? 'var(--ok)' : card.tone === 'danger' ? 'var(--danger)' : 'var(--text-faint)'
+              }}
+            >
+              <SubIcon size={13} />
+              <span>{card.sub}</span>
             </div>
           </div>
         );
@@ -90,3 +82,4 @@ export default function MetricCards({ summary }) {
     </div>
   );
 }
+

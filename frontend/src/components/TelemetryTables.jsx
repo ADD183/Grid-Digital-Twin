@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Server, Cpu, Activity } from 'lucide-react';
+import { Table } from 'lucide-react';
 
 export default function TelemetryTables({ topology }) {
   const [activeTab, setActiveTab] = useState('buses');
@@ -9,40 +9,28 @@ export default function TelemetryTables({ topology }) {
   const { buses = [], lines = [] } = topology;
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
+    <div className="vp-card" style={{ marginBottom: '24px' }}>
       
       {/* Header & Tabs */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#06b6d4', fontWeight: 600, fontSize: '1.02rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '1.02rem' }}>
           <Table size={20} />
           <span>Grid Telemetry & Thermal Load Inspection</span>
         </div>
 
         {/* Tab Buttons */}
-        <div style={{ display: 'flex', backgroundColor: '#0f172a', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="vp-segmented">
           <button
             onClick={() => setActiveTab('buses')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              backgroundColor: activeTab === 'buses' ? '#06b6d4' : 'transparent',
-              color: activeTab === 'buses' ? '#ffffff' : '#94a3b8'
-            }}
+            className={`vp-segmented-btn ${activeTab === 'buses' ? 'active' : ''}`}
+            aria-selected={activeTab === 'buses'}
           >
             Bus Voltages ({buses.length})
           </button>
           <button
             onClick={() => setActiveTab('lines')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              backgroundColor: activeTab === 'lines' ? '#06b6d4' : 'transparent',
-              color: activeTab === 'lines' ? '#ffffff' : '#94a3b8'
-            }}
+            className={`vp-segmented-btn ${activeTab === 'lines' ? 'active' : ''}`}
+            aria-selected={activeTab === 'lines'}
           >
             Line Thermal Loading ({lines.length})
           </button>
@@ -51,35 +39,34 @@ export default function TelemetryTables({ topology }) {
 
       {/* Tab 1: Bus Table */}
       {activeTab === 'buses' && (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
+        <div className="vp-table-container">
+          <table className="vp-table">
             <thead>
-              <tr style={{ backgroundColor: 'rgba(255,255,255,0.03)', color: '#94a3b8', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <th style={{ padding: '10px 14px' }}>Bus ID</th>
-                <th style={{ padding: '10px 14px' }}>Name</th>
-                <th style={{ padding: '10px 14px' }}>Voltage (p.u.)</th>
-                <th style={{ padding: '10px 14px' }}>Nominal (kV)</th>
-                <th style={{ padding: '10px 14px' }}>Active Power P (MW)</th>
-                <th style={{ padding: '10px 14px' }}>Reactive Power Q (MVar)</th>
-                <th style={{ padding: '10px 14px' }}>Status</th>
+              <tr>
+                <th>Bus ID</th>
+                <th>Name</th>
+                <th className="num">Voltage (p.u.)</th>
+                <th className="num">Nominal (kV)</th>
+                <th className="num">Active Power P (MW)</th>
+                <th className="num">Reactive Power Q (MVar)</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {buses.map((bus) => {
                 const isSafe = bus.vm_pu >= 0.95 && bus.vm_pu <= 1.05;
-                const statusColor = isSafe ? '#10b981' : '#ef4444';
                 return (
-                  <tr key={bus.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#06b6d4' }}>{bus.id}</td>
-                    <td style={{ padding: '10px 14px', color: '#f8fafc' }}>{bus.name}</td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: statusColor }}>
+                  <tr key={bus.id}>
+                    <td className="mono" style={{ fontWeight: 600, color: 'var(--accent)' }}>{bus.id}</td>
+                    <td>{bus.name}</td>
+                    <td className="num mono" style={{ fontWeight: 600, color: isSafe ? 'var(--ok)' : 'var(--danger)' }}>
                       {bus.vm_pu.toFixed(4)}
                     </td>
-                    <td style={{ padding: '10px 14px', color: '#cbd5e1' }}>{bus.vn_kv} kV</td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>{bus.p_mw.toFixed(3)}</td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>{bus.q_mvar.toFixed(3)}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.74rem', backgroundColor: `${statusColor}15`, color: statusColor, border: `1px solid ${statusColor}30` }}>
+                    <td className="num">{bus.vn_kv} kV</td>
+                    <td className="num mono">{bus.p_mw.toFixed(3)}</td>
+                    <td className="num mono">{bus.q_mvar.toFixed(3)}</td>
+                    <td>
+                      <span className="vp-badge" data-tone={isSafe ? 'ok' : 'danger'}>
                         {isSafe ? 'Normal' : 'Violation'}
                       </span>
                     </td>
@@ -93,34 +80,35 @@ export default function TelemetryTables({ topology }) {
 
       {/* Tab 2: Line Table */}
       {activeTab === 'lines' && (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
+        <div className="vp-table-container">
+          <table className="vp-table">
             <thead>
-              <tr style={{ backgroundColor: 'rgba(255,255,255,0.03)', color: '#94a3b8', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <th style={{ padding: '10px 14px' }}>Line ID</th>
-                <th style={{ padding: '10px 14px' }}>Name</th>
-                <th style={{ padding: '10px 14px' }}>Endpoints</th>
-                <th style={{ padding: '10px 14px' }}>Length (km)</th>
-                <th style={{ padding: '10px 14px' }}>Thermal Loading (%)</th>
-                <th style={{ padding: '10px 14px' }}>Load Visual</th>
+              <tr>
+                <th>Line ID</th>
+                <th>Name</th>
+                <th>Endpoints</th>
+                <th className="num">Length (km)</th>
+                <th className="num">Thermal Loading (%)</th>
+                <th>Load Visual</th>
               </tr>
             </thead>
             <tbody>
               {lines.map((line) => {
                 const load = line.loading_percent;
-                const barColor = load <= 70 ? '#06b6d4' : (load <= 100 ? '#f59e0b' : '#ef4444');
+                const tone = load <= 70 ? 'ok' : load <= 100 ? 'warn' : 'danger';
+                const barColor = tone === 'ok' ? 'var(--ok)' : tone === 'warn' ? 'var(--warn)' : 'var(--danger)';
                 return (
-                  <tr key={line.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#06b6d4' }}>{line.id}</td>
-                    <td style={{ padding: '10px 14px', color: '#f8fafc' }}>{line.name}</td>
-                    <td style={{ padding: '10px 14px', color: '#cbd5e1' }}>Bus {line.from_bus} → Bus {line.to_bus}</td>
-                    <td style={{ padding: '10px 14px', color: '#cbd5e1' }}>{line.length_km} km</td>
-                    <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: barColor }}>
+                  <tr key={line.id}>
+                    <td className="mono" style={{ fontWeight: 600, color: 'var(--accent)' }}>{line.id}</td>
+                    <td>{line.name}</td>
+                    <td>Bus {line.from_bus} → Bus {line.to_bus}</td>
+                    <td className="num">{line.length_km} km</td>
+                    <td className="num mono" style={{ fontWeight: 600, color: barColor }}>
                       {load.toFixed(2)}%
                     </td>
-                    <td style={{ padding: '10px 14px', width: '180px' }}>
-                      <div style={{ height: '8px', width: '100%', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${Math.min(load, 100)}%`, backgroundColor: barColor, borderRadius: '4px' }} />
+                    <td style={{ width: '180px' }}>
+                      <div style={{ height: '6px', width: '100%', backgroundColor: 'var(--surface-raised)', borderRadius: '999px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                        <div style={{ height: '100%', width: `${Math.min(load, 100)}%`, backgroundColor: barColor, borderRadius: '999px', transition: 'width 0.3s ease' }} />
                       </div>
                     </td>
                   </tr>
@@ -134,3 +122,4 @@ export default function TelemetryTables({ topology }) {
     </div>
   );
 }
+

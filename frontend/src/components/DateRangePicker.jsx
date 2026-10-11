@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, RefreshCw, Layers } from 'lucide-react';
+import { Calendar, Clock, RefreshCw } from 'lucide-react';
 
 export default function DateRangePicker({ startDate, endDate, onApply, loading }) {
   const [start, setStart] = useState(startDate);
@@ -43,18 +43,18 @@ export default function DateRangePicker({ startDate, endDate, onApply, loading }
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: '24px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div className="vp-card" style={{ marginBottom: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         
         {/* Section Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#06b6d4', fontWeight: 600, fontSize: '0.95rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontWeight: 600, fontSize: '0.95rem' }}>
             <Calendar size={18} />
             <span>Select Simulation Date Window</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Presets:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '4px' }}>Presets:</span>
             {[
               { label: '1 Month', months: 1 },
               { label: '2 Months', months: 2 },
@@ -65,18 +65,8 @@ export default function DateRangePicker({ startDate, endDate, onApply, loading }
                 key={p.months}
                 type="button"
                 onClick={() => setPreset(p.months)}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '0.78rem',
-                  fontWeight: 500,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#e2e8f0',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => (e.target.style.borderColor = '#06b6d4')}
-                onMouseLeave={(e) => (e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
+                className="vp-btn vp-btn-secondary"
+                style={{ height: '30px', padding: '0 10px', fontSize: '0.78rem' }}
               >
                 {p.label}
               </button>
@@ -85,72 +75,70 @@ export default function DateRangePicker({ startDate, endDate, onApply, loading }
         </div>
 
         {/* Date Inputs Form */}
-        <form onSubmit={handleApply} style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        <form onSubmit={handleApply} style={{ display: 'flex', alignItems: 'flex-end', gap: '16px', flexWrap: 'wrap' }}>
           
           {/* Start Date Calendar Input */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px' }}>
-            <label style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 500 }}>Start Date (Calendar)</label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                type="date"
-                value={start}
-                min="2020-01-01"
-                max="2023-12-31"
-                onChange={(e) => setStart(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  color: '#f8fafc',
-                  fontSize: '0.9rem',
-                  outline: 'none'
-                }}
-              />
-            </div>
+            <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500 }}>Start Date</label>
+            <input
+              type="date"
+              value={start}
+              min="2020-01-01"
+              max="2023-12-31"
+              onChange={(e) => setStart(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: 'var(--r-sm)',
+                backgroundColor: 'var(--surface-raised)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+                fontSize: '0.88rem',
+                outline: 'none',
+                colorScheme: 'inherit'
+              }}
+            />
           </div>
 
           {/* End Date Calendar Input */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px' }}>
-            <label style={{ fontSize: '0.78rem', color: '#94a3b8', fontWeight: 500 }}>End Date (Calendar)</label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                type="date"
-                value={end}
-                min={start || "2020-01-01"}
-                max="2023-12-31"
-                onChange={(e) => setEnd(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: '#0f172a',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  color: '#f8fafc',
-                  fontSize: '0.9rem',
-                  outline: 'none'
-                }}
-              />
-            </div>
+            <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500 }}>End Date</label>
+            <input
+              type="date"
+              value={end}
+              min={start || "2020-01-01"}
+              max="2023-12-31"
+              onChange={(e) => setEnd(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: 'var(--r-sm)',
+                backgroundColor: 'var(--surface-raised)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+                fontSize: '0.88rem',
+                outline: 'none',
+                colorScheme: 'inherit'
+              }}
+            />
           </div>
 
           {/* Duration Badge */}
           <div 
+            className="vp-badge" 
+            data-tone="info"
             style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              padding: '10px 14px', 
-              borderRadius: '8px', 
-              backgroundColor: 'rgba(6, 182, 212, 0.08)',
-              border: '1px solid rgba(6, 182, 212, 0.2)',
-              marginTop: '18px'
+              padding: '8px 12px', 
+              borderRadius: 'var(--r-sm)', 
+              fontSize: '0.82rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            <Clock size={16} color="#06b6d4" />
-            <span style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 500 }}>
-              <strong style={{ color: '#06b6d4' }}>{duration.days} Days</strong> ({duration.months} Months)
+            <Clock size={15} />
+            <span>
+              <strong>{duration.days} Days</strong> ({duration.months} Months)
             </span>
           </div>
 
@@ -158,24 +146,10 @@ export default function DateRangePicker({ startDate, endDate, onApply, loading }
           <button
             type="submit"
             disabled={loading}
-            style={{
-              marginTop: '18px',
-              padding: '10px 22px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-              color: '#ffffff',
-              fontWeight: 600,
-              fontSize: '0.88rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 0 15px rgba(6, 182, 212, 0.3)',
-              opacity: loading ? 0.7 : 1,
-              transition: 'transform 0.15s ease'
-            }}
+            className="vp-btn vp-btn-primary"
           >
-            <RefreshCw size={16} className={loading ? 'animated-pulse' : ''} />
-            <span>{loading ? 'Fetching...' : 'Update Simulation Data'}</span>
+            <RefreshCw size={16} className={loading ? 'animated-spin' : ''} />
+            <span>{loading ? 'Fetching...' : 'Update Data'}</span>
           </button>
 
         </form>
@@ -184,3 +158,4 @@ export default function DateRangePicker({ startDate, endDate, onApply, loading }
     </div>
   );
 }
+
